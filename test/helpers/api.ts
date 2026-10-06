@@ -1,4 +1,4 @@
-import type { INestApplication } from '@nestjs/common';
+import type { INestApplication, Type } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import type { App } from 'supertest/types.js';
 import { AppModule } from '../../src/app.module.js';
@@ -7,9 +7,12 @@ import { PrismaService } from '../../src/infrastructure/prisma/prisma.service.js
 
 export type TestApi = { app: INestApplication<App>; prisma: PrismaService };
 
-export async function createTestApi(): Promise<TestApi> {
+export async function createTestApi(
+  controllers: Type<unknown>[] = [],
+): Promise<TestApi> {
   const module = await Test.createTestingModule({
     imports: [AppModule],
+    controllers,
   }).compile();
   const app = module.createNestApplication();
   configureApp(app);

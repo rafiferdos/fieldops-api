@@ -108,7 +108,13 @@ Consumed refresh records session expiry পর্যন্ত রাখতে �
 
 `GET {{base_url}}/users/me` → Auth tab → Bearer Token = `{{access_token}}`। Expected `200`; নিজের safe profile পাবেন। Header ছাড়া, wrong/expired token, logout-এর পরে অথবা refresh reuse-এর পরে `401`।
 
-Authentication guard default-এ সব registered route protect করে; public health/register/login/google/refresh-এ explicit `@Public()` আছে। প্রতিটি private request-এ current database session/account check হয়; role JWT থেকে বিশ্বাস করা হয় না। Role/ownership authorization পরবর্তী domain work।
+Authentication guard default-এ সব registered route protect করে; public health/register/login/google/refresh-এ explicit `@Public()` আছে। প্রতিটি private request-এ current database session/account check হয়; role JWT থেকে বিশ্বাস করা হয় না। Resource ownership checks domain modules-এর সঙ্গে যোগ হবে।
+
+### Role authorization
+
+`RolesGuard` global authentication guard-এর পরে চলে। Private route-এ `@Roles(Role.ADMIN)` বা `@Roles(Role.ADMIN, Role.TECHNICIAN)` দিন; controller-level default method-level roles দিয়ে override করা যায়। Role current DB actor থেকে আসে, client input/JWT role থেকে নয়। Missing/invalid session `401`, allowed list-এর বাইরে role `403`; ADMIN-এর automatic bypass নেই। `@Public()` ও `@Roles()` একসঙ্গে দেবেন না—actor না থাকলে request deny হবে।
+
+`/users/me` তিনটি role-এর জন্য খোলা। Resource ownership domain service-এর query-তে enforce করতে হবে; `@Roles()` ownership check-এর বিকল্প নয়। Role-restricted admin/domain endpoints পরবর্তী stage; integration tests-এর role-check routes production app-এ নেই। [NestJS guards](https://docs.nestjs.com/guards)
 
 ### Registration
 

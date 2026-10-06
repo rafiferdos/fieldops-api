@@ -12,6 +12,7 @@ import { AccessTokenGuard } from './guards/access-token.guard.js';
 import { GoogleAuthService } from './google-auth.service.js';
 import { GoogleTokenService } from './google-token.service.js';
 import { GoogleRequestGuard } from './guards/google-request.guard.js';
+import { RolesGuard } from './guards/roles.guard.js';
 
 @Module({
   imports: [
@@ -45,6 +46,7 @@ import { GoogleRequestGuard } from './guards/google-request.guard.js';
     GoogleTokenService,
     GoogleRequestGuard,
     { provide: APP_GUARD, useExisting: AccessTokenGuard },
+    { provide: APP_GUARD, useClass: RolesGuard },
   ],
 })
 export class AuthModule {}
