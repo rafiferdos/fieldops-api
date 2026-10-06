@@ -12,6 +12,17 @@ Node.js 24, NestJS (Express adapter), strict TypeScript / ESM, PostgreSQL 18, Pr
 nvm use
 cp .env.example .env
 npm ci
+```
+
+`.env`-এ `JWT_ACCESS_SECRET` বসাতে একটি secret generate করুন (Git-এ রাখবেন না):
+
+```bash
+node -e "console.log(require('node:crypto').randomBytes(64).toString('base64'))"
+```
+
+তারপর:
+
+```bash
 npm run db:generate
 docker compose up -d postgres
 npm run db:status
@@ -33,10 +44,22 @@ npm run start:dev
 | GET    | `/api/v1/health`        | API liveness                         |
 | GET    | `/api/v1/health/ready`  | Prisma দিয়ে database readiness check |
 | POST   | `/api/v1/auth/register` | Customer account তৈরি                |
+| POST   | `/api/v1/auth/login`    | Password যাচাই ও session/token pair  |
 
 Success: `{ success: true, message, data }`। Error: `{ success: false, message, errors: [] }`।
 
-Roles: `CUSTOMER`, `TECHNICIAN`, `ADMIN`। Dispatch ও finance duties `ADMIN` role-এর মধ্যে থাকবে। Login/session ও Google login পরবর্তী কাজ।
+Roles: `CUSTOMER`, `TECHNICIAN`, `ADMIN`। Dispatch ও finance duties `ADMIN` role-এর মধ্যে থাকবে। Google login পরবর্তী কাজ।
+
+### Apidog: login test
+
+Local environment: `base_url = http://localhost:3000/api/v1`। Credentials/token local values রাখুন। Server: `npm run start:dev`।
+
+1. `POST {{base_url}}/auth/register` — নিচের registration JSON দিয়ে নতুন account তৈরি করুন (`201`)।
+2. `POST {{base_url}}/auth/login` — JSON body-তে একই `email` ও `password` দিন (`200`)। `data`-তে safe `user`, `accessToken`, `refreshToken`, `tokenType`, `expiresIn: 900`, `refreshExpiresAt` থাকবে।
+3. Login-এর **Post Processors → Extract Variable**: Environment scope-এ `access_token` = `$.data.accessToken`, `refresh_token` = `$.data.refreshToken` save করুন। [Apidog guide](https://docs.apidog.io/extract-variable-588468m0)
+4. ভুল password বা অজানা email দিয়ে login: একই `401` ও `Invalid email or password` message। Body-তে `role` দিলে `400`। Login প্রতি IP-তে ১০ attempts/minute।
+
+Access JWT ১৫ মিনিট, session ও refresh token সর্বোচ্চ ৭ দিন। Auth response/error `Cache-Control: no-store`। Raw refresh token database-এ রাখা হয় না।
 
 ### Registration
 

@@ -6,6 +6,10 @@ const envSchema = z.object({
     .default('development'),
   PORT: z.coerce.number().int().min(1).max(65535).default(3000),
   FRONTEND_ORIGIN: z.url(),
+  JWT_ACCESS_SECRET: z.string().refine((value) => {
+    const decoded = Buffer.from(value, 'base64');
+    return decoded.length >= 64 && decoded.toString('base64') === value;
+  }, 'JWT_ACCESS_SECRET must be a random base64 secret of at least 64 bytes'),
   DATABASE_URL: z
     .url()
     .refine(

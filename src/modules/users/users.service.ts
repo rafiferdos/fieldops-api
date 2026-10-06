@@ -2,14 +2,7 @@ import { ConflictException, Inject, Injectable } from '@nestjs/common';
 import { Prisma } from '../../generated/prisma/client.js';
 import { Role } from '../../generated/prisma/enums.js';
 import { PrismaService } from '../../infrastructure/prisma/prisma.service.js';
-
-const publicUserSelect = {
-  id: true,
-  name: true,
-  email: true,
-  role: true,
-  createdAt: true,
-} satisfies Prisma.UserSelect;
+import { publicUserSelect } from './users.select.js';
 
 type CreateCustomerInput = {
   name: string;
@@ -20,6 +13,13 @@ type CreateCustomerInput = {
 @Injectable()
 export class UsersService {
   constructor(@Inject(PrismaService) private readonly prisma: PrismaService) {}
+
+  findForLogin(email: string) {
+    return this.prisma.user.findUnique({
+      where: { email },
+      select: { id: true, passwordHash: true, status: true, deletedAt: true },
+    });
+  }
 
   async createCustomer(input: CreateCustomerInput) {
     try {

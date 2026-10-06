@@ -1,37 +1,28 @@
 import { randomUUID } from 'node:crypto';
 import type { INestApplication } from '@nestjs/common';
-import { Test } from '@nestjs/testing';
 import { verify } from 'argon2';
 import request from 'supertest';
 import type { App } from 'supertest/types.js';
-import { AppModule } from '../src/app.module.js';
-import { configureApp } from '../src/config/app.config.js';
-import { PrismaService } from '../src/infrastructure/prisma/prisma.service.js';
+import type { PrismaService } from '../src/infrastructure/prisma/prisma.service.js';
+import { createTestApi, closeTestApi, type TestApi } from './helpers/api.js';
 
 describe('Customer registration (e2e)', () => {
   let app: INestApplication<App>;
   let prisma: PrismaService;
+  let api: TestApi | undefined;
   let email: string;
   const password = '  a long test passphrase  ';
   const endpoint = '/api/v1/auth/register';
 
   beforeEach(async () => {
     email = `registration-${randomUUID()}@example.com`;
-    const module = await Test.createTestingModule({
-      imports: [AppModule],
-    }).compile();
-    app = module.createNestApplication();
-    configureApp(app);
-    prisma = app.get(PrismaService);
-    await app.init();
+    api = undefined;
+    api = await createTestApi();
+    ({ app, prisma } = api);
   });
 
   afterEach(async () => {
-    try {
-      await prisma?.user.deleteMany({ where: { email } });
-    } finally {
-      await app?.close();
-    }
+    await closeTestApi(api, email);
   });
 
   it('creates a normalized CUSTOMER with a salted hash and safe response fields', async () => {

@@ -1,25 +1,20 @@
-import { Test } from '@nestjs/testing';
 import type { INestApplication } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import request from 'supertest';
 import type { App } from 'supertest/types.js';
-import { AppModule } from '../src/app.module.js';
-import { configureApp } from '../src/config/app.config.js';
+import { createTestApi, closeTestApi, type TestApi } from './helpers/api.js';
 
 describe('API foundation (e2e)', () => {
   let app: INestApplication<App>;
+  let api: TestApi | undefined;
 
   beforeAll(async () => {
-    const module = await Test.createTestingModule({
-      imports: [AppModule],
-    }).compile();
-    app = module.createNestApplication();
-    configureApp(app);
-    await app.init();
+    api = await createTestApi();
+    app = api.app;
   });
 
   afterAll(async () => {
-    await app?.close();
+    await closeTestApi(api);
   });
 
   it('serves liveness at the production prefix with security and CORS headers', async () => {
