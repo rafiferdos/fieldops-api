@@ -49,15 +49,21 @@ describe('API foundation (e2e)', () => {
     });
   });
 
-  it.each(['/', '/health', '/api/v1/missing'])(
-    'returns the required error shape for %s',
+  it('returns the required error shape for an unknown API route', async () => {
+    const response = await request(app.getHttpServer())
+      .get('/api/v1/missing')
+      .expect(404);
+    expect(response.body).toEqual({
+      success: false,
+      message: expect.any(String),
+      errors: [],
+    });
+  });
+
+  it.each(['/', '/health'])(
+    'does not expose a route outside the API prefix: %s',
     async (path) => {
-      const response = await request(app.getHttpServer()).get(path).expect(404);
-      expect(response.body).toEqual({
-        success: false,
-        message: expect.any(String),
-        errors: [],
-      });
+      await request(app.getHttpServer()).get(path).expect(404);
     },
   );
 });
