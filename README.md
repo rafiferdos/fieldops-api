@@ -28,10 +28,10 @@ npm run start:dev
 
 ## Available endpoints
 
-| Method | Endpoint | Purpose |
-| --- | --- | --- |
-| GET | `/api/v1/health` | API liveness |
-| GET | `/api/v1/health/ready` | Prisma দিয়ে database readiness check |
+| Method | Endpoint               | Purpose                              |
+| ------ | ---------------------- | ------------------------------------ |
+| GET    | `/api/v1/health`       | API liveness                         |
+| GET    | `/api/v1/health/ready` | Prisma দিয়ে database readiness check |
 
 Success: `{ success: true, message, data }`। Error: `{ success: false, message, errors: [] }`।
 
