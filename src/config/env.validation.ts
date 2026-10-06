@@ -6,6 +6,14 @@ const envSchema = z.object({
     .default('development'),
   PORT: z.coerce.number().int().min(1).max(65535).default(3000),
   FRONTEND_ORIGIN: z.url(),
+  GOOGLE_CLIENT_ID: z.preprocess(
+    (value) => (typeof value === 'string' && !value.trim() ? undefined : value),
+    z
+      .string()
+      .trim()
+      .regex(/^[A-Za-z0-9_-]+\.apps\.googleusercontent\.com$/)
+      .optional(),
+  ),
   JWT_ACCESS_SECRET: z.string().refine((value) => {
     const decoded = Buffer.from(value, 'base64');
     return decoded.length >= 64 && decoded.toString('base64') === value;

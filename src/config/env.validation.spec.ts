@@ -27,3 +27,30 @@ describe('JWT startup configuration', () => {
     ).toThrow();
   });
 });
+
+describe('Google startup configuration', () => {
+  const validEnv = {
+    ...baseEnv,
+    JWT_ACCESS_SECRET: randomBytes(64).toString('base64'),
+  };
+
+  it.each([undefined, '', '  '])(
+    'permits an unconfigured Google client without breaking password login',
+    (clientId) => {
+      expect(
+        validateEnv({ ...validEnv, GOOGLE_CLIENT_ID: clientId })
+          .GOOGLE_CLIENT_ID,
+      ).toBeUndefined();
+    },
+  );
+
+  it('accepts a Web OAuth Client ID and rejects a secret/placeholder', () => {
+    const clientId = '123456789-test.apps.googleusercontent.com';
+    expect(
+      validateEnv({ ...validEnv, GOOGLE_CLIENT_ID: clientId }).GOOGLE_CLIENT_ID,
+    ).toBe(clientId);
+    expect(() =>
+      validateEnv({ ...validEnv, GOOGLE_CLIENT_ID: 'your-client-id' }),
+    ).toThrow();
+  });
+});

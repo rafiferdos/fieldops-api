@@ -1,6 +1,6 @@
 # FieldOps API
 
-Programming Hero Assignment 6-এর Field Service Management backend। Foundation ও customer registration প্রস্তুত; বাকি domain APIs implementation চলছে। Assignment 7 frontend পরে হবে।
+Programming Hero Assignment 6-এর Field Service Management backend। Password/Google login, session/token lifecycle ও own profile প্রস্তুত; domain APIs implementation চলছে। Assignment 7 frontend পরে হবে।
 
 ## Stack
 
@@ -39,19 +39,20 @@ npm run start:dev
 
 ## Available endpoints
 
-| Method | Endpoint                | Purpose                              |
-| ------ | ----------------------- | ------------------------------------ |
-| GET    | `/api/v1/health`        | API liveness                         |
-| GET    | `/api/v1/health/ready`  | Prisma দিয়ে database readiness check |
-| POST   | `/api/v1/auth/register` | Customer account তৈরি                |
-| POST   | `/api/v1/auth/login`    | Password যাচাই ও session/token pair  |
-| POST   | `/api/v1/auth/refresh`  | Refresh token rotation               |
-| POST   | `/api/v1/auth/logout`   | Bearer দিয়ে current session revoke   |
-| GET    | `/api/v1/users/me`      | Authenticated own profile            |
+| Method | Endpoint                | Purpose                               |
+| ------ | ----------------------- | ------------------------------------- |
+| GET    | `/api/v1/health`        | API liveness                          |
+| GET    | `/api/v1/health/ready`  | Prisma দিয়ে database readiness check  |
+| POST   | `/api/v1/auth/register` | Customer account তৈরি                 |
+| POST   | `/api/v1/auth/login`    | Password যাচাই ও session/token pair   |
+| POST   | `/api/v1/auth/google`   | Verified Google credential দিয়ে login |
+| POST   | `/api/v1/auth/refresh`  | Refresh token rotation                |
+| POST   | `/api/v1/auth/logout`   | Bearer দিয়ে current session revoke    |
+| GET    | `/api/v1/users/me`      | Authenticated own profile             |
 
 Success: `{ success: true, message, data }`। Error: `{ success: false, message, errors: [] }`।
 
-Roles: `CUSTOMER`, `TECHNICIAN`, `ADMIN`। Dispatch ও finance duties `ADMIN` role-এর মধ্যে থাকবে। Google login পরবর্তী কাজ।
+Roles: `CUSTOMER`, `TECHNICIAN`, `ADMIN`। Dispatch ও finance duties `ADMIN` role-এর মধ্যে থাকবে।
 
 ### Apidog: login test
 
@@ -63,6 +64,36 @@ Local environment: `base_url = http://localhost:3000/api/v1`। Credentials/toke
 4. ভুল password বা অজানা email দিয়ে login: একই `401` ও `Invalid email or password` message। Body-তে `role` দিলে `400`। Login প্রতি IP-তে ১০ attempts/minute।
 
 Access JWT ১৫ মিনিট, session ও refresh token সর্বোচ্চ ৭ দিন। Auth response/error `Cache-Control: no-store`। Raw refresh token database-এ রাখা হয় না।
+
+### Google setup and Apidog test
+
+1. [Google setup guide](https://developers.google.com/identity/gsi/web/guides/get-google-api-clientid) অনুসারে OAuth consent screen ও **Web application** Client তৈরি করুন। Testing audience হলে নিজের account test user হিসেবে রাখুন। **Authorized JavaScript origins**-এ `http://localhost` এবং `.env`-এর `FRONTEND_ORIGIN` (default `http://localhost:3001`) দিন। Helper popup/callback flow ব্যবহার করে; redirect URI লাগে না।
+2. `.env`-এ `GOOGLE_CLIENT_ID=<your-id>.apps.googleusercontent.com` বসিয়ে backend restart করুন। Client secret লাগে না। Configuration খালি থাকলে password login চলবে, Google endpoint `503` দেবে; invalid nonempty configuration startup-এ reject হবে।
+3. আলাদা terminal-এ `npm run google:test` চালিয়ে দেখানো local URL খুলুন। Google button-এ sign in করে পাওয়া **ID token** Apidog environment-এর `google_credential` **Local Value**-তে copy করুন। Helper credential disk/log-এ রাখে না; Assignment 7 frontend নয়।
+4. `POST {{base_url}}/auth/google`, **No Auth**, **Body → JSON**:
+
+```json
+{ "credential": "{{google_credential}}" }
+```
+
+Expected `200`, `message: "Signed in successfully"`; `data` login-এর মতো `user`, `accessToken`, `refreshToken`, `tokenType`, `expiresIn`, `refreshExpiresAt`। Login-এর একই token extraction rules ব্যবহার করুন; এরপর `/users/me`, refresh ও logout test করুন। নতুন Google user-এর role `CUSTOMER`, password hash নেই। Return user-এর role/profile DB থেকেই আসে।
+
+| Test                                                          | Expected                                     |
+| ------------------------------------------------------------- | -------------------------------------------- |
+| নতুন verified Google identity                                 | `200`, CUSTOMER ও token pair                 |
+| একই Google account দিয়ে আবার login                            | `200`, একই user ও নতুন session               |
+| Invalid/expired token, wrong audience, unverified email       | `401`, account/session তৈরি নয়               |
+| Missing/empty credential, extra role/email field              | `400`                                        |
+| Email আগে থেকেই অন্য account-এ আছে                            | `409`, automatic account linking নয়          |
+| Bound account suspended/deleted                               | `401`                                        |
+| Foreign Origin header                                         | `403`                                        |
+| Form body / wrong Content-Type                                | `415`; শুধু JSON callback exchange supported |
+| Google client ID অনুপস্থিত বা certificate service unavailable | `503`                                        |
+| প্রতি IP-তে Google endpoint-এ ১০ requests/minute ছাড়ালে       | `429`                                        |
+
+Google library signature/audience/issuer/expiry verify করে; verified email বাধ্যতামূলক। Identity lookup `(GOOGLE, sub)` দিয়ে; email বদলালে existing identity/profile rebind হয় না। Existing email collision-এ আগের sign-in method ব্যবহার করুন; authenticated linking আলাদা ভবিষ্যৎ কাজ। Subject lock parallel first sign-in serialize করে; user+identity+session একই transaction-এ লেখা হয়। [Google verification guide](https://developers.google.com/identity/gsi/web/guides/verify-google-id-token)
+
+Browser request-এর Origin `FRONTEND_ORIGIN`-এর সঙ্গে মিলতে হবে; Apidog/server client-এর Origin না থাকলেও চলে। এই endpoint cookies set করে না এবং Google-এর direct form/redirect callback গ্রহণ করে না; form flow-এর CSRF handling ভবিষ্যতে সেই flow যোগ করার সময় লাগবে। Real OAuth sign-in নিজস্ব Client ID/account দিয়ে manual verify করতে হবে। Automated tests শুধু certificate download replace করে test keys ব্যবহার করে; Google library-এর আসল signature/claim verification ও real PostgreSQL transactions চলবে।
 
 ### Apidog: refresh/logout test
 
@@ -77,7 +108,7 @@ Consumed refresh records session expiry পর্যন্ত রাখতে �
 
 `GET {{base_url}}/users/me` → Auth tab → Bearer Token = `{{access_token}}`। Expected `200`; নিজের safe profile পাবেন। Header ছাড়া, wrong/expired token, logout-এর পরে অথবা refresh reuse-এর পরে `401`।
 
-Authentication guard default-এ সব registered route protect করে; public health/register/login/refresh-এ explicit `@Public()` আছে। প্রতিটি private request-এ current database session/account check হয়; role JWT থেকে বিশ্বাস করা হয় না। Role/ownership authorization পরবর্তী domain work।
+Authentication guard default-এ সব registered route protect করে; public health/register/login/google/refresh-এ explicit `@Public()` আছে। প্রতিটি private request-এ current database session/account check হয়; role JWT থেকে বিশ্বাস করা হয় না। Role/ownership authorization পরবর্তী domain work।
 
 ### Registration
 
@@ -127,7 +158,7 @@ Migration files Git-এ রাখতে হবে। `.env`, `node_modules/`, `d
 - [Assignment source](https://github.com/Apollo-Level2-Web-Dev/B7A6)
 - [Reviewed Notion plan](https://app.notion.com/p/3f14ab5df14481b9bdccd1349fd83a18)
 
-পরবর্তী কাজ: Google login, role/ownership authorization এবং domain modules।
+পরবর্তী কাজ: role/ownership authorization, own profile update এবং domain modules।
 
 ## Known dependency advisories
 

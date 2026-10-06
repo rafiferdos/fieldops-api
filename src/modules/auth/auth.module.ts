@@ -9,6 +9,9 @@ import { AuthService } from './auth.service.js';
 import { SessionsService } from './sessions.service.js';
 import { TokensService } from './tokens.service.js';
 import { AccessTokenGuard } from './guards/access-token.guard.js';
+import { GoogleAuthService } from './google-auth.service.js';
+import { GoogleTokenService } from './google-token.service.js';
+import { GoogleRequestGuard } from './guards/google-request.guard.js';
 
 @Module({
   imports: [
@@ -38,6 +41,9 @@ import { AccessTokenGuard } from './guards/access-token.guard.js';
     SessionsService,
     TokensService,
     AccessTokenGuard,
+    GoogleAuthService,
+    GoogleTokenService,
+    GoogleRequestGuard,
     { provide: APP_GUARD, useExisting: AccessTokenGuard },
   ],
 })

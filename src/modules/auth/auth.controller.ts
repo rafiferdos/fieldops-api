@@ -1,4 +1,11 @@
-import { Body, Controller, HttpCode, Inject, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  HttpCode,
+  Inject,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
 import { success } from '../../common/http/success.js';
 import { ZodValidationPipe } from '../../common/pipes/zod-validation.pipe.js';
@@ -12,10 +19,30 @@ import { refreshSchema, type RefreshInput } from './schemas/refresh.schema.js';
 import { Public } from './decorators/public.decorator.js';
 import { CurrentActor } from './decorators/current-actor.decorator.js';
 import type { AuthActor } from './auth.types.js';
+import { GoogleAuthService } from './google-auth.service.js';
+import { GoogleRequestGuard } from './guards/google-request.guard.js';
+import { googleSchema, type GoogleInput } from './schemas/google.schema.js';
 
 @Controller('auth')
 export class AuthController {
-  constructor(@Inject(AuthService) private readonly auth: AuthService) {}
+  constructor(
+    @Inject(AuthService) private readonly auth: AuthService,
+    @Inject(GoogleAuthService) private readonly google: GoogleAuthService,
+  ) {}
+
+  @Post('google')
+  @Public()
+  @HttpCode(200)
+  @UseGuards(GoogleRequestGuard)
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
+  async googleLogin(
+    @Body(new ZodValidationPipe(googleSchema)) input: GoogleInput,
+  ) {
+    return success(
+      await this.google.login(input.credential),
+      'Signed in successfully',
+    );
+  }
 
   @Post('register')
   @Public()
