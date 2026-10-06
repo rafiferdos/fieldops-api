@@ -11,3 +11,12 @@ export const publicUserSelect = {
 export type PublicUser = Prisma.UserGetPayload<{
   select: typeof publicUserSelect;
 }>;
+
+export const ownProfileSelect = {
+  ...publicUserSelect,
+  phone: true,
+} satisfies Prisma.UserSelect;
+
+export type OwnProfile = Prisma.UserGetPayload<{
+  select: typeof ownProfileSelect;
+}>;

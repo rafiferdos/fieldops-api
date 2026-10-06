@@ -6,7 +6,11 @@ import {
   hashRefreshToken,
 } from '../../common/security/refresh-token.js';
 import { PrismaService } from '../../infrastructure/prisma/prisma.service.js';
-import { publicUserSelect, type PublicUser } from '../users/users.select.js';
+import {
+  ownProfileSelect,
+  publicUserSelect,
+  type PublicUser,
+} from '../users/users.select.js';
 import type { SessionCredentials } from './auth.types.js';
 
 const SESSION_TTL_MS = 7 * 24 * 60 * 60 * 1000;
@@ -150,7 +154,7 @@ export class SessionsService {
         expiresAt: { gt: new Date() },
         user: { status: UserStatus.ACTIVE, deletedAt: null },
       },
-      select: { user: { select: publicUserSelect } },
+      select: { user: { select: ownProfileSelect } },
     });
     return session ? { sessionId, user: session.user } : null;
   }

@@ -1,6 +1,6 @@
 # FieldOps API
 
-Programming Hero Assignment 6-এর Field Service Management backend। Password/Google login, session/token lifecycle ও own profile প্রস্তুত; domain APIs implementation চলছে। Assignment 7 frontend পরে হবে।
+Programming Hero Assignment 6-এর Field Service Management backend। Password/Google login, session/token lifecycle, role authorization ও own profile update প্রস্তুত; domain APIs implementation চলছে। Assignment 7 frontend পরে হবে।
 
 ## Stack
 
@@ -49,6 +49,7 @@ npm run start:dev
 | POST   | `/api/v1/auth/refresh`  | Refresh token rotation                |
 | POST   | `/api/v1/auth/logout`   | Bearer দিয়ে current session revoke    |
 | GET    | `/api/v1/users/me`      | Authenticated own profile             |
+| PATCH  | `/api/v1/users/me`      | নিজের name/phone update ও audit       |
 
 Success: `{ success: true, message, data }`। Error: `{ success: false, message, errors: [] }`।
 
@@ -108,6 +109,42 @@ Consumed refresh records session expiry পর্যন্ত রাখতে �
 
 `GET {{base_url}}/users/me` → Auth tab → Bearer Token = `{{access_token}}`। Expected `200`; নিজের safe profile পাবেন। Header ছাড়া, wrong/expired token, logout-এর পরে অথবা refresh reuse-এর পরে `401`।
 
+GET/PATCH profile-এর `data`-তে `id`, `name`, `email`, `role`, `createdAt`-এর সঙ্গে `phone` (string অথবা null) থাকবে। Registration/login/refresh-এর user projection আগের মতো থাকবে।
+
+### Apidog: update own profile
+
+`PATCH {{base_url}}/users/me` → Auth → Bearer Token = `{{access_token}}` → Body → JSON:
+
+```json
+{
+  "name": "Rafi Ferdos",
+  "phone": "+8801712345678"
+}
+```
+
+Expected `200`, `message: "Profile updated successfully"`; `data` GET profile-এর মতো। CUSTOMER/TECHNICIAN/ADMIN সবাই নিজের profile update করতে পারবেন। Owner authenticated actor থেকে আসে; request body/query থেকে নয়।
+
+| Field         | Rules                                                                                                           |
+| ------------- | --------------------------------------------------------------------------------------------------------------- |
+| `name`        | Optional; trim করার পরে ২–১০০ characters                                                                        |
+| `phone`       | Optional; trim হয়; `+` দিয়ে international format, ২–১৫ digits এবং প্রথম digit nonzero; example `+8801712345678` |
+| `phone: null` | Stored phone মুছে দেয়                                                                                           |
+
+অন্তত একটি field দিতে হবে। Omitted fields অক্ষত থাকবে। এটি phone format validation; phone ownership verification নয়। Role, status, email, password, userId এবং অন্যান্য extra fields reject হবে।
+
+| Test                                                                | Expected                                |
+| ------------------------------------------------------------------- | --------------------------------------- |
+| Valid name/phone → GET profile                                      | PATCH `200`; GET-এ saved values         |
+| শুধু name update                                                    | `200`; আগের phone অক্ষত                 |
+| `{ "phone": null }`                                                 | `200`; profile phone null               |
+| `{}`, blank/invalid fields, extra role/email/password               | `400`; profile/audit write নয়           |
+| No Auth, invalid/revoked/expired session, suspended/deleted account | `401`; write নয়                         |
+| একই সময়ে আলাদা name ও phone updates                                 | দুটোই `200`; final profile-এ দুটো value |
+
+Profile update-এর সময় transaction-এর ভিতরে active account/current session আবার check হয়। Profile write ও `USER_PROFILE_UPDATED` audit একই transaction-এ commit হয়; audit fail হলে update rollback হয়। Audit metadata-তে শুধু `updatedFields` থাকে, personal values/credentials নয়। একই valid PATCH repeat করলে নতুন audit entry হয়। Default rate limit ১২০ requests/minute প্রতি IP/endpoint।
+
+`AuditService.record(tx, event)` typed event নেয় এবং create-only operation দেয়; audit history update/delete API নেই। Administrative audit-log listing পরবর্তী domain stage।
+
 Authentication guard default-এ সব registered route protect করে; public health/register/login/google/refresh-এ explicit `@Public()` আছে। প্রতিটি private request-এ current database session/account check হয়; role JWT থেকে বিশ্বাস করা হয় না। Resource ownership checks domain modules-এর সঙ্গে যোগ হবে।
 
 ### Role authorization
@@ -164,7 +201,7 @@ Migration files Git-এ রাখতে হবে। `.env`, `node_modules/`, `d
 - [Assignment source](https://github.com/Apollo-Level2-Web-Dev/B7A6)
 - [Reviewed Notion plan](https://app.notion.com/p/3f14ab5df14481b9bdccd1349fd83a18)
 
-পরবর্তী কাজ: role/ownership authorization, own profile update এবং domain modules।
+পরবর্তী কাজ: Service catalog CRUD, search/pagination ও Redis cache; তারপর service requests ও ownership rules।
 
 ## Known dependency advisories
 

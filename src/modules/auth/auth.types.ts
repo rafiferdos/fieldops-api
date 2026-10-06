@@ -1,4 +1,4 @@
-import type { PublicUser } from '../users/users.select.js';
+import type { PublicUser, OwnProfile } from '../users/users.select.js';
 import type { Request } from 'express';
 
 export type SessionCredentials = {
@@ -10,7 +10,7 @@ export type SessionCredentials = {
 
 export type AuthActor = {
   sessionId: string;
-  user: PublicUser;
+  user: OwnProfile;
 };
 
 export type AuthenticatedRequest = Request & { actor?: AuthActor };

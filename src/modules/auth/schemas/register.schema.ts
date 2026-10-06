@@ -1,8 +1,9 @@
 import { z } from 'zod';
 import { emailSchema, passwordSchema } from './credentials.schema.js';
+import { nameSchema } from '../../users/schemas/profile.schema.js';
 
 export const registerSchema = z.strictObject({
-  name: z.string().trim().min(2).max(100),
+  name: nameSchema,
   email: emailSchema,
   password: passwordSchema.min(15),
 });

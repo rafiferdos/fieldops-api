@@ -313,7 +313,7 @@ describe('Login and sessions (e2e)', () => {
       expect(response.body).toEqual({
         success: true,
         message: 'Profile fetched successfully',
-        data: tokens.user,
+        data: { ...tokens.user, phone: null },
       });
       expect(response.body.data.role).toBe(role);
       await request(api.app.getHttpServer())
