@@ -1,0 +1,11 @@
+/node_modules/
+/dist/
+/coverage/
+/src/generated/prisma/
+/.agents/
+/.claude/
+/.windsurf/
+/.codex/
+/.aws/
+package-lock.json
+skills-lock.json

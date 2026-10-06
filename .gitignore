@@ -1,6 +1,26 @@
-node_modules
+# Dependencies and generated output
+/node_modules/
+/dist/
+/coverage/
+/src/generated/prisma/
+*.tsbuildinfo
+*.log
+
+# Secrets (keep only the safe example)
 .env
 .env.*
 !.env.example
-/src/generated/prisma/
-/src/generated/prisma
+
+# Local agent tools; keep the shared AGENTS.md and Copilot instructions
+/.agents/
+/.claude/
+/.windsurf/
+/.codex/
+/.aws/
+/skills-lock.json
+
+# OS and local editor files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
