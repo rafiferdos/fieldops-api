@@ -21,6 +21,6 @@
     "strictPropertyInitialization": false,
     "types": ["vitest/globals", "node"]
   },
-  "include": ["src/**/*.ts", "test/**/*.ts", "*.config.ts"],
+  "include": ["src/**/*.ts", "test/**/*.ts", "*.ts"],
   "exclude": ["node_modules", "dist", "coverage"]
 }
