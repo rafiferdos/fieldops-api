@@ -1,1 +1,0 @@
-{"version":3,"file":"enums.js","sourceRoot":"","sources":["../../../src/generated/prisma/enums.ts"],"names":[],"mappings":"AAWA,MAAM,CAAC,MAAM,IAAI,GAAG;IAClB,QAAQ,EAAE,UAAU;IACpB,UAAU,EAAE,YAAY;IACxB,KAAK,EAAE,OAAO;CACN,CAAA;AAKV,MAAM,CAAC,MAAM,UAAU,GAAG;IACxB,MAAM,EAAE,QAAQ;IAChB,SAAS,EAAE,WAAW;CACd,CAAA"}
