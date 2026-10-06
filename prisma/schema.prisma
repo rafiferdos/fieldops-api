@@ -30,6 +30,33 @@ model User {
   deletedAt    DateTime?  @db.Timestamptz(3)
   createdAt    DateTime   @default(now()) @db.Timestamptz(3)
   updatedAt    DateTime   @updatedAt @db.Timestamptz(3)
+  sessions     Session[]
 
   @@index([role, status])
+}
+
+model Session {
+  id            String         @id @default(uuid()) @db.Uuid
+  userId        String         @db.Uuid
+  expiresAt     DateTime       @db.Timestamptz(3)
+  revokedAt     DateTime?      @db.Timestamptz(3)
+  createdAt     DateTime       @default(now()) @db.Timestamptz(3)
+  updatedAt     DateTime       @updatedAt @db.Timestamptz(3)
+  user          User           @relation(fields: [userId], references: [id], onDelete: Restrict)
+  refreshTokens RefreshToken[]
+
+  @@index([userId, revokedAt])
+  @@index([expiresAt])
+}
+
+model RefreshToken {
+  tokenHash  String    @id @db.Char(64)
+  sessionId  String    @db.Uuid
+  expiresAt  DateTime  @db.Timestamptz(3)
+  consumedAt DateTime? @db.Timestamptz(3)
+  createdAt  DateTime  @default(now()) @db.Timestamptz(3)
+  session    Session   @relation(fields: [sessionId], references: [id], onDelete: Restrict)
+
+  @@index([sessionId])
+  @@index([expiresAt])
 }
