@@ -33,6 +33,7 @@ export async function closeTestApi(
   try {
     if (email) {
       await api.prisma.$transaction([
+        api.prisma.auditLog.deleteMany({ where: { actor: { email } } }),
         api.prisma.refreshToken.deleteMany({
           where: { session: { user: { email } } },
         }),
