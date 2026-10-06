@@ -34,6 +34,7 @@ export async function closeTestApi(
           where: { session: { user: { email } } },
         }),
         api.prisma.session.deleteMany({ where: { user: { email } } }),
+        api.prisma.authIdentity.deleteMany({ where: { user: { email } } }),
         api.prisma.user.deleteMany({ where: { email } }),
       ]);
     }

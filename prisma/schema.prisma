@@ -19,6 +19,10 @@ enum UserStatus {
   SUSPENDED
 }
 
+enum AuthProvider {
+  GOOGLE
+}
+
 model User {
   id           String     @id @default(uuid()) @db.Uuid
   email        String     @unique
@@ -31,8 +35,20 @@ model User {
   createdAt    DateTime   @default(now()) @db.Timestamptz(3)
   updatedAt    DateTime   @updatedAt @db.Timestamptz(3)
   sessions     Session[]
+  identities   AuthIdentity[]
 
   @@index([role, status])
+}
+
+model AuthIdentity {
+  provider        AuthProvider
+  providerSubject String       @db.VarChar(255)
+  userId          String       @db.Uuid
+  createdAt       DateTime     @default(now()) @db.Timestamptz(3)
+  user            User         @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@id([provider, providerSubject])
+  @@unique([userId, provider])
 }
 
 model Session {
