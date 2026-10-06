@@ -129,4 +129,169 @@ describe('Login and sessions (e2e)', () => {
       0,
     );
   });
+
+  const refresh = (refreshToken: string) =>
+    request(api.app.getHttpServer())
+      .post('/api/v1/auth/refresh')
+      .send({ refreshToken });
+  const logout = (accessToken: string) =>
+    request(api.app.getHttpServer())
+      .post('/api/v1/auth/logout')
+      .set('Authorization', `Bearer ${accessToken}`);
+
+  it('rotates tokens without extending expiry and commits family revocation on old-token reuse', async () => {
+    const original = (await login().expect(200)).body.data;
+    const next = (
+      await refresh(original.refreshToken)
+        .expect(200)
+        .expect('Cache-Control', 'no-store')
+    ).body.data;
+    const latest = (await refresh(next.refreshToken).expect(200)).body.data;
+    expect(
+      new Set([original.refreshToken, next.refreshToken, latest.refreshToken])
+        .size,
+    ).toBe(3);
+    expect(latest.refreshExpiresAt).toBe(original.refreshExpiresAt);
+    const token = await api.prisma.refreshToken.findUniqueOrThrow({
+      where: { tokenHash: hashRefreshToken(original.refreshToken) },
+    });
+    expect(token.consumedAt).not.toBeNull();
+    expect(
+      await api.prisma.refreshToken.count({
+        where: { sessionId: token.sessionId },
+      }),
+    ).toBe(3);
+    await refresh(original.refreshToken).expect(401);
+    expect(
+      (
+        await api.prisma.session.findUniqueOrThrow({
+          where: { id: token.sessionId },
+        })
+      ).revokedAt,
+    ).not.toBeNull();
+    await refresh(latest.refreshToken).expect(401);
+    await logout(latest.accessToken).expect(401);
+  });
+
+  it('allows one concurrent rotation and revokes the family for the reused request', async () => {
+    const original = (await login().expect(200)).body.data;
+    const responses = await Promise.all([
+      refresh(original.refreshToken),
+      refresh(original.refreshToken),
+    ]);
+    expect(
+      responses.map((response) => response.status).sort((a, b) => a - b),
+    ).toEqual([200, 401]);
+    const winner = responses.find((response) => response.status === 200)!;
+    const token = await api.prisma.refreshToken.findUniqueOrThrow({
+      where: { tokenHash: hashRefreshToken(original.refreshToken) },
+      include: { session: true },
+    });
+    expect(token.session.revokedAt).not.toBeNull();
+    expect(
+      await api.prisma.refreshToken.count({
+        where: { sessionId: token.sessionId },
+      }),
+    ).toBe(2);
+    await refresh(winner.body.data.refreshToken).expect(401);
+  });
+
+  it('logs out only the current session and blocks its remaining tokens', async () => {
+    const first = (await login().expect(200)).body.data;
+    const second = (await login().expect(200)).body.data;
+    const response = await logout(first.accessToken)
+      .expect(200)
+      .expect('Cache-Control', 'no-store');
+    expect(response.body).toEqual({
+      success: true,
+      message: 'Signed out successfully',
+      data: null,
+    });
+    await refresh(first.refreshToken).expect(401);
+    await logout(first.accessToken).expect(401);
+    await refresh(second.refreshToken).expect(200);
+  });
+
+  it('cannot leave a live session after a logout/refresh race', async () => {
+    const original = (await login().expect(200)).body.data;
+    const [rotation, signOut] = await Promise.all([
+      refresh(original.refreshToken),
+      logout(original.accessToken),
+    ]);
+    expect([200, 401]).toContain(rotation.status);
+    expect(signOut.status).toBe(200);
+    const token = await api.prisma.refreshToken.findUniqueOrThrow({
+      where: { tokenHash: hashRefreshToken(original.refreshToken) },
+      include: { session: true },
+    });
+    expect(token.session.revokedAt).not.toBeNull();
+    if (rotation.status === 200)
+      await refresh(rotation.body.data.refreshToken).expect(401);
+  });
+
+  it.each([
+    'session-expired',
+    'token-expired',
+    'revoked',
+    'suspended',
+    'deleted',
+  ])(
+    'rejects refresh for %s without creating a replacement',
+    async (scenario) => {
+      const original = (await login().expect(200)).body.data;
+      const tokenHash = hashRefreshToken(original.refreshToken);
+      const token = await api.prisma.refreshToken.findUniqueOrThrow({
+        where: { tokenHash },
+      });
+      if (scenario === 'session-expired')
+        await api.prisma.session.update({
+          where: { id: token.sessionId },
+          data: { expiresAt: new Date(Date.now() - 1000) },
+        });
+      if (scenario === 'token-expired')
+        await api.prisma.refreshToken.update({
+          where: { tokenHash },
+          data: { expiresAt: new Date(Date.now() - 1000) },
+        });
+      if (scenario === 'revoked')
+        await api.prisma.session.update({
+          where: { id: token.sessionId },
+          data: { revokedAt: new Date() },
+        });
+      if (scenario === 'suspended')
+        await api.prisma.user.update({
+          where: { email },
+          data: { status: 'SUSPENDED' },
+        });
+      if (scenario === 'deleted')
+        await api.prisma.user.update({
+          where: { email },
+          data: { deletedAt: new Date() },
+        });
+      const response = await refresh(original.refreshToken).expect(401);
+      expect(response.body).toEqual({
+        success: false,
+        message: 'Invalid or expired refresh token',
+        errors: [],
+      });
+      expect(
+        await api.prisma.refreshToken.count({
+          where: { sessionId: token.sessionId },
+        }),
+      ).toBe(1);
+    },
+  );
+
+  it('validates the refresh body and requires a Bearer token for logout', async () => {
+    await refresh('malformed').expect(400);
+    await refresh('a'.repeat(43)).expect(401);
+    await request(api.app.getHttpServer())
+      .post('/api/v1/auth/refresh')
+      .send({ refreshToken: 'a'.repeat(43), userId: randomUUID() })
+      .expect(400);
+    await request(api.app.getHttpServer())
+      .post('/api/v1/auth/logout')
+      .expect(401);
+    await logout('invalid-token').expect(401);
+  });
 });

@@ -7,6 +7,7 @@ import { AuthController } from './auth.controller.js';
 import { AuthService } from './auth.service.js';
 import { SessionsService } from './sessions.service.js';
 import { TokensService } from './tokens.service.js';
+import { AccessTokenGuard } from './guards/access-token.guard.js';
 
 @Module({
   imports: [
@@ -31,6 +32,6 @@ import { TokensService } from './tokens.service.js';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, SessionsService, TokensService],
+  providers: [AuthService, SessionsService, TokensService, AccessTokenGuard],
 })
 export class AuthModule {}

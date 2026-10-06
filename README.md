@@ -45,6 +45,8 @@ npm run start:dev
 | GET    | `/api/v1/health/ready`  | Prisma দিয়ে database readiness check |
 | POST   | `/api/v1/auth/register` | Customer account তৈরি                |
 | POST   | `/api/v1/auth/login`    | Password যাচাই ও session/token pair  |
+| POST   | `/api/v1/auth/refresh`  | Refresh token rotation               |
+| POST   | `/api/v1/auth/logout`   | Bearer দিয়ে current session revoke   |
 
 Success: `{ success: true, message, data }`। Error: `{ success: false, message, errors: [] }`।
 
@@ -60,6 +62,15 @@ Local environment: `base_url = http://localhost:3000/api/v1`। Credentials/toke
 4. ভুল password বা অজানা email দিয়ে login: একই `401` ও `Invalid email or password` message। Body-তে `role` দিলে `400`। Login প্রতি IP-তে ১০ attempts/minute।
 
 Access JWT ১৫ মিনিট, session ও refresh token সর্বোচ্চ ৭ দিন। Auth response/error `Cache-Control: no-store`। Raw refresh token database-এ রাখা হয় না।
+
+### Apidog: refresh/logout test
+
+- `POST {{base_url}}/auth/refresh`, JSON: `{ "refreshToken": "{{refresh_token}}" }`। Bearer লাগে না। Expected `200`; login-এর মতো extraction rules দিয়ে দুই token update করুন। Expiry original ৭ দিনের মধ্যেই থাকে।
+- Refresh-এর আগে পুরোনো token `old_refresh_token` variable-এ copy করুন। Refresh সফল হওয়ার পরে পুরোনো token আবার পাঠান: `401`। নতুন refresh token-ও এরপর `401`; ওই session-এর access token দিয়ে logout-ও `401`। আবার login করে নতুন session নিন।
+- `POST {{base_url}}/auth/logout`: Auth tab-এ Bearer Token = `{{access_token}}`, body নেই। Expected `200`, `data: null`। একই access token দিয়ে logout বা refresh token দিয়ে refresh এখন `401`। অন্য login-এর session কাজ করবে।
+- Refresh malformed body `400`, unknown/expired/revoked token `401`। Refresh প্রতি IP-তে ৩০ attempts/minute। একই token-এর parallel refresh session revoke করবে; client-এ একবারে একটি refresh চালাতে হবে।
+
+Consumed refresh records session expiry পর্যন্ত রাখতে হবে, যাতে পুরোনো token reuse detect হয়। Logout ও rotation একই Session row lock-এ serialize হয়; reuse revocation commit হওয়ার পরে `401` দেওয়া হয়।
 
 ### Registration
 

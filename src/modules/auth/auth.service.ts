@@ -46,4 +46,15 @@ export class AuthService {
     if (!session) throw new UnauthorizedException('Invalid email or password');
     return this.tokens.issue(session);
   }
+
+  async refresh(refreshToken: string) {
+    const session = await this.sessions.rotate(refreshToken);
+    if (!session)
+      throw new UnauthorizedException('Invalid or expired refresh token');
+    return this.tokens.issue(session);
+  }
+
+  async logout(sessionId: string): Promise<void> {
+    await this.sessions.revoke(sessionId);
+  }
 }
