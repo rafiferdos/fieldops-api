@@ -1,6 +1,6 @@
 # FieldOps API
 
-Programming Hero Assignment 6-এর Field Service Management backend। এখন foundation প্রস্তুত; domain APIs এখনো implementation বাকি। Assignment 7 frontend পরে হবে।
+Programming Hero Assignment 6-এর Field Service Management backend। Foundation ও customer registration প্রস্তুত; বাকি domain APIs implementation চলছে। Assignment 7 frontend পরে হবে।
 
 ## Stack
 
@@ -28,14 +28,29 @@ npm run start:dev
 
 ## Available endpoints
 
-| Method | Endpoint               | Purpose                              |
-| ------ | ---------------------- | ------------------------------------ |
-| GET    | `/api/v1/health`       | API liveness                         |
-| GET    | `/api/v1/health/ready` | Prisma দিয়ে database readiness check |
+| Method | Endpoint                | Purpose                              |
+| ------ | ----------------------- | ------------------------------------ |
+| GET    | `/api/v1/health`        | API liveness                         |
+| GET    | `/api/v1/health/ready`  | Prisma দিয়ে database readiness check |
+| POST   | `/api/v1/auth/register` | Customer account তৈরি                |
 
 Success: `{ success: true, message, data }`। Error: `{ success: false, message, errors: [] }`।
 
-Roles: `CUSTOMER`, `TECHNICIAN`, `ADMIN`। Dispatch ও finance duties `ADMIN` role-এর মধ্যে থাকবে। Authentication এবং domain APIs এখনো তৈরি হয়নি।
+Roles: `CUSTOMER`, `TECHNICIAN`, `ADMIN`। Dispatch ও finance duties `ADMIN` role-এর মধ্যে থাকবে। Login/session ও Google login পরবর্তী কাজ।
+
+### Registration
+
+```json
+{
+  "name": "Rafi Ferdos",
+  "email": "rafi@example.com",
+  "password": "a long unique passphrase"
+}
+```
+
+শুধু `name`, `email`, `password` গ্রহণ করা হয়; unknown fields reject হবে। Name trim এবং email trim/lowercase হয়। Password ১৫–১২৮ characters; spaces অক্ষত থাকে। Role server থেকে `CUSTOMER` হয়। Password Argon2id দিয়ে hash হয় ([OWASP guidance](https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html))।
+
+`201` response-এর `data`-তে শুধু `id`, `name`, `email`, `role`, `createdAt` থাকে। Invalid input `400`; duplicate email (soft-deleted account-সহ) `409`; registration প্রতি IP-তে ১০ attempts/minute। Login token এখানে দেওয়া হয় না।
 
 ## Checks
 
@@ -44,11 +59,12 @@ npm run db:validate
 npm run typecheck
 npm run lint
 npm test
+npm run db:test:setup
 npm run test:e2e
 npm run build
 ```
 
-E2E tests `.env`-এ configured running PostgreSQL ব্যবহার করে read-only readiness query চালায়। Unit tests-এ database লাগে না। Build স্বয়ংক্রিয়ভাবে Prisma Client generate করে; production entrypoint `dist/main.js`।
+E2E tests-এর জন্য `.env`-এ আলাদা `TEST_DATABASE_URL` দিন; database name `_test` দিয়ে শেষ হবে (example: `fieldops_test`)। `db:test:setup` প্রয়োজন হলে test database তৈরি করে committed migrations apply করে; existing data reset করে না। Database user-এর `CREATEDB` permission লাগবে। Tests নিজেদের registration fixtures cleanup করে; main `DATABASE_URL`-এর database ব্যবহার করে না। Unit tests-এ database লাগে না। Build স্বয়ংক্রিয়ভাবে Prisma Client generate করে; production entrypoint `dist/main.js`।
 
 ```bash
 npm run start:prod
@@ -70,4 +86,8 @@ Migration files Git-এ রাখতে হবে। `.env`, `node_modules/`, `d
 - [Assignment source](https://github.com/Apollo-Level2-Web-Dev/B7A6)
 - [Reviewed Notion plan](https://app.notion.com/p/3f14ab5df14481b9bdccd1349fd83a18)
 
-পরবর্তী কাজ: Zod request validation, authentication, ownership checks এবং domain modules।
+পরবর্তী কাজ: login/session, Google login, ownership checks এবং domain modules।
+
+## Known dependency advisories
+
+2026-10-06-এর `npm audit`-এ Prisma 7.10 tooling-এর `deepmerge-ts` ও `mysql2` dependency paths থেকে ৪টি high package warning আছে। Runtime PostgreSQL adapter ব্যবহার করে; audit এখনো clean নয়। Suggested forced Prisma downgrade বর্তমান setup-এর সঙ্গে compatible নয়, তাই প্রয়োগ করা হয়নি।

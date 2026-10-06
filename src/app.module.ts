@@ -5,6 +5,7 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 
 import { HttpExceptionFilter } from './common/filters/http-exception.filter.js';
 import { validateEnv } from './config/env.validation.js';
+import { AuthModule } from './modules/auth/auth.module.js';
 import { HealthModule } from './modules/health/health.module.js';
 
 @Module({
@@ -18,6 +19,7 @@ import { HealthModule } from './modules/health/health.module.js';
       throttlers: [{ ttl: 60_000, limit: 120 }],
     }),
     HealthModule,
+    AuthModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },
