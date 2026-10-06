@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 
 import { PrismaService } from '../../infrastructure/prisma/prisma.service.js';
+import { success } from '../../common/http/success.js';
 
 @Controller('health')
 export class HealthController {
@@ -13,11 +14,7 @@ export class HealthController {
 
   @Get()
   live() {
-    return {
-      success: true,
-      message: 'API is running',
-      data: { status: 'ok' },
-    };
+    return success({ status: 'ok' }, 'API is running');
   }
 
   @Get('ready')
@@ -28,10 +25,6 @@ export class HealthController {
       throw new ServiceUnavailableException('Database is unavailable');
     }
 
-    return {
-      success: true,
-      message: 'API is ready',
-      data: { database: 'up' },
-    };
+    return success({ database: 'up' }, 'API is ready');
   }
 }
