@@ -5,6 +5,8 @@ import {
   type CanActivate,
   type ExecutionContext,
 } from '@nestjs/common';
+import { Reflector } from '@nestjs/core';
+import { PUBLIC_ROUTE } from '../decorators/public.decorator.js';
 import type { AuthenticatedRequest } from '../auth.types.js';
 import { SessionsService } from '../sessions.service.js';
 import { TokensService } from '../tokens.service.js';
@@ -14,9 +16,18 @@ export class AccessTokenGuard implements CanActivate {
   constructor(
     @Inject(TokensService) private readonly tokens: TokensService,
     @Inject(SessionsService) private readonly sessions: SessionsService,
+    @Inject(Reflector) private readonly reflector: Reflector,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
+    if (
+      this.reflector.getAllAndOverride<boolean>(PUBLIC_ROUTE, [
+        context.getHandler(),
+        context.getClass(),
+      ])
+    ) {
+      return true;
+    }
     const request = context.switchToHttp().getRequest<AuthenticatedRequest>();
     const authorization = request.headers.authorization;
     const token =

@@ -47,6 +47,7 @@ npm run start:dev
 | POST   | `/api/v1/auth/login`    | Password যাচাই ও session/token pair  |
 | POST   | `/api/v1/auth/refresh`  | Refresh token rotation               |
 | POST   | `/api/v1/auth/logout`   | Bearer দিয়ে current session revoke   |
+| GET    | `/api/v1/users/me`      | Authenticated own profile            |
 
 Success: `{ success: true, message, data }`। Error: `{ success: false, message, errors: [] }`।
 
@@ -71,6 +72,12 @@ Access JWT ১৫ মিনিট, session ও refresh token সর্বোচ�
 - Refresh malformed body `400`, unknown/expired/revoked token `401`। Refresh প্রতি IP-তে ৩০ attempts/minute। একই token-এর parallel refresh session revoke করবে; client-এ একবারে একটি refresh চালাতে হবে।
 
 Consumed refresh records session expiry পর্যন্ত রাখতে হবে, যাতে পুরোনো token reuse detect হয়। Logout ও rotation একই Session row lock-এ serialize হয়; reuse revocation commit হওয়ার পরে `401` দেওয়া হয়।
+
+### Apidog: protected profile test
+
+`GET {{base_url}}/users/me` → Auth tab → Bearer Token = `{{access_token}}`। Expected `200`; নিজের safe profile পাবেন। Header ছাড়া, wrong/expired token, logout-এর পরে অথবা refresh reuse-এর পরে `401`।
+
+Authentication guard default-এ সব registered route protect করে; public health/register/login/refresh-এ explicit `@Public()` আছে। প্রতিটি private request-এ current database session/account check হয়; role JWT থেকে বিশ্বাস করা হয় না। Role/ownership authorization পরবর্তী domain work।
 
 ### Registration
 
@@ -120,7 +127,7 @@ Migration files Git-এ রাখতে হবে। `.env`, `node_modules/`, `d
 - [Assignment source](https://github.com/Apollo-Level2-Web-Dev/B7A6)
 - [Reviewed Notion plan](https://app.notion.com/p/3f14ab5df14481b9bdccd1349fd83a18)
 
-পরবর্তী কাজ: login/session, Google login, ownership checks এবং domain modules।
+পরবর্তী কাজ: Google login, role/ownership authorization এবং domain modules।
 
 ## Known dependency advisories
 

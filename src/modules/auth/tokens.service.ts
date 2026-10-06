@@ -1,4 +1,5 @@
 import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
+import { randomUUID } from 'node:crypto';
 import { JwtService } from '@nestjs/jwt';
 import { z } from 'zod';
 import type { SessionCredentials } from './auth.types.js';
@@ -24,7 +25,7 @@ export class TokensService {
 
     const accessToken = await this.jwt.signAsync(
       { sub: session.user.id, sid: session.id, tokenUse: 'access' },
-      { expiresIn },
+      { expiresIn, jwtid: randomUUID() },
     );
     return {
       user: session.user,

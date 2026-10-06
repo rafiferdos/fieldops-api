@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { APP_GUARD } from '@nestjs/core';
 import { JwtModule } from '@nestjs/jwt';
 import { PrismaModule } from '../../infrastructure/prisma/prisma.module.js';
 import { UsersModule } from '../users/users.module.js';
@@ -32,6 +33,12 @@ import { AccessTokenGuard } from './guards/access-token.guard.js';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, SessionsService, TokensService, AccessTokenGuard],
+  providers: [
+    AuthService,
+    SessionsService,
+    TokensService,
+    AccessTokenGuard,
+    { provide: APP_GUARD, useExisting: AccessTokenGuard },
+  ],
 })
 export class AuthModule {}

@@ -7,8 +7,10 @@ import {
 
 import { PrismaService } from '../../infrastructure/prisma/prisma.service.js';
 import { success } from '../../common/http/success.js';
+import { Public } from '../auth/decorators/public.decorator.js';
 
 @Controller('health')
+@Public()
 export class HealthController {
   constructor(@Inject(PrismaService) private readonly prisma: PrismaService) {}
 
