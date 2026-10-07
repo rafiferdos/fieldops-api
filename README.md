@@ -1,6 +1,6 @@
 # FieldOps API
 
-Field Service Management backend for Programming Hero Assignment 6. Authentication, sessions, profiles, an audited catalog, service requests, technician scheduling, work progress, atomic completion and immutable invoices are implemented. Assignment 7 is a separate frontend stage.
+Field Service Management backend for Programming Hero Assignment 6. Authentication, sessions, profiles, an audited catalog, service requests, technician scheduling, work progress, atomic completion, immutable invoices and verified SSLCommerz payments are implemented. Assignment 7 is a separate frontend stage.
 
 ## Stack
 
@@ -31,39 +31,45 @@ npm run start:dev
 
 All routes use `/api/v1`. C = CUSTOMER, T = TECHNICIAN, A = ADMIN. Dispatch and finance duties belong to ADMIN. Private resource queries enforce ownership/current assignment; ADMIN has no automatic bypass on technician-only actions.
 
-| Method | Path                        | Access and purpose                    |
-| ------ | --------------------------- | ------------------------------------- |
-| GET    | `/health`                   | Public liveness                       |
-| GET    | `/health/ready`             | Public database readiness             |
-| POST   | `/auth/register`            | Public customer registration          |
-| POST   | `/auth/login`               | Public password login                 |
-| POST   | `/auth/google`              | Public verified Google login          |
-| POST   | `/auth/refresh`             | Public refresh token rotation         |
-| POST   | `/auth/logout`              | C/T/A current session revocation      |
-| GET    | `/users/me`                 | C/T/A own profile                     |
-| PATCH  | `/users/me`                 | C/T/A audited name/phone update       |
-| GET    | `/services`                 | Public search, pagination and sorting |
-| GET    | `/services/:id`             | Public active service details         |
-| POST   | `/services`                 | A audited creation                    |
-| PATCH  | `/services/:id`             | A audited update                      |
-| DELETE | `/services/:id`             | A audited soft deletion               |
-| POST   | `/requests`                 | C request creation                    |
-| GET    | `/requests`                 | C own / A scoped list                 |
-| GET    | `/requests/:id`             | C own / A details                     |
-| PATCH  | `/requests/:id`             | C own PENDING edit                    |
-| PATCH  | `/requests/:id/review`      | A approve/reject                      |
-| POST   | `/requests/:id/cancel`      | C own / A atomic cancellation         |
-| PUT    | `/technicians/:id/skills`   | A skill replacement                   |
-| GET    | `/technicians`              | A availability by skill/window        |
-| POST   | `/requests/:id/assignment`  | A assignment and price snapshot       |
-| GET    | `/work-orders`              | C own / T assigned / A list           |
-| GET    | `/work-orders/:id`          | Scoped details and safe timeline      |
-| PATCH  | `/work-orders/:id/schedule` | A reschedule/reassignment             |
-| PATCH  | `/work-orders/:id/status`   | Assigned T ordered progress           |
-| POST   | `/work-orders/:id/complete` | Assigned T completion and invoice     |
-| GET    | `/invoices/:id`             | C own / A frozen invoice              |
+| Method | Path                            | Access and purpose                                |
+| ------ | ------------------------------- | ------------------------------------------------- |
+| GET    | `/health`                       | Public liveness                                   |
+| GET    | `/health/ready`                 | Public database readiness                         |
+| POST   | `/auth/register`                | Public customer registration                      |
+| POST   | `/auth/login`                   | Public password login                             |
+| POST   | `/auth/google`                  | Public verified Google login                      |
+| POST   | `/auth/refresh`                 | Public refresh token rotation                     |
+| POST   | `/auth/logout`                  | C/T/A current session revocation                  |
+| GET    | `/users/me`                     | C/T/A own profile                                 |
+| PATCH  | `/users/me`                     | C/T/A audited name/phone update                   |
+| GET    | `/services`                     | Public search, pagination and sorting             |
+| GET    | `/services/:id`                 | Public active service details                     |
+| POST   | `/services`                     | A audited creation                                |
+| PATCH  | `/services/:id`                 | A audited update                                  |
+| DELETE | `/services/:id`                 | A audited soft deletion                           |
+| POST   | `/requests`                     | C request creation                                |
+| GET    | `/requests`                     | C own / A scoped list                             |
+| GET    | `/requests/:id`                 | C own / A details                                 |
+| PATCH  | `/requests/:id`                 | C own PENDING edit                                |
+| PATCH  | `/requests/:id/review`          | A approve/reject                                  |
+| POST   | `/requests/:id/cancel`          | C own / A atomic cancellation                     |
+| PUT    | `/technicians/:id/skills`       | A skill replacement                               |
+| GET    | `/technicians`                  | A availability by skill/window                    |
+| POST   | `/requests/:id/assignment`      | A assignment and price snapshot                   |
+| GET    | `/work-orders`                  | C own / T assigned / A list                       |
+| GET    | `/work-orders/:id`              | Scoped details and safe timeline                  |
+| PATCH  | `/work-orders/:id/schedule`     | A reschedule/reassignment                         |
+| PATCH  | `/work-orders/:id/status`       | Assigned T ordered progress                       |
+| POST   | `/work-orders/:id/complete`     | Assigned T completion and invoice                 |
+| GET    | `/invoices/:id`                 | C own / A frozen invoice                          |
+| POST   | `/invoices/:id/payment-session` | C own idempotent checkout creation/recovery       |
+| GET    | `/payments/:id`                 | C own / A safe database payment state             |
+| POST   | `/payments/sslcommerz/ipn`      | Public provider notification; server verification |
+| POST   | `/payments/sslcommerz/success`  | Public verified success callback                  |
+| POST   | `/payments/sslcommerz/fail`     | Public gateway lookup; verified failure           |
+| POST   | `/payments/sslcommerz/cancel`   | Public gateway lookup; verified cancellation      |
 
-Success: `{ success: true, message, data }`. Error: `{ success: false, message, errors: [] }`. Missing authentication is `401`, disallowed role `403`, private resources outside ownership scope `404`, invalid input `400`, state/version conflicts `409`, rate limiting `429` and temporary unavailability `503`. Private responses and errors use `Cache-Control: no-store`.
+Success: `{ success: true, message, data }`. Error: `{ success: false, message, errors: [] }`. Missing authentication is `401`, disallowed role `403`, private resources outside ownership scope `404`, invalid input `400`, state/version conflicts `409`, oversized bodies `413`, unsupported request formats/encodings `415`, rate limiting `429`, gateway/verification failure `502` and temporary unavailability `503`. Private responses and errors use `Cache-Control: no-store`.
 
 ## Apidog setup and authentication
 
@@ -254,6 +260,90 @@ Completion, invoice and WORK_ORDER_COMPLETED/INVOICE_ISSUED audits commit atomic
 - Invoices begin UNPAID; clients/admins cannot directly mark them paid. Gateway settlement must verify the provider.
 - ASSIGNED/EN_ROUTE completion is `409`; C/A completion `403`; unassigned/former T `404`; bad report/version/extra fields `400`; completed work cancellation/rescheduling/report rewrites `409`.
 
+## Apidog: SSLCommerz payments
+
+### Gateway configuration
+
+Configure all four payment settings in the ignored `.env`, then restart:
+
+```dotenv
+SSLCOMMERZ_MODE=sandbox
+SSLCOMMERZ_STORE_ID=<your sandbox store ID>
+SSLCOMMERZ_STORE_PASSWORD=<your sandbox merchant password>
+PUBLIC_API_URL=https://<your publicly reachable API host>
+```
+
+`PUBLIC_API_URL` is an HTTPS origin, with no `/api/v1` suffix/path, credentials, query or fragment. Callback routes must be reachable by SSLCommerz; localhost alone cannot receive IPNs. Configure the merchant panel's IPN listener as `<PUBLIC_API_URL>/api/v1/payments/sslcommerz/ipn`. Sandbox/live credentials are separate; live mode targets the official production host. Blank settings disable initiation (`503`); partial/invalid settings fail startup. Existing attempts retain their mode/store identity and cannot be verified using different merchant configuration.
+
+SSLCommerz supports BDT 10–500,000 per session. Our catalog retains its existing wider price range, so frozen invoices outside the gateway range return `409`; they are never silently marked paid. The hosted checkout handles payment details; FieldOps never collects/stores card data. [Official SSLCommerz integration documentation](https://developer.sslcommerz.com/doc/v4/)
+
+### Create or replay a checkout
+
+Complete the work first and extract `invoice_id`. As the invoice's CUSTOMER, update `/users/me` with an international phone number. Gateway customer name/email must each fit within 50 characters; unsupported contact details return `409`.
+
+Set `idempotency_key` to a UUID and retain it for this attempt. `POST {{base_url}}/invoices/{{invoice_id}}/payment-session`, CUSTOMER Bearer, header `Idempotency-Key: {{idempotency_key}}`, JSON:
+
+```json
+{
+  "billing": {
+    "address": "House 12, Road 3",
+    "city": "Dhaka",
+    "postcode": "1000"
+  }
+}
+```
+
+Billing address trims to 5–50 characters, city 2–50, postcode 1–30; country is fixed Bangladesh. Name/email/phone come from the authenticated account; invoice owner/amount/currency come from PostgreSQL. Extra fields, including amount/currency/customerId/status, return `400`. The key accepts 16–100 ASCII characters: letters, digits, `.`, `_`, `:`, `-`, starting with a letter/digit. Missing/malformed keys return `400`. Initiation/replay limit is 10 requests/minute per IP.
+
+Expected first successful creation `201`. Extract `payment_id = $.data.id` and `checkout_url = $.data.checkoutUrl`; open the checkout URL in a browser and complete the sandbox checkout. Replay the **same key and same JSON** for `200` with the same attempt. Billing differences or using that key for another invoice return `409`. A different key while an attempt is active/unresolved also returns `409`.
+
+```json
+{
+  "id": "<payment UUID>",
+  "invoiceId": "<invoice UUID>",
+  "amountMinor": 150000,
+  "currency": "BDT",
+  "gateway": "SSLCOMMERZ",
+  "mode": "SANDBOX",
+  "status": "PENDING",
+  "checkoutUrl": "https://sandbox.sslcommerz.com/<provider checkout path>",
+  "reviewReason": null,
+  "requiresReview": false,
+  "createdAt": "<UTC ISO timestamp>",
+  "updatedAt": "<UTC ISO timestamp>",
+  "verifiedAt": null,
+  "settledAt": null
+}
+```
+
+Only an unpaid PENDING attempt exposes its checkout URL. `GET /payments/{{payment_id}}` is C own / A; foreign customer `404`, T `403`, missing/revoked session `401`, invalid UUID `400`. It reads database state without calling the gateway. Merchant IDs, raw session keys, idempotency hashes, validation IDs, bank references and merchant credentials are excluded.
+
+### Verify callbacks and financial state
+
+The four callback routes accept URL-encoded forms or JSON without Bearer authentication. Their identifiers are `tran_id` (our 24-character hexadecimal merchant reference) and optional `val_id` (provider validation reference). Provider fields may include additional data, but claimed status/amount/risk/store/bank reference never decide settlement. Browser success is insufficient; the backend calls the provider validation API and compares the stored transaction, gross amount, original amount and BDT currency.
+
+Successful processing returns `200`, `{ "success": true, "message": "Payment notification verified and processed", "data": { "received": true } }`; this also acknowledges a verified lookup that remains pending. It does not imply a paid invoice. Read `/payments/{{payment_id}}` and `/invoices/{{invoice_id}}` afterward. Verified safe settlement produces SUCCEEDED / PAID with matching settledAt/paidAt; invalid/unavailable verification returns `502` and preserves financial state. Malformed IDs `400`, unknown merchant reference `404`, unsupported body format `415`. No financial/private details appear in public acknowledgements.
+
+Duplicates and simultaneous IPN/success calls create one settlement, one settled receipt and one audit per financial event. Late fail/cancel cannot reverse success. An individual failed bank attempt does not close the hosted checkout: failure/cancellation needs a verified terminal session with matching identity/amount/currency. Pending/uncertain lookup retains the existing attempt.
+
+Each verified captured bank transaction gets an immutable receipt. High risk, amount/currency mismatch, reused provider references and multiple captures require review. A later additional charge preserves the original settlement, records a REVIEW receipt and exposes `requiresReview: true`; revenue is counted once. Review cases need operator investigation and any applicable provider refund; automatic refund/review approval is outside this stage. Reconciliation never overrides a recorded review decision.
+
+### Recover uncertainty safely
+
+A timeout/invalid initiation response returns `502` and retains UNKNOWN. A crash or database failure after initiation can retain INITIATING. Retry the original key/JSON to retrieve its payment ID; **do not switch keys**. After 15 seconds, replaying an INITIATING/UNKNOWN/PENDING attempt queries the existing merchant reference and revalidates any captured transaction. It never initiates another checkout. Gateway failure during recovery returns `502` without releasing the attempt. No-record/pending results remain unresolved; time alone does not prove failure.
+
+An operator may reconcile one attempt immediately:
+
+```bash
+npm run payment:reconcile -- <payment UUID>
+```
+
+The command uses the same validation/settlement service, prints only payment ID/status/review flag and closes the app. It requires matching configured merchant credentials. A definitive initiation rejection or verified terminal failure/cancellation permits a **new key**; reusing the old key still retrieves the original attempt. A paid invoice rejects new attempts.
+
+Reservation, state/audit writes and settlement use short database transactions with invoice → payment locks; provider calls stay outside transactions. Cross-invoice provider identities serialize separately. PostgreSQL protects snapshots, one live checkout, one settlement and unique checkout sessions. Deferred constraints reject a PAID invoice without a matching SUCCEEDED payment and settled safe receipt; payment/invoice/receipt/audits roll back together on failure. No direct PAID mutation API exists.
+
+Automated tests exercise the real Nest app, guards, JWTs, PostgreSQL and gateway adapter while replacing only gateway HTTP transport. Built HTTP tests cover checkout, replay, form callbacks and settlement. Tests never inherit actual merchant credentials. Real SSLCommerz sandbox checkout/IPN delivery still requires manual verification with your merchant configuration; sandbox grading acceptance remains unconfirmed.
+
 ## Checks and CI
 
 ```bash
@@ -271,7 +361,7 @@ E2E requires a separate `TEST_DATABASE_URL` whose database name ends in `_test`.
 
 [Backend CI](.github/workflows/ci.yml) runs on main pushes, pull requests and manual dispatch: locked install, generate/schema/type/lint, unit tests, fresh PostgreSQL migrations, real Redis integration, build and compiled native HTTP flow. Temporary services and a generated signing key need no production secrets. Official actions are pinned by immutable SHA; permissions are read-only. Remote CI must be verified after pushing; local success does not prove a hosted run.
 
-`test:compiled` imports the built Nest app only after selecting the guarded test environment and asserting the actual database name. Its temporary loopback server verifies safe ADMIN/TECH bootstrap, real password login, request lifecycle, scheduling, scoped reads, cancellation/progress, completion retries, invoices and audits; it removes only its fixtures.
+`test:compiled` imports the built Nest app only after selecting the guarded test environment and asserting the actual database name. Its temporary loopback server verifies safe ADMIN/TECH bootstrap, real password login, request lifecycle, scheduling, scoped reads, cancellation/progress, completion retries, invoices, idempotent checkout/form callbacks, verified settlement and audits; it removes only its fixtures.
 
 ## Schema changes
 
@@ -280,14 +370,14 @@ npm run db:migrate -- --name describe_your_change
 npm run db:generate
 ```
 
-Preserve custom `btree_gist`, exclusion/check constraints, immutable snapshot triggers and deferred invoice constraints in later migrations. Do not replace migration history with `db push`. PostgreSQL must permit the extension. Commit migration files, source, shared repository instructions, configuration and lockfile. `.env`, node_modules, dist, coverage, TypeScript cache, generated Prisma Client and local agent skills stay ignored.
+Preserve custom `btree_gist`, exclusion/check constraints, immutable snapshot/receipt triggers, unique payment session/attempt constraints and deferred invoice/verified-settlement constraints in later migrations. Do not replace migration history with `db push`. PostgreSQL must permit the extension. Commit migration files, source, shared repository instructions, configuration and lockfile. `.env`, node_modules, dist, coverage, TypeScript cache, generated Prisma Client and local agent skills stay ignored.
 
 ## Requirements and plan
 
 - [Assignment source](https://github.com/Apollo-Level2-Web-Dev/B7A6)
 - [Reviewed plan](https://app.notion.com/p/3f14ab5df14481b9bdccd1349fd83a18)
 
-There are 27 domain APIs and two health routes before payments. Deployment/submission review remain; Assignment 7 requirements must be reviewed separately.
+There are 33 domain APIs and two health routes. Feedback and the four ADMIN management/reporting APIs remain. Deployment/submission review remain; Assignment 7 requirements must be reviewed separately.
 
 ## Known dependency advisories
 

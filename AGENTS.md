@@ -10,7 +10,7 @@ Read https://github.com/Apollo-Level2-Web-Dev/B7A6 and its four Markdown files w
 
 Use Bengali only for conversation with the user, retaining English technical terms. All project artifacts, README documentation, comments, identifiers and repository instructions must be written in proper English. Keep explanations concise. When recommending résumé additions, explicitly distinguish existing listed skills from technologies/engineering capabilities not mentioned in the résumé; absence from the résumé does not mean the user lacks the skill. Prioritize Redis, automated testing, payment reliability and concurrency now; background jobs later.
 
-The user writes the core application. Unless subsequently asked to implement it, provide focused explanations, near-code domain hints, and exact common utility code. The current artifacts are plans, not a completed application.
+The user writes the core application. Unless subsequently asked to implement it, provide focused explanations, near-code domain hints, and exact common utility code. Implemented backend domains and their verification limits are recorded in the current README. Assignment 7 remains deferred.
 
 Use Node 24 LTS, strict TypeScript, NestJS with the default Express adapter, PostgreSQL and Prisma 7. The user selected NestJS. Preserve the current CLI-generated ESM, Vitest, oxlint/Prettier configuration and lockfile. Exactly three primary roles: CUSTOMER, TECHNICIAN, ADMIN. Use versioned routes, Bearer authentication, email/password and verified Google login, Zod validation, consistent success/error JSON, soft deletion, audit logs, pagination, filtering/search, and a real supported gateway. SSLCommerz/BDT is the planned gateway; sandbox grading acceptance is unconfirmed.
 
