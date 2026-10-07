@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import { setTimeout } from 'node:timers/promises';
 import request from 'supertest';
 import { vi } from 'vitest';
 import { AuditService } from '../src/common/audit/audit.service.js';
@@ -271,5 +272,53 @@ describe('Customer feedback HTTP workflow', () => {
     await submitFeedback(ctx).expect(201);
     expect(await rows()).toHaveLength(1);
     expect(await audits()).toHaveLength(1);
+  });
+  it('rechecks session revocation after waiting for a lifecycle lock', async () => {
+    await payFeedbackInvoice(ctx);
+    const work = await ctx.prisma.workOrder.findUniqueOrThrow({
+      where: { id: ctx.workOrderId },
+    });
+    let acquired!: (pid: number) => void;
+    let release!: () => void;
+    const ready = new Promise<number>((resolve) => {
+      acquired = resolve;
+    });
+    const released = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    const blocker = ctx.prisma.$transaction(
+      async (tx) => {
+        const [connection] = await tx.$queryRaw<
+          Array<{ pid: number }>
+        >`SELECT pg_backend_pid() AS pid`;
+        await tx.$queryRaw`SELECT id FROM "ServiceRequest" WHERE id = ${work.requestId}::uuid FOR UPDATE`;
+        acquired(connection!.pid);
+        await released;
+      },
+      { timeout: 10000 },
+    );
+    const pid = await ready;
+    const attempt = submitFeedback(ctx).then((response) => response);
+    try {
+      let waiting = false;
+      const deadline = performance.now() + 2000;
+      while (!waiting && performance.now() < deadline) {
+        const [state] = await ctx.prisma.$queryRaw<Array<{ waiting: boolean }>>`
+          SELECT EXISTS (SELECT 1 FROM pg_stat_activity WHERE ${pid}::integer = ANY(pg_blocking_pids(pid))) AS waiting`;
+        waiting = state!.waiting;
+        if (!waiting) await setTimeout(10);
+      }
+      expect(waiting).toBe(true);
+      await ctx.prisma.session.update({
+        where: { id: ctx.owner.actor.sessionId },
+        data: { revokedAt: new Date() },
+      });
+    } finally {
+      release();
+      await blocker;
+    }
+    expect((await attempt).status).toBe(401);
+    expect(await rows()).toHaveLength(0);
+    expect(await audits()).toHaveLength(0);
   });
 });

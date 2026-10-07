@@ -1,5 +1,6 @@
 import type { Prisma } from '../../generated/prisma/client.js';
 import { invoiceSelect, invoiceView } from '../invoices/invoice.select.js';
+import { feedbackSelect, feedbackView } from '../feedback/feedback.select.js';
 
 export const workOrderSummarySelect = {
   id: true,
@@ -11,6 +12,7 @@ export const workOrderSummarySelect = {
   agreedPriceMinor: true,
   currency: true,
   invoice: { select: invoiceSelect },
+  feedback: { select: feedbackSelect },
 } satisfies Prisma.WorkOrderSelect;
 export const workOrderSelect = {
   ...workOrderSummarySelect,
@@ -40,6 +42,7 @@ export function workOrderSummaryView(
   return {
     ...order,
     invoice: order.invoice ? invoiceView(order.invoice) : null,
+    feedback: order.feedback ? feedbackView(order.feedback) : null,
     scheduledStart: order.scheduledStart.toISOString(),
     scheduledEnd: order.scheduledEnd.toISOString(),
   };
@@ -50,6 +53,7 @@ export function workOrderView(
   return {
     ...order,
     invoice: order.invoice ? invoiceView(order.invoice) : null,
+    feedback: order.feedback ? feedbackView(order.feedback) : null,
     scheduledStart: order.scheduledStart.toISOString(),
     scheduledEnd: order.scheduledEnd.toISOString(),
     createdAt: order.createdAt.toISOString(),

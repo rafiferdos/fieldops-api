@@ -1,6 +1,6 @@
 # FieldOps API
 
-Field Service Management backend for Programming Hero Assignment 6. Authentication, sessions, profiles, an audited catalog, service requests, technician scheduling, work progress, atomic completion, immutable invoices and verified SSLCommerz payments are implemented. Assignment 7 is a separate frontend stage.
+Field Service Management backend for Programming Hero Assignment 6. Authentication, sessions, profiles, an audited catalog, service requests, technician scheduling, work progress, atomic completion, immutable invoices, verified SSLCommerz payments and customer feedback are implemented. Assignment 7 is a separate frontend stage.
 
 ## Stack
 
@@ -68,6 +68,7 @@ All routes use `/api/v1`. C = CUSTOMER, T = TECHNICIAN, A = ADMIN. Dispatch and 
 | POST   | `/payments/sslcommerz/success`  | Public verified success callback                  |
 | POST   | `/payments/sslcommerz/fail`     | Public gateway lookup; verified failure           |
 | POST   | `/payments/sslcommerz/cancel`   | Public gateway lookup; verified cancellation      |
+| POST   | `/work-orders/:id/feedback`     | C own completed, paid work; one immutable review  |
 
 Success: `{ success: true, message, data }`. Error: `{ success: false, message, errors: [] }`. Missing authentication is `401`, disallowed role `403`, private resources outside ownership scope `404`, invalid input `400`, state/version conflicts `409`, oversized bodies `413`, unsupported request formats/encodings `415`, rate limiting `429`, gateway/verification failure `502` and temporary unavailability `503`. Private responses and errors use `Cache-Control: no-store`.
 
@@ -344,6 +345,44 @@ Reservation, state/audit writes and settlement use short database transactions w
 
 Automated tests exercise the real Nest app, guards, JWTs, PostgreSQL and gateway adapter while replacing only gateway HTTP transport. Built HTTP tests cover checkout, replay, form callbacks and settlement. Tests never inherit actual merchant credentials. Real SSLCommerz sandbox checkout/IPN delivery still requires manual verification with your merchant configuration; sandbox grading acceptance remains unconfirmed.
 
+## Apidog: customer feedback
+
+After completing work and verifying its invoice is PAID, use customer Bearer authentication:
+
+`POST {{base_url}}/work-orders/{{work_order_id}}/feedback`
+
+```json
+{ "rating": 5, "comment": "The technician explained the repair clearly." }
+```
+
+Rating must be an integer from 1 to 5. Comment is optional; when supplied it must be a nonblank string of at most 1,000 characters after trimming. Normal line breaks/tabs are supported; database NUL and unsafe control characters are rejected. Send only rating/comment; ownership and work/payment state come from PostgreSQL.
+
+Expected `201`:
+
+```json
+{
+  "success": true,
+  "message": "Feedback submitted successfully",
+  "data": {
+    "id": "<feedback UUID>",
+    "workOrderId": "<work-order UUID>",
+    "rating": 5,
+    "comment": "The technician explained the repair clearly.",
+    "createdAt": "<UTC ISO timestamp>"
+  }
+}
+```
+
+Rating-only `{ "rating": 4 }` stores/returns `comment: null`. Extract `feedback_id = $.data.id`. Submission and FEEDBACK_SUBMITTED audit commit together. Audit metadata contains only feedbackId/rating, never the review text or contact details. Submitted feedback is immutable; there is no edit/delete endpoint.
+
+- Read `GET /work-orders/{{work_order_id}}`: `data.feedback` matches the submission; `null` before submission. Scoped work lists and request work summaries use the same projection. C own / assigned T / A may read it; public catalog responses never include feedback.
+- Repeat the same body, change its rating, or submit simultaneously: one submission/audit persists; all later attempts return `409`. After a lost response, read the work-order detail to recover the existing review.
+- COMPLETED with UNPAID invoice, a payment held for review, unfinished work or cancelled work → `409`. Browser success alone does not enable feedback.
+- Other customer/missing work/soft-deleted request → `404`; ADMIN/TECHNICIAN submission → `403`; unavailable session/account → `401`. Authority is rechecked after waiting on lifecycle locks.
+- Invalid UUID, rating 0/6/fraction/string, blank/oversized/null comment, array body or extra fields → `400`. Catalog soft deletion does not remove historical feedback or prevent eligible submission.
+
+Manual checks: verify one successful paid submission, read it as each permitted role, repeat for `409`, switch customer for `404`, switch to technician/admin for `403`, and try an unpaid order for `409`. Private responses use `Cache-Control: no-store`.
+
 ## Checks and CI
 
 ```bash
@@ -361,7 +400,7 @@ E2E requires a separate `TEST_DATABASE_URL` whose database name ends in `_test`.
 
 [Backend CI](.github/workflows/ci.yml) runs on main pushes, pull requests and manual dispatch: locked install, generate/schema/type/lint, unit tests, fresh PostgreSQL migrations, real Redis integration, build and compiled native HTTP flow. Temporary services and a generated signing key need no production secrets. Official actions are pinned by immutable SHA; permissions are read-only. Remote CI must be verified after pushing; local success does not prove a hosted run.
 
-`test:compiled` imports the built Nest app only after selecting the guarded test environment and asserting the actual database name. Its temporary loopback server verifies safe ADMIN/TECH bootstrap, real password login, request lifecycle, scheduling, scoped reads, cancellation/progress, completion retries, invoices, idempotent checkout/form callbacks, verified settlement and audits; it removes only its fixtures.
+`test:compiled` imports the built Nest app only after selecting the guarded test environment and asserting the actual database name. Its temporary loopback server verifies safe ADMIN/TECH bootstrap, real password login, request lifecycle, scheduling, scoped reads, cancellation/progress, completion retries, invoices, idempotent checkout/form callbacks, verified settlement, customer feedback and audits; it removes only its fixtures.
 
 ## Schema changes
 
@@ -377,7 +416,7 @@ Preserve custom `btree_gist`, exclusion/check constraints, immutable snapshot/re
 - [Assignment source](https://github.com/Apollo-Level2-Web-Dev/B7A6)
 - [Reviewed plan](https://app.notion.com/p/3f14ab5df14481b9bdccd1349fd83a18)
 
-There are 33 domain APIs and two health routes. Feedback and the four ADMIN management/reporting APIs remain. Deployment/submission review remain; Assignment 7 requirements must be reviewed separately.
+There are 34 domain APIs and two health routes. The four ADMIN management/reporting APIs remain. Deployment/submission review remain; Assignment 7 requirements must be reviewed separately.
 
 ## Known dependency advisories
 

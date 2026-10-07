@@ -320,6 +320,11 @@ try {
     token: customer,
   });
   assert.deepEqual(invoice, completed.invoice);
+  await call(`/work-orders/${work.id}/feedback`, 409, {
+    method: 'POST',
+    token: customer,
+    body: { rating: 5 },
+  });
   await call(`/invoices/${invoice.id}`, 404, { token: other });
   await call(`/invoices/${invoice.id}`, 403, { token: technician });
   await call(`/invoices/${invoice.id}`, 200, { token: admin });
@@ -461,8 +466,51 @@ try {
     }),
     1,
   );
+  const feedbackPath = `/work-orders/${work.id}/feedback`;
+  const feedbackBody = { rating: 5, comment: '  Excellent service.  ' };
+  await call(feedbackPath, 404, {
+    method: 'POST',
+    token: other,
+    body: feedbackBody,
+  });
+  await call(feedbackPath, 403, {
+    method: 'POST',
+    token: technician,
+    body: feedbackBody,
+  });
+  const feedback = await call(feedbackPath, 201, {
+    method: 'POST',
+    token: customer,
+    body: feedbackBody,
+  });
+  assert.equal(feedback.comment, 'Excellent service.');
+  assert.equal(feedback.rating, 5);
+  assert.equal(feedback.workOrderId, work.id);
+  await call(feedbackPath, 409, {
+    method: 'POST',
+    token: customer,
+    body: feedbackBody,
+  });
+  for (const token of [customer, technician, admin]) {
+    const detail = await call(`/work-orders/${work.id}`, 200, { token });
+    assert.deepEqual(detail.feedback, feedback);
+    assert.equal(
+      detail.timeline.filter((event) => event.action === 'FEEDBACK_SUBMITTED')
+        .length,
+      1,
+    );
+  }
+  assert.deepEqual(
+    (await call(`/requests/${work.requestId}`, 200, { token: customer }))
+      .workOrder.feedback,
+    feedback,
+  );
+  assert.equal(
+    await prisma.feedback.count({ where: { workOrderId: work.id } }),
+    1,
+  );
   console.log(
-    'Compiled HTTP workflow passed: safe bootstrap, authentication, request lifecycle, scheduling, scoped work, atomic cancellation, completion, invoices and verified idempotent payment settlement (test transport)',
+    'Compiled HTTP workflow passed: safe bootstrap, authentication, request lifecycle, scheduling, scoped work, atomic cancellation, completion, invoices, verified idempotent payment settlement (test transport) and audited customer feedback',
   );
 } finally {
   await prisma
@@ -496,6 +544,7 @@ try {
         where: { paymentId: { in: paymentIds } },
       });
       await tx.payment.deleteMany({ where: { id: { in: paymentIds } } });
+      await tx.feedback.deleteMany({ where: { customerId: { in: ids } } });
       await tx.invoice.deleteMany({ where: { customerId: { in: ids } } });
       await tx.workOrder.deleteMany({
         where: { request: { customerId: { in: ids } } },
