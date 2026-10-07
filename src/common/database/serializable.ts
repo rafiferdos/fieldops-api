@@ -43,7 +43,8 @@ export async function serializable<T>(
         throw new ServiceUnavailableException(
           'Concurrent change; retry shortly',
         );
-      await setTimeout(10 * (attempt + 1) + Math.floor(Math.random() * 10));
+      // Spread competing transactions across bounded retry windows instead of retrying in lockstep.
+      await setTimeout(50 * 2 ** attempt + Math.floor(Math.random() * 50));
     }
   }
   throw new ServiceUnavailableException('Concurrent change; retry shortly');
