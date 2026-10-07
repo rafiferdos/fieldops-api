@@ -26,6 +26,8 @@ import { workOrderSelect, workOrderView } from './work-order.select.js';
 import { pagination } from '../../common/http/pagination.js';
 import { literalSearch } from '../../common/validation/literal-search.js';
 import type { WorkOrderQuery, ProgressInput } from './scheduling.schema.js';
+import type { CompletionInput } from './completion.schema.js';
+import { invoiceSelect, invoiceView } from '../invoices/invoice.select.js';
 
 @Injectable()
 export class WorkOrdersService {
@@ -164,6 +166,89 @@ export class WorkOrdersService {
         },
       });
       return this.view(tx, id);
+    });
+  }
+
+  complete(actor: AuthActor, id: string, input: CompletionInput) {
+    return serializable(this.prisma, async (tx) => {
+      const technician = await requireActiveActor(tx, actor, ['TECHNICIAN']);
+      const order = await this.lockOrder(tx, id, technician);
+      if (order.status === 'COMPLETED') {
+        // A lost response may be retried with the original version; never rewrite a report.
+        const sameCompletion =
+          order.report === input.report &&
+          (input.version === order.version - 1 ||
+            input.version === order.version);
+        if (!sameCompletion)
+          throw new ConflictException(
+            'Work already completed; report and invoice are frozen',
+          );
+        const invoice = await tx.invoice.findUniqueOrThrow({
+          where: { workOrderId: id },
+          select: invoiceSelect,
+        });
+        return { ...workOrderView(order), invoice: invoiceView(invoice) };
+      }
+      this.assertVersion(order.version, input.version);
+      if (order.status !== 'IN_PROGRESS' || order.request.status !== 'APPROVED')
+        throw new ConflictException(
+          'Only in-progress approved work can be completed',
+        );
+      const completedAt = new Date();
+      const changed = await tx.workOrder.updateMany({
+        where: {
+          id,
+          technicianId: technician.id,
+          status: 'IN_PROGRESS',
+          version: input.version,
+        },
+        data: {
+          status: 'COMPLETED',
+          completedAt,
+          report: input.report,
+          version: { increment: 1 },
+        },
+      });
+      if (changed.count !== 1)
+        throw new ConflictException(
+          'Work order changed; fetch the latest version and retry',
+        );
+      const invoice = await tx.invoice.create({
+        data: {
+          workOrderId: id,
+          customerId: order.request.customerId,
+          amountMinor: order.agreedPriceMinor,
+          currency: order.currency,
+          issuedAt: completedAt,
+        },
+        select: invoiceSelect,
+      });
+      await this.audit.record(tx, {
+        actorId: technician.id,
+        entityType: 'WORK_ORDER',
+        entityId: id,
+        action: 'WORK_ORDER_COMPLETED',
+        metadata: {
+          fromStatus: 'IN_PROGRESS',
+          toStatus: 'COMPLETED',
+          previousVersion: order.version,
+          version: order.version + 1,
+          invoiceId: invoice.id,
+        },
+      });
+      await this.audit.record(tx, {
+        actorId: technician.id,
+        entityType: 'INVOICE',
+        entityId: invoice.id,
+        action: 'INVOICE_ISSUED',
+        metadata: {
+          workOrderId: id,
+          amountMinor: invoice.amountMinor,
+          currency: invoice.currency,
+          status: 'UNPAID',
+        },
+      });
+      return { ...(await this.view(tx, id)), invoice: invoiceView(invoice) };
     });
   }
 

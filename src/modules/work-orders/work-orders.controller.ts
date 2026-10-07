@@ -2,9 +2,11 @@ import {
   Body,
   Controller,
   Get,
+  HttpCode,
   Inject,
   Param,
   Patch,
+  Post,
   Query,
 } from '@nestjs/common';
 import { success } from '../../common/http/success.js';
@@ -21,6 +23,7 @@ import {
   type ProgressInput,
 } from './scheduling.schema.js';
 import { WorkOrdersService } from './work-orders.service.js';
+import { completionSchema, type CompletionInput } from './completion.schema.js';
 @Controller('work-orders')
 export class WorkOrdersController {
   constructor(
@@ -70,6 +73,19 @@ export class WorkOrdersController {
     return success(
       await this.orders.reschedule(actor, id, input),
       'Work order rescheduled successfully',
+    );
+  }
+  @Post(':id/complete')
+  @HttpCode(200)
+  @Roles('TECHNICIAN')
+  async complete(
+    @CurrentActor() actor: AuthActor,
+    @Param('id', new ZodValidationPipe(uuidSchema)) id: string,
+    @Body(new ZodValidationPipe(completionSchema)) input: CompletionInput,
+  ) {
+    return success(
+      await this.orders.complete(actor, id, input),
+      'Work order completed successfully',
     );
   }
 }

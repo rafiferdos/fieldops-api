@@ -10,6 +10,27 @@ type AuditTarget = {
 export type AuditEvent = AuditTarget &
   (
     | {
+        action: 'WORK_ORDER_COMPLETED';
+        entityType: 'WORK_ORDER';
+        metadata: {
+          fromStatus: 'IN_PROGRESS';
+          toStatus: 'COMPLETED';
+          previousVersion: number;
+          version: number;
+          invoiceId: string;
+        };
+      }
+    | {
+        action: 'INVOICE_ISSUED';
+        entityType: 'INVOICE';
+        metadata: {
+          workOrderId: string;
+          amountMinor: number;
+          currency: 'BDT';
+          status: 'UNPAID';
+        };
+      }
+    | {
         action: 'WORK_ORDER_ASSIGNED';
         entityType: 'WORK_ORDER';
         metadata: {
