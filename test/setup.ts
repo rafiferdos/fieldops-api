@@ -26,3 +26,16 @@ if (
 
 process.env.DATABASE_URL = testUrl;
 process.env.NODE_ENV = 'test';
+const testRedisUrl = process.env.TEST_REDIS_URL;
+if (testRedisUrl) {
+  const redis = new URL(testRedisUrl);
+  if (
+    !['redis:', 'rediss:'].includes(redis.protocol) ||
+    !/^\/[1-9]\d*$/.test(redis.pathname)
+  ) {
+    throw new Error(
+      'TEST_REDIS_URL must use a separate Redis database index greater than zero',
+    );
+  }
+}
+process.env.REDIS_URL = testRedisUrl ?? '';

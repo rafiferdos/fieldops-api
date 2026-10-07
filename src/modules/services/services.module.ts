@@ -3,9 +3,10 @@ import { PrismaModule } from '../../infrastructure/prisma/prisma.module.js';
 import { AuditModule } from '../../common/audit/audit.module.js';
 import { ServicesController } from './services.controller.js';
 import { ServicesService } from './services.service.js';
+import { RedisCacheModule } from '../../infrastructure/cache/redis-cache.module.js';
 
 @Module({
-  imports: [PrismaModule, AuditModule],
+  imports: [PrismaModule, AuditModule, RedisCacheModule],
   controllers: [ServicesController],
   providers: [ServicesService],
 })

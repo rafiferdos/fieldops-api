@@ -1,10 +1,10 @@
 # FieldOps API
 
-Programming Hero Assignment 6-এর Field Service Management backend। Password/Google login, session/token lifecycle, role authorization ও own profile update প্রস্তুত; domain APIs implementation চলছে। Assignment 7 frontend পরে হবে।
+Programming Hero Assignment 6-এর Field Service Management backend। Authentication, sessions, own profile এবং audited service catalog প্রস্তুত; পরবর্তী domain APIs implementation চলছে। Assignment 7 frontend পরে হবে।
 
 ## Stack
 
-Node.js 24, NestJS (Express adapter), strict TypeScript / ESM, PostgreSQL 18, Prisma 7, Zod, Helmet এবং Throttler। Tests: Vitest + Supertest; lint: oxlint; formatting: Prettier।
+Node.js 24, NestJS (Express adapter), strict TypeScript / ESM, PostgreSQL 18, Prisma 7, Redis 8 / node-redis, Zod, Helmet এবং Throttler। Tests: Vitest + Supertest; lint: oxlint; formatting: Prettier।
 
 ## Local setup
 
@@ -24,7 +24,7 @@ node -e "console.log(require('node:crypto').randomBytes(64).toString('base64'))"
 
 ```bash
 npm run db:generate
-docker compose up -d postgres
+docker compose up -d --wait postgres redis
 npm run db:status
 ```
 
@@ -53,6 +53,8 @@ npm run start:dev
 | POST   | `/api/v1/services`      | ADMIN service তৈরি ও audit            |
 | PATCH  | `/api/v1/services/:id`  | ADMIN service update ও audit          |
 | DELETE | `/api/v1/services/:id`  | ADMIN service soft delete ও audit     |
+| GET    | `/api/v1/services`      | Public search, pagination, sorting    |
+| GET    | `/api/v1/services/:id`  | Public active service details         |
 
 Success: `{ success: true, message, data }`। Error: `{ success: false, message, errors: [] }`।
 
@@ -180,6 +182,25 @@ Expected `201`; `service_id = $.data.id` extract করুন। `basePriceMinor
 
 প্রতিটি mutation-এ current account/session/ADMIN role transaction-এর ভিতরে আবার check হয়। Service write, typed audit ও catalog revision একসঙ্গে commit হয়; audit fail হলে rollback। Price update-এর old/new snapshots row lock দিয়ে concurrent edits-এর সঙ্গেও সঠিক থাকে। Deleted services ভবিষ্যৎ work/invoice references-এর জন্য retained থাকবে।
 
+### Apidog: public catalog and cache
+
+`GET {{base_url}}/services?q=AC&page=1&limit=20&sort=price_asc` → **No Auth**। Expected `200`; `data: { items: [...], pagination: { page, limit, total, totalPages } }`। শুধু active services আসবে। Search name/description-এ case-insensitive literal match; `%`, `_`, `\` wildcard হিসেবে চলে না।
+
+| Query   | Rules / default                                                     |
+| ------- | ------------------------------------------------------------------- |
+| `q`     | Trim করা search, সর্বোচ্চ ১০০ characters; default empty             |
+| `page`  | Integer `1–100000`; default `1`                                     |
+| `limit` | Integer `1–100`; default `20`                                       |
+| `sort`  | `newest` (default), `oldest`, `name_asc`, `price_asc`, `price_desc` |
+
+`GET {{base_url}}/services/{{service_id}}` → No Auth, `200`; create-এর একই public projection। Deleted/missing service `404`, invalid UUID `400`। Empty search result-এ `items: []`, `total: 0`, `totalPages: 0`; শেষ page-এর পরে items empty থাকে। Extra/invalid query fields `400`। Stable ID tie-break এবং একই DB snapshot-এ items/count দিয়ে pagination হয়।
+
+Manual flow: ADMIN create → public list/details → ADMIN price PATCH → public list/details-এ নতুন price → DELETE → details `404`, list থেকে বাদ। CUSTOMER token দিয়ে mutation `403` verify করুন।
+
+Redis শুধু public catalog cache করে, TTL ৬০ seconds। `.env`-এর optional `REDIS_URL` blank হলে cache disabled; connection/command failure-এ DB fallback। PostgreSQL revision প্রতিটি read-এ check হয় এবং write/audit-এর সঙ্গে transaction-এ increment হয়; নতুন revision পুরোনো cache keys ব্যবহার করে না, পুরোনো keys TTL-এ expire হয়। ফলে outage-এর সময় write অথবা পুরোনো in-flight cache fill-এর পরও stale price/deleted service ফেরত আসে না। DB unavailable হলে cache দিয়ে authority check bypass হয় না। Main/test database অনুযায়ী cache namespace আলাদা এবং cached JSON strict public schema দিয়ে validate হয়। [Official node-redis production guide](https://redis.io/docs/latest/develop/clients/nodejs/produsage/)
+
+Local outage test: `docker compose stop redis` → public GET চালু থাকবে → ADMIN price update → `docker compose start redis` → public GET-এ updated price পাবেন। Server startup cache-এর জন্য অপেক্ষা করে না; auth/session/availability/payment data Redis-এ রাখা হয় না।
+
 ### Registration
 
 ```json
@@ -206,7 +227,7 @@ npm run test:e2e
 npm run build
 ```
 
-E2E tests-এর জন্য `.env`-এ আলাদা `TEST_DATABASE_URL` দিন; database name `_test` দিয়ে শেষ হবে (example: `fieldops_test`)। `db:test:setup` প্রয়োজন হলে test database তৈরি করে committed migrations apply করে; existing data reset করে না। Database user-এর `CREATEDB` permission লাগবে। Tests নিজেদের registration fixtures cleanup করে; main `DATABASE_URL`-এর database ব্যবহার করে না। Unit tests-এ database লাগে না। Build স্বয়ংক্রিয়ভাবে Prisma Client generate করে; production entrypoint `dist/main.js`।
+E2E tests-এর জন্য `.env`-এ আলাদা `TEST_DATABASE_URL` দিন; database name `_test` দিয়ে শেষ হবে (example: `fieldops_test`)। `db:test:setup` প্রয়োজন হলে test database তৈরি করে committed migrations apply করে; existing data reset করে না। Database user-এর `CREATEDB` permission লাগবে। Tests নিজেদের registration/service fixtures cleanup করে; main `DATABASE_URL`-এর database ব্যবহার করে না। Real cache tests-এর জন্য `TEST_REDIS_URL=redis://localhost:6379/1` দিন—index অবশ্যই `0`-এর বেশি; main Redis URL tests ব্যবহার করে না এবং flush command চালায় না। URL absent হলে real Redis tests skip হয়, public API/DB fallback tests চলে। Unit tests-এ DB/Redis লাগে না। Build স্বয়ংক্রিয়ভাবে Prisma Client generate করে; production entrypoint `dist/main.js`।
 
 ```bash
 npm run start:prod
@@ -228,8 +249,8 @@ Migration files Git-এ রাখতে হবে। `.env`, `node_modules/`, `d
 - [Assignment source](https://github.com/Apollo-Level2-Web-Dev/B7A6)
 - [Reviewed Notion plan](https://app.notion.com/p/3f14ab5df14481b9bdccd1349fd83a18)
 
-পরবর্তী কাজ: Public catalog search/pagination ও Redis cache; তারপর service requests ও ownership rules।
+পরবর্তী কাজ: Customer service requests ও ownership rules; তারপর technician availability/scheduling।
 
 ## Known dependency advisories
 
-2026-10-06-এর `npm audit`-এ Prisma 7.10 tooling-এর `deepmerge-ts` ও `mysql2` dependency paths থেকে ৪টি high package warning আছে। Runtime PostgreSQL adapter ব্যবহার করে; audit এখনো clean নয়। Suggested forced Prisma downgrade বর্তমান setup-এর সঙ্গে compatible নয়, তাই প্রয়োগ করা হয়নি।
+2026-10-07-এর dependency install check-এ Prisma 7.10 tooling-এর `deepmerge-ts` ও `mysql2` dependency paths থেকে আগের ৪টি high package warning রয়ে গেছে। Runtime PostgreSQL adapter ব্যবহার করে; audit এখনো clean নয়। Suggested forced Prisma downgrade বর্তমান setup-এর সঙ্গে compatible নয়, তাই প্রয়োগ করা হয়নি।

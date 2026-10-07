@@ -6,6 +6,16 @@ const envSchema = z.object({
     .default('development'),
   PORT: z.coerce.number().int().min(1).max(65535).default(3000),
   FRONTEND_ORIGIN: z.url(),
+  REDIS_URL: z.preprocess(
+    (value) => (typeof value === 'string' && !value.trim() ? undefined : value),
+    z
+      .url()
+      .refine(
+        (value) => ['redis:', 'rediss:'].includes(new URL(value).protocol),
+        'REDIS_URL must use redis:// or rediss://',
+      )
+      .optional(),
+  ),
   GOOGLE_CLIENT_ID: z.preprocess(
     (value) => (typeof value === 'string' && !value.trim() ? undefined : value),
     z

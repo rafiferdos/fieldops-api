@@ -54,3 +54,25 @@ describe('Google startup configuration', () => {
     ).toThrow();
   });
 });
+
+describe('Optional Redis configuration', () => {
+  const valid = {
+    ...baseEnv,
+    JWT_ACCESS_SECRET: randomBytes(64).toString('base64'),
+  };
+  it.each([undefined, '', '  '])('permits disabled caching: %s', (url) => {
+    expect(validateEnv({ ...valid, REDIS_URL: url }).REDIS_URL).toBeUndefined();
+  });
+  it.each(['redis://localhost:6379', 'rediss://cache.example.com:6379'])(
+    'accepts Redis URLs: %s',
+    (url) => {
+      expect(validateEnv({ ...valid, REDIS_URL: url }).REDIS_URL).toBe(url);
+    },
+  );
+  it.each(['http://localhost:6379', 'invalid'])(
+    'rejects invalid Redis configuration: %s',
+    (url) => {
+      expect(() => validateEnv({ ...valid, REDIS_URL: url })).toThrow();
+    },
+  );
+});
