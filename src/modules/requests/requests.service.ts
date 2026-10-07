@@ -21,6 +21,7 @@ import type {
   CancelRequestInput,
 } from './schemas/request.schema.js';
 import { lockRequest } from './request.lock.js';
+import { serializable } from '../../common/database/serializable.js';
 import { requestSelect, requestView } from './request.select.js';
 
 @Injectable()
@@ -220,7 +221,7 @@ export class RequestsService {
   }
 
   async cancel(actor: AuthActor, id: string, input: CancelRequestInput) {
-    return this.prisma.$transaction(async (tx) => {
+    return serializable(this.prisma, async (tx) => {
       const user = await requireActiveActor(tx, actor, [
         Role.CUSTOMER,
         Role.ADMIN,
@@ -238,7 +239,36 @@ export class RequestsService {
         throw new ConflictException(
           'Only pending or approved requests can be cancelled',
         );
-      // Future assignment/progress must lock this request first and cancel linked unstarted work atomically.
+      // Progress and rescheduling take the same request lock first: cancellation has one winner.
+      const order = await tx.workOrder.findUnique({
+        where: { requestId: id },
+        select: { id: true, status: true, version: true },
+      });
+      if (order) {
+        if (order.status !== 'ASSIGNED')
+          throw new ConflictException('Started work cannot be cancelled');
+        await tx.workOrder.update({
+          where: { id: order.id },
+          data: {
+            status: 'CANCELLED',
+            cancelledAt: new Date(),
+            version: { increment: 1 },
+          },
+        });
+        await this.audit.record(tx, {
+          actorId: user.id,
+          entityType: 'WORK_ORDER',
+          entityId: order.id,
+          action: 'WORK_ORDER_CANCELLED',
+          metadata: {
+            requestId: id,
+            fromStatus: 'ASSIGNED',
+            toStatus: 'CANCELLED',
+            previousVersion: order.version,
+            version: order.version + 1,
+          },
+        });
+      }
       const changed = await tx.serviceRequest.updateMany({
         where: {
           id,

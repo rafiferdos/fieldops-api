@@ -23,6 +23,9 @@ import {
 } from './scheduling.policy.js';
 import type { AssignmentInput, ScheduleInput } from './scheduling.schema.js';
 import { workOrderSelect, workOrderView } from './work-order.select.js';
+import { pagination } from '../../common/http/pagination.js';
+import { literalSearch } from '../../common/validation/literal-search.js';
+import type { WorkOrderQuery, ProgressInput } from './scheduling.schema.js';
 
 @Injectable()
 export class WorkOrdersService {
@@ -30,6 +33,139 @@ export class WorkOrdersService {
     @Inject(PrismaService) private readonly prisma: PrismaService,
     @Inject(AuditService) private readonly audit: AuditService,
   ) {}
+
+  list(actor: AuthActor, query: WorkOrderQuery) {
+    return this.prisma.$transaction(
+      async (tx) => {
+        const user = await requireActiveActor(tx, actor, [
+          'CUSTOMER',
+          'TECHNICIAN',
+          'ADMIN',
+        ]);
+        const search = literalSearch(query.q);
+        const where: Prisma.WorkOrderWhereInput = {
+          AND: [
+            this.scope(user),
+            {
+              ...(query.status ? { status: query.status } : {}),
+              ...(query.serviceId
+                ? { request: { serviceId: query.serviceId } }
+                : {}),
+              ...(search
+                ? {
+                    OR: [
+                      {
+                        request: {
+                          description: {
+                            contains: search,
+                            mode: 'insensitive',
+                          },
+                        },
+                      },
+                      {
+                        request: {
+                          address: { contains: search, mode: 'insensitive' },
+                        },
+                      },
+                      {
+                        request: {
+                          service: {
+                            name: { contains: search, mode: 'insensitive' },
+                          },
+                        },
+                      },
+                    ],
+                  }
+                : {}),
+            },
+          ],
+        };
+        const orders: Record<
+          WorkOrderQuery['sort'],
+          Prisma.WorkOrderOrderByWithRelationInput[]
+        > = {
+          newest: [{ createdAt: 'desc' }, { id: 'asc' }],
+          oldest: [{ createdAt: 'asc' }, { id: 'asc' }],
+          scheduled_start_asc: [{ scheduledStart: 'asc' }, { id: 'asc' }],
+        };
+        const items = await tx.workOrder.findMany({
+          where,
+          select: workOrderSelect,
+          skip: (query.page - 1) * query.limit,
+          take: query.limit,
+          orderBy: orders[query.sort],
+        });
+        return {
+          items: items.map(workOrderView),
+          pagination: pagination(await tx.workOrder.count({ where }), query),
+        };
+      },
+      { isolationLevel: 'RepeatableRead' },
+    );
+  }
+
+  detail(actor: AuthActor, id: string) {
+    return this.prisma.$transaction(
+      async (tx) => {
+        const user = await requireActiveActor(tx, actor, [
+          'CUSTOMER',
+          'TECHNICIAN',
+          'ADMIN',
+        ]);
+        const order = await tx.workOrder.findFirst({
+          where: { id, ...this.scope(user) },
+          select: workOrderSelect,
+        });
+        if (!order) throw new NotFoundException('Work order not found');
+        const timeline = await tx.auditLog.findMany({
+          where: { entityType: 'WORK_ORDER', entityId: id },
+          select: { id: true, action: true, metadata: true, createdAt: true },
+          orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+          take: 100,
+        });
+        return {
+          ...workOrderView(order),
+          timeline: timeline.reverse().map((event) => ({
+            ...event,
+            createdAt: event.createdAt.toISOString(),
+          })),
+        };
+      },
+      { isolationLevel: 'RepeatableRead' },
+    );
+  }
+
+  progress(actor: AuthActor, id: string, input: ProgressInput) {
+    return serializable(this.prisma, async (tx) => {
+      const technician = await requireActiveActor(tx, actor, ['TECHNICIAN']);
+      const order = await this.lockOrder(tx, id, technician);
+      this.assertVersion(order.version, input.version);
+      const allowed =
+        (order.status === 'ASSIGNED' && input.status === 'EN_ROUTE') ||
+        (order.status === 'EN_ROUTE' && input.status === 'IN_PROGRESS');
+      if (!allowed || order.request.status !== 'APPROVED')
+        throw new ConflictException('Invalid work order transition');
+      // The transition policy above narrows the source to ASSIGNED/EN_ROUTE.
+      const fromStatus = order.status === 'ASSIGNED' ? 'ASSIGNED' : 'EN_ROUTE';
+      await tx.workOrder.update({
+        where: { id },
+        data: { status: input.status, version: { increment: 1 } },
+      });
+      await this.audit.record(tx, {
+        actorId: technician.id,
+        entityType: 'WORK_ORDER',
+        entityId: id,
+        action: 'WORK_ORDER_STATUS_CHANGED',
+        metadata: {
+          fromStatus,
+          toStatus: input.status,
+          previousVersion: order.version,
+          version: order.version + 1,
+        },
+      });
+      return this.view(tx, id);
+    });
+  }
 
   assign(actor: AuthActor, requestId: string, input: AssignmentInput) {
     return this.schedulingTransaction(async (tx) => {

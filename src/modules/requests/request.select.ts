@@ -1,4 +1,8 @@
 import type { Prisma } from '../../generated/prisma/client.js';
+import {
+  workOrderSummarySelect,
+  workOrderSummaryView,
+} from '../work-orders/work-order.select.js';
 
 export const requestSelect = {
   id: true,
@@ -16,6 +20,7 @@ export const requestSelect = {
   createdAt: true,
   updatedAt: true,
   service: { select: { id: true, name: true } },
+  workOrder: { select: workOrderSummarySelect },
 } satisfies Prisma.ServiceRequestSelect;
 
 type SelectedRequest = Prisma.ServiceRequestGetPayload<{
@@ -24,6 +29,9 @@ type SelectedRequest = Prisma.ServiceRequestGetPayload<{
 export function requestView(request: SelectedRequest) {
   return {
     ...request,
+    workOrder: request.workOrder
+      ? workOrderSummaryView(request.workOrder)
+      : null,
     preferredStart: request.preferredStart.toISOString(),
     createdAt: request.createdAt.toISOString(),
     updatedAt: request.updatedAt.toISOString(),
