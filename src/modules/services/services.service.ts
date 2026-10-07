@@ -1,13 +1,10 @@
-import {
-  ForbiddenException,
-  Inject,
-  Injectable,
-  NotFoundException,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { createHash } from 'node:crypto';
 import type { Prisma } from '../../generated/prisma/client.js';
-import { Role, UserStatus } from '../../generated/prisma/enums.js';
+import { Role } from '../../generated/prisma/enums.js';
+import { requireActiveActor } from '../../common/security/active-actor.js';
+import { pagination } from '../../common/http/pagination.js';
+import { literalSearch } from '../../common/validation/literal-search.js';
 import { PrismaService } from '../../infrastructure/prisma/prisma.service.js';
 import { AuditService } from '../../common/audit/audit.service.js';
 import { RedisCacheService } from '../../infrastructure/cache/redis-cache.service.js';
@@ -41,7 +38,7 @@ export class ServicesService {
       catalogPageSchema,
       async () => {
         // Prisma contains maps to LIKE; escape metacharacters for literal user search.
-        const search = query.q.replace(/[\\%_]/g, '\\$&');
+        const search = literalSearch(query.q);
         const where: Prisma.ServiceWhereInput = {
           deletedAt: null,
           ...(search
@@ -78,12 +75,7 @@ export class ServicesService {
         );
         return {
           items: services.map(serviceView),
-          pagination: {
-            page: query.page,
-            limit: query.limit,
-            total,
-            totalPages: Math.ceil(total / query.limit),
-          },
+          pagination: pagination(total, query),
         };
       },
     );
@@ -116,7 +108,7 @@ export class ServicesService {
 
   async create(actor: AuthActor, input: CreateServiceInput) {
     return this.prisma.$transaction(async (tx) => {
-      await this.assertAdmin(tx, actor);
+      await requireActiveActor(tx, actor, [Role.ADMIN]);
       const service = await tx.service.create({
         data: {
           name: input.name,
@@ -151,7 +143,7 @@ export class ServicesService {
         : {}),
     };
     return this.prisma.$transaction(async (tx) => {
-      await this.assertAdmin(tx, actor);
+      await requireActiveActor(tx, actor, [Role.ADMIN]);
       const previous = await this.lockActiveService(tx, id);
       const service = await tx.service.update({
         where: { id, deletedAt: null },
@@ -181,7 +173,7 @@ export class ServicesService {
 
   async remove(actor: AuthActor, id: string) {
     await this.prisma.$transaction(async (tx) => {
-      await this.assertAdmin(tx, actor);
+      await requireActiveActor(tx, actor, [Role.ADMIN]);
       await this.lockActiveService(tx, id);
       await tx.service.update({
         where: { id, deletedAt: null },
@@ -196,28 +188,6 @@ export class ServicesService {
       });
       await this.advanceRevision(tx);
     });
-  }
-
-  private async assertAdmin(tx: Prisma.TransactionClient, actor: AuthActor) {
-    const user = await tx.user.findFirst({
-      where: {
-        id: actor.user.id,
-        status: UserStatus.ACTIVE,
-        deletedAt: null,
-        sessions: {
-          some: {
-            id: actor.sessionId,
-            revokedAt: null,
-            expiresAt: { gt: new Date() },
-          },
-        },
-      },
-      select: { role: true },
-    });
-    if (!user)
-      throw new UnauthorizedException('Account or session is unavailable');
-    if (user.role !== Role.ADMIN)
-      throw new ForbiddenException('Only administrators can manage services');
   }
 
   private async lockActiveService(tx: Prisma.TransactionClient, id: string) {

@@ -1,10 +1,10 @@
 import { z } from 'zod';
 import { createServiceSchema } from './service.schema.js';
+import { paginationQueryShape } from '../../../common/http/pagination.js';
 
 export const catalogQuerySchema = z.strictObject({
   q: z.string().trim().max(100).default(''),
-  page: z.coerce.number().int().min(1).max(100000).default(1),
-  limit: z.coerce.number().int().min(1).max(100).default(20),
+  ...paginationQueryShape,
   sort: z
     .enum(['newest', 'oldest', 'name_asc', 'price_asc', 'price_desc'])
     .default('newest'),

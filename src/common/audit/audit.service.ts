@@ -20,6 +20,11 @@ export type AuditEvent = AuditTarget &
         metadata: Record<string, never>;
       }
     | {
+        action: 'REQUEST_CREATED';
+        entityType: 'REQUEST';
+        metadata: { serviceId: string; status: 'PENDING'; version: 1 };
+      }
+    | {
         action: 'SERVICE_CREATED';
         entityType: 'SERVICE';
         metadata: { basePriceMinor: number; currency: 'BDT' };

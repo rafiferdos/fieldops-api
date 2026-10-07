@@ -55,6 +55,9 @@ npm run start:dev
 | DELETE | `/api/v1/services/:id`  | ADMIN service soft delete ও audit     |
 | GET    | `/api/v1/services`      | Public search, pagination, sorting    |
 | GET    | `/api/v1/services/:id`  | Public active service details         |
+| POST   | `/api/v1/requests`      | CUSTOMER service request তৈরি ও audit |
+| GET    | `/api/v1/requests`      | CUSTOMER own / ADMIN scoped list      |
+| GET    | `/api/v1/requests/:id`  | CUSTOMER own / ADMIN private details  |
 
 Success: `{ success: true, message, data }`। Error: `{ success: false, message, errors: [] }`।
 
@@ -214,6 +217,27 @@ Local outage test: `docker compose stop redis` → public GET চালু থ�
 শুধু `name`, `email`, `password` গ্রহণ করা হয়; unknown fields reject হবে। Name trim এবং email trim/lowercase হয়। Password ১৫–১২৮ characters; spaces অক্ষত থাকে। Role server থেকে `CUSTOMER` হয়। Password Argon2id দিয়ে hash হয় ([OWASP guidance](https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html))।
 
 `201` response-এর `data`-তে শুধু `id`, `name`, `email`, `role`, `createdAt` থাকে। Invalid input `400`; duplicate email (soft-deleted account-সহ) `409`; registration প্রতি IP-তে ১০ attempts/minute। Login token এখানে দেওয়া হয় না।
+
+### Apidog: customer requests
+
+Customer login-এর `access_token` ব্যবহার করুন; ADMIN login-এর `admin_access_token` আলাদা রাখুন। `POST {{base_url}}/requests` → Bearer `{{access_token}}` → JSON:
+
+```json
+{
+  "serviceId": "{{service_id}}",
+  "description": "The cooling unit needs inspection.",
+  "address": "House 12, Road 3, Dhaka",
+  "preferredStart": "2099-01-01T10:00:00+06:00"
+}
+```
+
+নিজের future preferred time বসান; timezone সহ ISO datetime বাধ্যতামূলক, response UTC-তে আসে। Description trim করে ১০–২০০০ ও address ১০–৫০০ characters। Owner token থেকে আসে; customerId/status/version/price input গ্রহণ হয় না। Active service দরকার, unavailable service `404`। ADMIN/TECHNICIAN create করলে `403`। Expected `201`, `status: PENDING`, `version: 1`; `request_id = $.data.id` এবং `request_version = $.data.version` extract করুন।
+
+- `GET {{base_url}}/requests?status=PENDING&serviceId={{service_id}}&page=1&limit=20&sort=newest`: CUSTOMER নিজের items/totals; ADMIN সব active requests।
+- Optional `q` (সর্বোচ্চ ১০০ characters) description/address/service name-এ case-insensitive literal search। Sort: `newest`, `oldest`, `preferred_start_asc`; page/limit catalog-এর মতো। Extra customerId বা invalid filters `400`।
+- `GET {{base_url}}/requests/{{request_id}}`: own/customer অথবা ADMIN `200`; অন্য customer's ID, soft-deleted বা missing request `404`; TECHNICIAN `403`; No Auth `401`।
+
+Request response-এ customerId/serviceId, nested service `{ id, name }`, description/address/preferredStart, status/version, review/cancellation facts ও timestamps থাকে। Staff/customer credentials বা private profile আসে না। সব request response/error `Cache-Control: no-store`; Redis-এ request data রাখা হয় না। Catalog soft-delete হলেও existing request history retained থাকে; request price snapshot এখন নেওয়া হয় না—assignment-এর সময় agreed price snapshot হবে। Create+safe audit একই transaction; audit metadata-তে address/description থাকে না।
 
 ## Checks
 

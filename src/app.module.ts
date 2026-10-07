@@ -8,6 +8,7 @@ import { validateEnv } from './config/env.validation.js';
 import { AuthModule } from './modules/auth/auth.module.js';
 import { HealthModule } from './modules/health/health.module.js';
 import { ServicesModule } from './modules/services/services.module.js';
+import { RequestsModule } from './modules/requests/requests.module.js';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { ServicesModule } from './modules/services/services.module.js';
     HealthModule,
     AuthModule,
     ServicesModule,
+    RequestsModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },

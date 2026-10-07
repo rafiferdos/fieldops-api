@@ -8,7 +8,7 @@ export function configureApp(app: INestApplication): void {
 
   app.use(helmet());
   app.use(
-    ['/api/v1/auth', '/api/v1/users/me'],
+    ['/api/v1/auth', '/api/v1/users/me', '/api/v1/requests'],
     (_req: Request, res: Response, next: NextFunction) => {
       res.setHeader('Cache-Control', 'no-store');
       next();
