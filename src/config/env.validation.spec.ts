@@ -76,3 +76,39 @@ describe('Optional Redis configuration', () => {
     },
   );
 });
+
+describe('Payment startup configuration', () => {
+  const valid = {
+    ...baseEnv,
+    JWT_ACCESS_SECRET: randomBytes(64).toString('base64'),
+  };
+  const payments = {
+    SSLCOMMERZ_MODE: 'sandbox',
+    SSLCOMMERZ_STORE_ID: 'fixture',
+    SSLCOMMERZ_STORE_PASSWORD: 'private',
+    PUBLIC_API_URL: 'https://api.example.com/',
+  };
+  it('allows disabled payments and normalizes a complete configuration', () => {
+    expect(validateEnv(valid).SSLCOMMERZ_STORE_ID).toBeUndefined();
+    expect(validateEnv({ ...valid, ...payments }).PUBLIC_API_URL).toBe(
+      'https://api.example.com',
+    );
+  });
+  it.each(Object.keys(payments))(
+    'rejects partially configured payments without %s',
+    (key) => {
+      expect(() => validateEnv({ ...valid, ...payments, [key]: '' })).toThrow();
+    },
+  );
+  it.each([
+    'http://localhost:3000',
+    'https://user:pass@api.example.com',
+    'https://api.example.com/api/v1',
+    'https://api.example.com/?query=1',
+    'https://api.example.com/#x',
+  ])('rejects callback origin %s', (url) => {
+    expect(() =>
+      validateEnv({ ...valid, ...payments, PUBLIC_API_URL: url }),
+    ).toThrow();
+  });
+});
