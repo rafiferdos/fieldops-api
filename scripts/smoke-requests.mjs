@@ -76,8 +76,8 @@ try {
       `Unexpected HTTP status for ${method} ${path}`,
     );
     if (
-      ['/requests', '/work-orders', '/technicians'].some((prefix) =>
-        path.startsWith(prefix),
+      ['/requests', '/work-orders', '/technicians', '/invoices'].some(
+        (prefix) => path.startsWith(prefix),
       )
     )
       assert.equal(response.headers.get('cache-control'), 'no-store');
@@ -281,8 +281,55 @@ try {
   });
   assert.equal(detail.status, 'IN_PROGRESS');
   assert.equal(detail.timeline.length, 4);
+  const completionBody = {
+    version: 4,
+    report: 'Inspection and repair completed.',
+  };
+  const completed = await call(`/work-orders/${work.id}/complete`, 200, {
+    method: 'POST',
+    token: technician,
+    body: completionBody,
+  });
+  assert.equal(completed.status, 'COMPLETED');
+  assert.equal(completed.version, 5);
+  assert.equal(completed.invoice.amountMinor, work.agreedPriceMinor);
+  assert.equal(completed.invoice.status, 'UNPAID');
+  const repeat = await call(`/work-orders/${work.id}/complete`, 200, {
+    method: 'POST',
+    token: technician,
+    body: completionBody,
+  });
+  assert.deepEqual(repeat, completed);
+  const invoice = await call(`/invoices/${completed.invoice.id}`, 200, {
+    token: customer,
+  });
+  assert.deepEqual(invoice, completed.invoice);
+  await call(`/invoices/${invoice.id}`, 404, { token: other });
+  await call(`/invoices/${invoice.id}`, 403, { token: technician });
+  await call(`/invoices/${invoice.id}`, 200, { token: admin });
+  assert.equal(
+    await prisma.invoice.count({ where: { workOrderId: work.id } }),
+    1,
+  );
+  assert.equal(
+    await prisma.auditLog.count({
+      where: { entityId: work.id, action: 'WORK_ORDER_COMPLETED' },
+    }),
+    1,
+  );
+  assert.equal(
+    await prisma.auditLog.count({
+      where: { entityId: invoice.id, action: 'INVOICE_ISSUED' },
+    }),
+    1,
+  );
+  const finalWork = await call(`/work-orders/${work.id}`, 200, {
+    token: technician,
+  });
+  assert.deepEqual(finalWork.invoice, invoice);
+  assert.equal(finalWork.timeline.length, 5);
   console.log(
-    'Compiled HTTP workflow passed: safe bootstrap, authentication, request lifecycle, scheduling, scoped work, progress and atomic cancellation',
+    'Compiled HTTP workflow passed: safe bootstrap, authentication, request lifecycle, scheduling, scoped work, atomic cancellation, completion and frozen invoices',
   );
 } finally {
   await prisma
@@ -292,6 +339,7 @@ try {
         select: { id: true },
       });
       const ids = users.map((user) => user.id);
+      await tx.invoice.deleteMany({ where: { customerId: { in: ids } } });
       await tx.workOrder.deleteMany({
         where: { request: { customerId: { in: ids } } },
       });

@@ -128,15 +128,20 @@ describe('Request creation and scoped reads (e2e)', () => {
   it.each(['newest', 'oldest', 'preferred_start_asc'] as const)(
     'provides stable sorting and pagination: %s',
     async (sort) => {
-      const a = await createOwnedRequest(ctx, ctx.owner, {
-        preferredStart: '2099-01-01T00:00:00Z',
+      // Set tied immutable timestamps at fixture insertion; production clients cannot choose them.
+      const tiedData = {
+        ...requestBody(ctx),
+        customerId: ctx.owner.id,
+        preferredStart: new Date('2099-01-01T00:00:00Z'),
+        createdAt: new Date('2026-01-01'),
+      };
+      const a = await ctx.prisma.serviceRequest.create({
+        data: tiedData,
+        select: { id: true },
       });
-      const b = await createOwnedRequest(ctx, ctx.owner, {
-        preferredStart: '2099-01-01T00:00:00Z',
-      });
-      await ctx.prisma.serviceRequest.updateMany({
-        where: { id: { in: [a.id, b.id] } },
-        data: { createdAt: new Date('2026-01-01') },
+      const b = await ctx.prisma.serviceRequest.create({
+        data: tiedData,
+        select: { id: true },
       });
       const first = await list({
         serviceId: ctx.service.id,
