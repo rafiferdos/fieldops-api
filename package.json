@@ -15,6 +15,7 @@
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main.js",
     "google:test": "node scripts/google-login.mjs",
+    "seed:technician": "npm run build && node scripts/seed-technician.mjs",
     "seed:admin": "npm run build && node scripts/seed-admin.mjs",
     "lint": "oxlint --type-aware src/ test/",
     "test": "vitest run",

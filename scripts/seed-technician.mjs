@@ -1,2 +1,2 @@
 import { bootstrapAccount } from './bootstrap-account.mjs';
-await bootstrapAccount('ADMIN', 'SEED_ADMIN');
+await bootstrapAccount('TECHNICIAN', 'SEED_TECHNICIAN');
