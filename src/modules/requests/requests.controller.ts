@@ -2,8 +2,10 @@ import {
   Body,
   Controller,
   Get,
+  HttpCode,
   Inject,
   Param,
+  Patch,
   Post,
   Query,
 } from '@nestjs/common';
@@ -20,6 +22,12 @@ import {
   requestQuerySchema,
   type CreateRequestInput,
   type RequestQuery,
+  updateRequestSchema,
+  reviewRequestSchema,
+  cancelRequestSchema,
+  type UpdateRequestInput,
+  type ReviewRequestInput,
+  type CancelRequestInput,
 } from './schemas/request.schema.js';
 
 @Controller('requests')
@@ -61,6 +69,46 @@ export class RequestsController {
     return success(
       await this.requests.detail(actor, id),
       'Request retrieved successfully',
+    );
+  }
+
+  @Patch(':id')
+  @Roles(Role.CUSTOMER)
+  async update(
+    @CurrentActor() actor: AuthActor,
+    @Param('id', new ZodValidationPipe(uuidSchema)) id: string,
+    @Body(new ZodValidationPipe(updateRequestSchema)) input: UpdateRequestInput,
+  ) {
+    return success(
+      await this.requests.update(actor, id, input),
+      'Request updated successfully',
+    );
+  }
+
+  @Patch(':id/review')
+  @Roles(Role.ADMIN)
+  async review(
+    @CurrentActor() actor: AuthActor,
+    @Param('id', new ZodValidationPipe(uuidSchema)) id: string,
+    @Body(new ZodValidationPipe(reviewRequestSchema)) input: ReviewRequestInput,
+  ) {
+    return success(
+      await this.requests.review(actor, id, input),
+      'Request reviewed successfully',
+    );
+  }
+
+  @Post(':id/cancel')
+  @HttpCode(200)
+  @Roles(Role.CUSTOMER, Role.ADMIN)
+  async cancel(
+    @CurrentActor() actor: AuthActor,
+    @Param('id', new ZodValidationPipe(uuidSchema)) id: string,
+    @Body(new ZodValidationPipe(cancelRequestSchema)) input: CancelRequestInput,
+  ) {
+    return success(
+      await this.requests.cancel(actor, id, input),
+      'Request cancelled successfully',
     );
   }
 }

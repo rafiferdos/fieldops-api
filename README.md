@@ -39,25 +39,28 @@ npm run start:dev
 
 ## Available endpoints
 
-| Method | Endpoint                | Purpose                               |
-| ------ | ----------------------- | ------------------------------------- |
-| GET    | `/api/v1/health`        | API liveness                          |
-| GET    | `/api/v1/health/ready`  | Prisma দিয়ে database readiness check  |
-| POST   | `/api/v1/auth/register` | Customer account তৈরি                 |
-| POST   | `/api/v1/auth/login`    | Password যাচাই ও session/token pair   |
-| POST   | `/api/v1/auth/google`   | Verified Google credential দিয়ে login |
-| POST   | `/api/v1/auth/refresh`  | Refresh token rotation                |
-| POST   | `/api/v1/auth/logout`   | Bearer দিয়ে current session revoke    |
-| GET    | `/api/v1/users/me`      | Authenticated own profile             |
-| PATCH  | `/api/v1/users/me`      | নিজের name/phone update ও audit       |
-| POST   | `/api/v1/services`      | ADMIN service তৈরি ও audit            |
-| PATCH  | `/api/v1/services/:id`  | ADMIN service update ও audit          |
-| DELETE | `/api/v1/services/:id`  | ADMIN service soft delete ও audit     |
-| GET    | `/api/v1/services`      | Public search, pagination, sorting    |
-| GET    | `/api/v1/services/:id`  | Public active service details         |
-| POST   | `/api/v1/requests`      | CUSTOMER service request তৈরি ও audit |
-| GET    | `/api/v1/requests`      | CUSTOMER own / ADMIN scoped list      |
-| GET    | `/api/v1/requests/:id`  | CUSTOMER own / ADMIN private details  |
+| Method | Endpoint                      | Purpose                               |
+| ------ | ----------------------------- | ------------------------------------- |
+| GET    | `/api/v1/health`              | API liveness                          |
+| GET    | `/api/v1/health/ready`        | Prisma দিয়ে database readiness check  |
+| POST   | `/api/v1/auth/register`       | Customer account তৈরি                 |
+| POST   | `/api/v1/auth/login`          | Password যাচাই ও session/token pair   |
+| POST   | `/api/v1/auth/google`         | Verified Google credential দিয়ে login |
+| POST   | `/api/v1/auth/refresh`        | Refresh token rotation                |
+| POST   | `/api/v1/auth/logout`         | Bearer দিয়ে current session revoke    |
+| GET    | `/api/v1/users/me`            | Authenticated own profile             |
+| PATCH  | `/api/v1/users/me`            | নিজের name/phone update ও audit       |
+| POST   | `/api/v1/services`            | ADMIN service তৈরি ও audit            |
+| PATCH  | `/api/v1/services/:id`        | ADMIN service update ও audit          |
+| DELETE | `/api/v1/services/:id`        | ADMIN service soft delete ও audit     |
+| GET    | `/api/v1/services`            | Public search, pagination, sorting    |
+| GET    | `/api/v1/services/:id`        | Public active service details         |
+| POST   | `/api/v1/requests`            | CUSTOMER service request তৈরি ও audit |
+| GET    | `/api/v1/requests`            | CUSTOMER own / ADMIN scoped list      |
+| GET    | `/api/v1/requests/:id`        | CUSTOMER own / ADMIN private details  |
+| PATCH  | `/api/v1/requests/:id`        | CUSTOMER own PENDING edit ও version   |
+| PATCH  | `/api/v1/requests/:id/review` | ADMIN approve/reject ও version        |
+| POST   | `/api/v1/requests/:id/cancel` | CUSTOMER own / ADMIN cancellation     |
 
 Success: `{ success: true, message, data }`। Error: `{ success: false, message, errors: [] }`।
 
@@ -238,6 +241,22 @@ Customer login-এর `access_token` ব্যবহার করুন; ADMIN l
 - `GET {{base_url}}/requests/{{request_id}}`: own/customer অথবা ADMIN `200`; অন্য customer's ID, soft-deleted বা missing request `404`; TECHNICIAN `403`; No Auth `401`।
 
 Request response-এ customerId/serviceId, nested service `{ id, name }`, description/address/preferredStart, status/version, review/cancellation facts ও timestamps থাকে। Staff/customer credentials বা private profile আসে না। সব request response/error `Cache-Control: no-store`; Redis-এ request data রাখা হয় না। Catalog soft-delete হলেও existing request history retained থাকে; request price snapshot এখন নেওয়া হয় না—assignment-এর সময় agreed price snapshot হবে। Create+safe audit একই transaction; audit metadata-তে address/description থাকে না।
+
+### Apidog: edit, review and cancellation
+
+প্রতিটি successful mutation-এর পরে `request_version = $.data.version` আবার extract করুন। Body-তে version অবশ্যই JSON number হবে; Apidog variable numeric হিসেবে বসান। Version positive integer, সর্বোচ্চ `2147483646`। Server stored version-এর সঙ্গে না মিললে `409`; latest detail fetch করে নিজের পরিবর্তন review করার পরে নতুন version নিয়ে retry করুন।
+
+| Operation                               | Auth                      | JSON body                                                |
+| --------------------------------------- | ------------------------- | -------------------------------------------------------- |
+| `PATCH /requests/{{request_id}}`        | Customer owner            | `{ "version": 1, "address": "House 25, Road 4, Dhaka" }` |
+| `PATCH /requests/{{request_id}}/review` | ADMIN                     | `{ "version": 2, "decision": "APPROVE" }`                |
+| `POST /requests/{{request_id}}/cancel`  | Customer owner অথবা ADMIN | `{ "version": 3, "reason": "Plans have changed" }`       |
+
+সবগুলো `200` ও updated request ফেরত দেয়। Edit শুধু PENDING এবং description/address/preferredStart-এর অন্তত একটি field; owner/serviceId/status/price/deletedAt বদলানো যাবে না। শুধু অন্য field edit করলে existing preferred time রাখা হয়; নতুন preferredStart দিলে future timezoneসহ datetime চাই। Review শুধু PENDING; `decision` হলো `APPROVE` অথবা `REJECT`, resulting status `APPROVED`/`REJECTED`। REJECT-এর জন্য reason বাধ্যতামূলক; APPROVE-তে optional। Reason trim করে ৩–৫০০ characters।
+
+Cancellation এখন PENDING অথবা APPROVED unassigned requests-এ; reason বাধ্যতামূলক। REJECTED/CANCELLED terminal, নতুন version দিয়েও edit/review/cancel `409`। Repeat cancel-ও `409`। ভবিষ্যৎ scheduling stage-এ linked unstarted work order একই transaction-এ cancel হবে এবং কাজ শুরু হয়ে গেলে cancellation reject হবে; সেই APIs এখনো নেই। Request hard-delete হয় না।
+
+Test flow: create v1 → edit v2 → ADMIN approve v3 → customer cancel v4। Old version repeat `409`; customer দিয়ে review/admin দিয়ে edit `403`; অন্য customer's edit/cancel `404`; missing version/invalid body `400`। Parallel same-version edit/edit, approve/reject বা review/cancel চালালে এক `200`, অন্য `409`; version একবার বাড়বে ও শুধু winning audit থাকবে। Audit failure হলে state/version rollback; metadata-তে reason/address/description নয়, safe status/version/field names থাকে।
 
 ## Checks
 

@@ -25,6 +25,35 @@ export type AuditEvent = AuditTarget &
         metadata: { serviceId: string; status: 'PENDING'; version: 1 };
       }
     | {
+        action: 'REQUEST_UPDATED';
+        entityType: 'REQUEST';
+        metadata: {
+          updatedFields: Array<'description' | 'address' | 'preferredStart'>;
+          previousVersion: number;
+          version: number;
+        };
+      }
+    | {
+        action: 'REQUEST_REVIEWED';
+        entityType: 'REQUEST';
+        metadata: {
+          fromStatus: 'PENDING';
+          toStatus: 'APPROVED' | 'REJECTED';
+          previousVersion: number;
+          version: number;
+        };
+      }
+    | {
+        action: 'REQUEST_CANCELLED';
+        entityType: 'REQUEST';
+        metadata: {
+          fromStatus: 'PENDING' | 'APPROVED';
+          toStatus: 'CANCELLED';
+          previousVersion: number;
+          version: number;
+        };
+      }
+    | {
         action: 'SERVICE_CREATED';
         entityType: 'SERVICE';
         metadata: { basePriceMinor: number; currency: 'BDT' };
