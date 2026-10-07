@@ -404,6 +404,8 @@ E2E requires a separate `TEST_DATABASE_URL` whose database name ends in `_test`.
 
 ## Schema changes
 
+Prisma uses the entire `prisma/` directory, configured by `schema: 'prisma'` in `prisma.config.ts`. `prisma/schema.prisma` holds the generator, PostgreSQL datasource and shared Currency enum. `prisma/models/` groups each domain's models and enums: users, auth, services, technicians, requests, work-orders, invoices, payments, feedback and audit. Cross-file relations need no imports; all files produce the same Prisma Client at `src/generated/prisma`. Do not point the CLI at `prisma/schema.prisma` alone, because that would omit domain models.
+
 ```bash
 npm run db:migrate -- --name describe_your_change
 npm run db:generate

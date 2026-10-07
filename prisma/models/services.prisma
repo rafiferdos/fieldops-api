@@ -1,0 +1,21 @@
+model Service {
+  id               String            @id @default(uuid()) @db.Uuid
+  name             String            @db.VarChar(100)
+  description      String            @db.VarChar(2000)
+  basePriceMinor   Int
+  currency         Currency          @default(BDT)
+  deletedAt        DateTime?         @db.Timestamptz(3)
+  createdAt        DateTime          @default(now()) @db.Timestamptz(3)
+  updatedAt        DateTime          @updatedAt @db.Timestamptz(3)
+  requests         ServiceRequest[]
+  technicianSkills TechnicianSkill[]
+
+  @@index([deletedAt, createdAt, id])
+  @@index([deletedAt, basePriceMinor, id])
+}
+
+// Durable cache generation; incremented in every catalog write transaction.
+model CatalogRevision {
+  id       Int    @id
+  revision BigInt @default(0)
+}

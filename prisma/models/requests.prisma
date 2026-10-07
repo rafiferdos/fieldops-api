@@ -1,0 +1,31 @@
+enum RequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+model ServiceRequest {
+  id                 String        @id @default(uuid()) @db.Uuid
+  customerId         String        @db.Uuid
+  serviceId          String        @db.Uuid
+  description        String        @db.VarChar(2000)
+  address            String        @db.VarChar(500)
+  preferredStart     DateTime      @db.Timestamptz(3)
+  status             RequestStatus @default(PENDING)
+  version            Int           @default(1)
+  reviewReason       String?       @db.VarChar(500)
+  reviewedAt         DateTime?     @db.Timestamptz(3)
+  cancellationReason String?       @db.VarChar(500)
+  cancelledAt        DateTime?     @db.Timestamptz(3)
+  deletedAt          DateTime?     @db.Timestamptz(3)
+  createdAt          DateTime      @default(now()) @db.Timestamptz(3)
+  updatedAt          DateTime      @updatedAt @db.Timestamptz(3)
+  customer           User          @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  service            Service       @relation(fields: [serviceId], references: [id], onDelete: Restrict)
+  workOrder          WorkOrder?
+
+  @@index([customerId, deletedAt, status, createdAt, id])
+  @@index([deletedAt, status, createdAt, id])
+  @@index([serviceId, deletedAt, createdAt, id])
+}

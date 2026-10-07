@@ -1,0 +1,10 @@
+model TechnicianSkill {
+  userId     String   @db.Uuid
+  serviceId  String   @db.Uuid
+  createdAt  DateTime @default(now()) @db.Timestamptz(3)
+  technician User     @relation(fields: [userId], references: [id], onDelete: Restrict)
+  service    Service  @relation(fields: [serviceId], references: [id], onDelete: Restrict)
+
+  @@id([userId, serviceId])
+  @@index([serviceId, userId])
+}

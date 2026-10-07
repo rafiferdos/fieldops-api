@@ -1,0 +1,31 @@
+enum WorkOrderStatus {
+  ASSIGNED
+  EN_ROUTE
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+model WorkOrder {
+  id               String          @id @default(uuid()) @db.Uuid
+  requestId        String          @unique @db.Uuid
+  technicianId     String          @db.Uuid
+  status           WorkOrderStatus @default(ASSIGNED)
+  scheduledStart   DateTime        @db.Timestamptz(3)
+  scheduledEnd     DateTime        @db.Timestamptz(3)
+  agreedPriceMinor Int
+  currency         Currency        @default(BDT)
+  version          Int             @default(1)
+  completedAt      DateTime?       @db.Timestamptz(3)
+  report           String?         @db.VarChar(2000)
+  cancelledAt      DateTime?       @db.Timestamptz(3)
+  createdAt        DateTime        @default(now()) @db.Timestamptz(3)
+  updatedAt        DateTime        @updatedAt @db.Timestamptz(3)
+  request          ServiceRequest  @relation(fields: [requestId], references: [id], onDelete: Restrict)
+  technician       User            @relation(fields: [technicianId], references: [id], onDelete: Restrict)
+  invoice          Invoice?
+  feedback         Feedback?
+
+  @@index([technicianId, status, scheduledStart, id])
+  @@index([status, scheduledStart, id])
+}

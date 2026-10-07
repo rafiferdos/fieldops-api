@@ -1,0 +1,22 @@
+enum InvoiceStatus {
+  UNPAID
+  PAID
+}
+
+model Invoice {
+  id          String        @id @default(uuid()) @db.Uuid
+  workOrderId String        @unique @db.Uuid
+  customerId  String        @db.Uuid
+  amountMinor Int
+  currency    Currency      @default(BDT)
+  status      InvoiceStatus @default(UNPAID)
+  issuedAt    DateTime      @default(now()) @db.Timestamptz(3)
+  paidAt      DateTime?     @db.Timestamptz(3)
+  workOrder   WorkOrder     @relation(fields: [workOrderId], references: [id], onDelete: Restrict)
+  customer    User          @relation(fields: [customerId], references: [id], onDelete: Restrict)
+
+  payments Payment[]
+
+  @@index([customerId, issuedAt, id])
+  @@index([status, issuedAt, id])
+}
