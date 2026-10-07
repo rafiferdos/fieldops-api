@@ -11,6 +11,7 @@ import { ServicesModule } from './modules/services/services.module.js';
 import { WorkOrdersModule } from './modules/work-orders/work-orders.module.js';
 import { TechniciansModule } from './modules/technicians/technicians.module.js';
 import { RequestsModule } from './modules/requests/requests.module.js';
+import { InvoicesModule } from './modules/invoices/invoices.module.js';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { RequestsModule } from './modules/requests/requests.module.js';
     RequestsModule,
     TechniciansModule,
     WorkOrdersModule,
+    InvoicesModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },
