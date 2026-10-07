@@ -1,11 +1,9 @@
 import 'dotenv/config';
 import { randomUUID } from 'node:crypto';
 import assert from 'node:assert/strict';
+import { execFile } from 'node:child_process';
+import { promisify } from 'node:util';
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from '../dist/app.module.js';
-import { configureApp } from '../dist/config/app.config.js';
-import { PrismaService } from '../dist/infrastructure/prisma/prisma.service.js';
-import { hashPassword } from '../dist/common/security/password.js';
 
 const testUrl = process.env.TEST_DATABASE_URL;
 assert(testUrl, 'Set TEST_DATABASE_URL before compiled smoke tests');
@@ -37,16 +35,29 @@ process.env.DATABASE_URL = testUrl;
 process.env.REDIS_URL = redis ?? '';
 process.env.NODE_ENV = 'test';
 
+// ConfigModule validates at module evaluation time. Select the test DB BEFORE importing it.
+const { AppModule } = await import('../dist/app.module.js');
+const { configureApp } = await import('../dist/config/app.config.js');
+const { PrismaService } =
+  await import('../dist/infrastructure/prisma/prisma.service.js');
+
 const app = await NestFactory.create(AppModule, { logger: false });
 configureApp(app);
 const prisma = app.get(PrismaService);
 const tag = randomUUID();
-const emails = ['owner', 'other', 'admin'].map(
+const emails = ['owner', 'other', 'admin', 'technician'].map(
   (name) => `compiled-${name}-${tag}@example.com`,
 );
 const password = `temporary compiled passphrase ${randomUUID()}`;
 let serviceId;
 try {
+  const [{ database }] =
+    await prisma.$queryRaw`SELECT current_database() AS database`;
+  assert.equal(
+    database,
+    decodeURIComponent(test.pathname.slice(1)),
+    'Compiled app must use the selected test database',
+  );
   await app.listen(0, '127.0.0.1');
   const base = `${await app.getUrl()}/api/v1`;
   async function call(path, status, { method = 'GET', body, token } = {}) {
@@ -64,7 +75,11 @@ try {
       status,
       `Unexpected HTTP status for ${method} ${path}`,
     );
-    if (path.startsWith('/requests'))
+    if (
+      ['/requests', '/work-orders', '/technicians'].some((prefix) =>
+        path.startsWith(prefix),
+      )
+    )
       assert.equal(response.headers.get('cache-control'), 'no-store');
     return (await response.json()).data;
   }
@@ -75,14 +90,26 @@ try {
       body: { email, password, name: 'Compiled Customer' },
     });
   }
-  await prisma.user.create({
-    data: {
-      email: emails[2],
-      name: 'Compiled Admin',
-      role: 'ADMIN',
-      passwordHash: await hashPassword(password),
-    },
-  });
+  const bootstrap = async (role, email, seedPassword = password) =>
+    promisify(execFile)(process.execPath, [`scripts/seed-${role}.mjs`], {
+      env: {
+        ...process.env,
+        [`SEED_${role.toUpperCase()}_EMAIL`]: email,
+        [`SEED_${role.toUpperCase()}_PASSWORD`]: seedPassword,
+      },
+      timeout: 15000,
+    });
+  await assert.rejects(bootstrap('admin', emails[0]), { code: 1 });
+  assert.equal(
+    (await prisma.user.findUniqueOrThrow({ where: { email: emails[0] } })).role,
+    'CUSTOMER',
+  );
+  await bootstrap('admin', emails[2]);
+  await Promise.all([
+    bootstrap('technician', emails[3]),
+    bootstrap('technician', emails[3]),
+  ]);
+  await bootstrap('technician', emails[3], `changed password ${randomUUID()}`);
   const login = async (email) =>
     (
       await call('/auth/login', 200, {
@@ -93,6 +120,20 @@ try {
   const customer = await login(emails[0]);
   const other = await login(emails[1]);
   const admin = await login(emails[2]);
+  const technician = await login(emails[3]);
+  const technicianAccount = await prisma.user.findUniqueOrThrow({
+    where: { email: emails[3] },
+    select: { id: true },
+  });
+  assert.equal(
+    await prisma.auditLog.count({
+      where: {
+        entityId: technicianAccount.id,
+        action: 'TECHNICIAN_BOOTSTRAPPED',
+      },
+    }),
+    1,
+  );
   const service = await call('/services', 201, {
     method: 'POST',
     token: admin,
@@ -148,8 +189,100 @@ try {
     await prisma.auditLog.count({ where: { entityId: created.id } }),
     4,
   );
+  await call(`/technicians/${technicianAccount.id}/skills`, 200, {
+    method: 'PUT',
+    token: admin,
+    body: { serviceIds: [serviceId] },
+  });
+  const start = new Date(Date.now() + 86400000).toISOString();
+  const end = new Date(Date.now() + 90000000).toISOString();
+  const query = new URLSearchParams({ serviceId, start, end });
+  assert(
+    (await call(`/technicians?${query}`, 200, { token: admin })).items.some(
+      (item) => item.id === technicianAccount.id,
+    ),
+  );
+  const newRequest = async () =>
+    call('/requests', 201, {
+      method: 'POST',
+      token: customer,
+      body: {
+        serviceId,
+        description: 'Inspect the heating control.',
+        address: 'House 12, Road 3, Dhaka',
+        preferredStart: start,
+      },
+    });
+  const dispatch = async () => {
+    const req = await newRequest();
+    await call(`/requests/${req.id}/review`, 200, {
+      method: 'PATCH',
+      token: admin,
+      body: { version: 1, decision: 'APPROVE' },
+    });
+    return call(`/requests/${req.id}/assignment`, 201, {
+      method: 'POST',
+      token: admin,
+      body: { technicianId: technicianAccount.id, start, end },
+    });
+  };
+  const cancellable = await dispatch();
+  const cancelledWork = await call(
+    `/requests/${cancellable.requestId}/cancel`,
+    200,
+    {
+      method: 'POST',
+      token: customer,
+      body: {
+        version: cancellable.request.version,
+        reason: 'Visit no longer needed',
+      },
+    },
+  );
+  assert.equal(cancelledWork.workOrder.status, 'CANCELLED');
+  const work = await dispatch();
+  assert.equal(work.agreedPriceMinor, 150000);
+  await call(`/work-orders/${work.id}`, 404, { token: other });
+  assert.equal(
+    (
+      await call(`/work-orders?serviceId=${serviceId}&status=ASSIGNED`, 200, {
+        token: technician,
+      })
+    ).pagination.total,
+    1,
+  );
+  await call(`/work-orders/${work.id}/schedule`, 200, {
+    method: 'PATCH',
+    token: admin,
+    body: { version: 1, technicianId: technicianAccount.id, start, end },
+  });
+  await call(`/work-orders/${work.id}/status`, 409, {
+    method: 'PATCH',
+    token: technician,
+    body: { version: 1, status: 'EN_ROUTE' },
+  });
+  await call(`/work-orders/${work.id}/status`, 200, {
+    method: 'PATCH',
+    token: technician,
+    body: { version: 2, status: 'EN_ROUTE' },
+  });
+  await call(`/requests/${work.requestId}/cancel`, 409, {
+    method: 'POST',
+    token: customer,
+    body: { version: work.request.version, reason: 'Visit already started' },
+  });
+  await call(`/work-orders/${work.id}/status`, 200, {
+    method: 'PATCH',
+    token: technician,
+    body: { version: 3, status: 'IN_PROGRESS' },
+  });
+  const detail = await call(`/work-orders/${work.id}`, 200, {
+    token: customer,
+  });
+  assert.equal(detail.status, 'IN_PROGRESS');
+  assert.equal(detail.timeline.length, 4);
   console.log(
-    'Compiled HTTP workflow passed: authentication, ownership, request lifecycle, versions and audit',
+    'Compiled HTTP workflow passed: safe bootstrap, authentication, request lifecycle, scheduling, scoped work, progress and atomic cancellation',
   );
 } finally {
   await prisma
@@ -159,10 +292,21 @@ try {
         select: { id: true },
       });
       const ids = users.map((user) => user.id);
+      await tx.workOrder.deleteMany({
+        where: { request: { customerId: { in: ids } } },
+      });
+      await tx.technicianSkill.deleteMany({ where: { userId: { in: ids } } });
       await tx.serviceRequest.deleteMany({
         where: { customerId: { in: ids } },
       });
-      await tx.auditLog.deleteMany({ where: { actorId: { in: ids } } });
+      await tx.auditLog.deleteMany({
+        where: {
+          OR: [
+            { actorId: { in: ids } },
+            { entityType: 'USER', entityId: { in: ids } },
+          ],
+        },
+      });
       await tx.refreshToken.deleteMany({
         where: { session: { userId: { in: ids } } },
       });

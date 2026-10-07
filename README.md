@@ -1,6 +1,6 @@
 # FieldOps API
 
-Programming Hero Assignment 6-এর Field Service Management backend। Authentication, sessions, own profile, audited catalog এবং ownership/version-সহ request lifecycle প্রস্তুত। Scheduling ও payments পরবর্তী stage; Assignment 7 frontend পরে হবে।
+Programming Hero Assignment 6-এর Field Service Management backend। Authentication, sessions, own profile, audited catalog, request lifecycle এবং technician scheduling/progress প্রস্তুত। Completion, invoicing ও payments পরবর্তী stage; Assignment 7 frontend পরে হবে।
 
 ## Stack
 
@@ -39,28 +39,35 @@ npm run start:dev
 
 ## Available endpoints
 
-| Method | Endpoint                      | Purpose                               |
-| ------ | ----------------------------- | ------------------------------------- |
-| GET    | `/api/v1/health`              | API liveness                          |
-| GET    | `/api/v1/health/ready`        | Prisma দিয়ে database readiness check  |
-| POST   | `/api/v1/auth/register`       | Customer account তৈরি                 |
-| POST   | `/api/v1/auth/login`          | Password যাচাই ও session/token pair   |
-| POST   | `/api/v1/auth/google`         | Verified Google credential দিয়ে login |
-| POST   | `/api/v1/auth/refresh`        | Refresh token rotation                |
-| POST   | `/api/v1/auth/logout`         | Bearer দিয়ে current session revoke    |
-| GET    | `/api/v1/users/me`            | Authenticated own profile             |
-| PATCH  | `/api/v1/users/me`            | নিজের name/phone update ও audit       |
-| POST   | `/api/v1/services`            | ADMIN service তৈরি ও audit            |
-| PATCH  | `/api/v1/services/:id`        | ADMIN service update ও audit          |
-| DELETE | `/api/v1/services/:id`        | ADMIN service soft delete ও audit     |
-| GET    | `/api/v1/services`            | Public search, pagination, sorting    |
-| GET    | `/api/v1/services/:id`        | Public active service details         |
-| POST   | `/api/v1/requests`            | CUSTOMER service request তৈরি ও audit |
-| GET    | `/api/v1/requests`            | CUSTOMER own / ADMIN scoped list      |
-| GET    | `/api/v1/requests/:id`        | CUSTOMER own / ADMIN private details  |
-| PATCH  | `/api/v1/requests/:id`        | CUSTOMER own PENDING edit ও version   |
-| PATCH  | `/api/v1/requests/:id/review` | ADMIN approve/reject ও version        |
-| POST   | `/api/v1/requests/:id/cancel` | CUSTOMER own / ADMIN cancellation     |
+| Method | Endpoint                           | Purpose                                         |
+| ------ | ---------------------------------- | ----------------------------------------------- |
+| GET    | `/api/v1/health`                   | API liveness                                    |
+| GET    | `/api/v1/health/ready`             | Prisma দিয়ে database readiness check            |
+| POST   | `/api/v1/auth/register`            | Customer account তৈরি                           |
+| POST   | `/api/v1/auth/login`               | Password যাচাই ও session/token pair             |
+| POST   | `/api/v1/auth/google`              | Verified Google credential দিয়ে login           |
+| POST   | `/api/v1/auth/refresh`             | Refresh token rotation                          |
+| POST   | `/api/v1/auth/logout`              | Bearer দিয়ে current session revoke              |
+| GET    | `/api/v1/users/me`                 | Authenticated own profile                       |
+| PATCH  | `/api/v1/users/me`                 | নিজের name/phone update ও audit                 |
+| POST   | `/api/v1/services`                 | ADMIN service তৈরি ও audit                      |
+| PATCH  | `/api/v1/services/:id`             | ADMIN service update ও audit                    |
+| DELETE | `/api/v1/services/:id`             | ADMIN service soft delete ও audit               |
+| GET    | `/api/v1/services`                 | Public search, pagination, sorting              |
+| GET    | `/api/v1/services/:id`             | Public active service details                   |
+| POST   | `/api/v1/requests`                 | CUSTOMER service request তৈরি ও audit           |
+| GET    | `/api/v1/requests`                 | CUSTOMER own / ADMIN scoped list                |
+| GET    | `/api/v1/requests/:id`             | CUSTOMER own / ADMIN private details            |
+| PATCH  | `/api/v1/requests/:id`             | CUSTOMER own PENDING edit ও version             |
+| PATCH  | `/api/v1/requests/:id/review`      | ADMIN approve/reject ও version                  |
+| POST   | `/api/v1/requests/:id/cancel`      | CUSTOMER own / ADMIN atomic cancellation        |
+| PUT    | `/api/v1/technicians/:id/skills`   | ADMIN technician skill replacement              |
+| GET    | `/api/v1/technicians`              | ADMIN skill/window-based availability           |
+| POST   | `/api/v1/requests/:id/assignment`  | ADMIN assignment ও price snapshot               |
+| GET    | `/api/v1/work-orders`              | CUSTOMER own / TECHNICIAN assigned / ADMIN list |
+| GET    | `/api/v1/work-orders/:id`          | Scoped details ও recent safe timeline           |
+| PATCH  | `/api/v1/work-orders/:id/schedule` | ADMIN versioned reschedule/reassignment         |
+| PATCH  | `/api/v1/work-orders/:id/status`   | Assigned TECHNICIAN ordered progress            |
 
 Success: `{ success: true, message, data }`। Error: `{ success: false, message, errors: [] }`।
 
@@ -156,7 +163,7 @@ Profile update-এর সময় transaction-এর ভিতরে active accoun
 
 `AuditService.record(tx, event)` typed event নেয় এবং create-only operation দেয়; audit history update/delete API নেই। Administrative audit-log listing পরবর্তী domain stage।
 
-Authentication guard default-এ সব registered route protect করে; public health/register/login/google/refresh-এ explicit `@Public()` আছে। প্রতিটি private request-এ current database session/account check হয়; role JWT থেকে বিশ্বাস করা হয় না। Resource ownership checks domain modules-এর সঙ্গে যোগ হবে।
+Authentication guard default-এ সব registered route protect করে; public health/register/login/google/refresh-এ explicit `@Public()` আছে। প্রতিটি private request-এ current database session/account check হয়; role JWT থেকে বিশ্বাস করা হয় না। Requests ও work orders-এ resource ownership domain queries-তে enforce হয়।
 
 ### Role authorization
 
@@ -240,7 +247,7 @@ Customer login-এর `access_token` ব্যবহার করুন; ADMIN l
 - Optional `q` (সর্বোচ্চ ১০০ characters) description/address/service name-এ case-insensitive literal search। Sort: `newest`, `oldest`, `preferred_start_asc`; page/limit catalog-এর মতো। Extra customerId বা invalid filters `400`।
 - `GET {{base_url}}/requests/{{request_id}}`: own/customer অথবা ADMIN `200`; অন্য customer's ID, soft-deleted বা missing request `404`; TECHNICIAN `403`; No Auth `401`।
 
-Request response-এ customerId/serviceId, nested service `{ id, name }`, description/address/preferredStart, status/version, review/cancellation facts ও timestamps থাকে। Staff/customer credentials বা private profile আসে না। সব request response/error `Cache-Control: no-store`; Redis-এ request data রাখা হয় না। Catalog soft-delete হলেও existing request history retained থাকে; request price snapshot এখন নেওয়া হয় না—assignment-এর সময় agreed price snapshot হবে। Create+safe audit একই transaction; audit metadata-তে address/description থাকে না।
+Request response-এ nullable `workOrder` summary (id, technicianId, status, version, scheduledStart/end, agreedPriceMinor, currency), customerId/serviceId, nested service `{ id, name }`, description/address/preferredStart, status/version, review/cancellation facts ও timestamps থাকে। Staff/customer credentials বা private profile আসে না। সব request response/error `Cache-Control: no-store`; Redis-এ request data রাখা হয় না। Catalog soft-delete হলেও existing request history retained থাকে; request price snapshot এখন নেওয়া হয় না—assignment-এর সময় agreed price snapshot নেওয়া হয়। Create+safe audit একই transaction; audit metadata-তে address/description থাকে না।
 
 ### Apidog: edit, review and cancellation
 
@@ -254,9 +261,52 @@ Request response-এ customerId/serviceId, nested service `{ id, name }`, descri
 
 সবগুলো `200` ও updated request ফেরত দেয়। Edit শুধু PENDING এবং description/address/preferredStart-এর অন্তত একটি field; owner/serviceId/status/price/deletedAt বদলানো যাবে না। শুধু অন্য field edit করলে existing preferred time রাখা হয়; নতুন preferredStart দিলে future timezoneসহ datetime চাই। Review শুধু PENDING; `decision` হলো `APPROVE` অথবা `REJECT`, resulting status `APPROVED`/`REJECTED`। REJECT-এর জন্য reason বাধ্যতামূলক; APPROVE-তে optional। Reason trim করে ৩–৫০০ characters।
 
-Cancellation এখন PENDING অথবা APPROVED unassigned requests-এ; reason বাধ্যতামূলক। REJECTED/CANCELLED terminal, নতুন version দিয়েও edit/review/cancel `409`। Repeat cancel-ও `409`। ভবিষ্যৎ scheduling stage-এ linked unstarted work order একই transaction-এ cancel হবে এবং কাজ শুরু হয়ে গেলে cancellation reject হবে; সেই APIs এখনো নেই। Request hard-delete হয় না।
+Cancellation PENDING অথবা APPROVED requests-এ; reason বাধ্যতামূলক। Linked work order ASSIGNED থাকলে request ও work order একই transaction-এ CANCELLED হয়, দুই version বাড়ে এবং slot মুক্ত হয়। EN_ROUTE/IN_PROGRESS/COMPLETED work cancel করলে `409`। REJECTED/CANCELLED request terminal; repeat cancel-ও `409`। Request hard-delete হয় না।
 
 Test flow: create v1 → edit v2 → ADMIN approve v3 → customer cancel v4। Old version repeat `409`; customer দিয়ে review/admin দিয়ে edit `403`; অন্য customer's edit/cancel `404`; missing version/invalid body `400`। Parallel same-version edit/edit, approve/reject বা review/cancel চালালে এক `200`, অন্য `409`; version একবার বাড়বে ও শুধু winning audit থাকবে। Audit failure হলে state/version rollback; metadata-তে reason/address/description নয়, safe status/version/field names থাকে।
+
+### Apidog: technician scheduling and progress
+
+`.env`-এ dedicated `SEED_TECHNICIAN_EMAIL`, `SEED_TECHNICIAN_PASSWORD` (১৫–১২৮ characters), optional `SEED_TECHNICIAN_NAME` বসিয়ে `npm run seed:technician` চালান। Script শুধু নতুন TECHNICIAN + system audit তৈরি করে; existing account promote/password reset করে না। ADMIN/TECHNICIAN bootstrap একই email lock ব্যবহার করে। Technician `/auth/login` থেকে `technician_access_token = $.data.accessToken` ও `technician_id = $.data.user.id` extract করুন।
+
+Apidog variables: `service_id`, `request_id`, `technician_id`, `admin_access_token`, `technician_access_token`, customer `access_token`, `work_order_id`, numeric `work_order_version` ও `request_version`। সব credentials/token **Local Value**-তে রাখুন। Access token expired হলে নিজ নিজ account login/refresh করুন।
+
+1. ADMIN Bearer দিয়ে `PUT /technicians/{{technician_id}}/skills` → `{ "serviceIds": ["{{service_id}}"] }` → `200`। এটি পুরো skill set replace করে; unique UUID সর্বোচ্চ ১০০, `[]` allowed। Active work-এর required skill সরালে `409`; missing/deleted service অথবা non-technician account `404`।
+2. ADMIN `GET /technicians?serviceId={{service_id}}&start=2099-01-01T10%3A00%3A00%2B06%3A00&end=2099-01-01T11%3A00%3A00%2B06%3A00&page=1&limit=20` → `200`, `{ items: [{ id, name }], pagination }`। নিজের future start/end দিন; Apidog query editor-এ raw values দিলে URL encode নিজে হবে। শুধু active matching-skill technicians ও non-overlapping visits আসে। এটি availability snapshot; slot reserve করে না।
+3. CUSTOMER request তৈরি করুন → ADMIN approve করুন → ADMIN `POST /requests/{{request_id}}/assignment` → নিচের JSON → `201`। `work_order_id = $.data.id`, `work_order_version = $.data.version`, **`request_version = $.data.request.version`** extract করুন। Assignment request version-ও বাড়ায়।
+
+```json
+{
+  "technicianId": "{{technician_id}}",
+  "start": "2099-01-01T10:00:00+06:00",
+  "end": "2099-01-01T11:00:00+06:00"
+}
+```
+
+4. ADMIN `PATCH /work-orders/{{work_order_id}}/schedule` → একই JSON-এর সঙ্গে numeric `"version": 1` → `200`। নতুন start/end বা skilled technician দিন; নিজের existing slot-ও allowed। `work_order_version = $.data.version` extract করুন। শুধু ASSIGNED work reschedule হয়; agreed price/currency অপরিবর্তিত থাকে।
+5. CUSTOMER/assigned TECHNICIAN/ADMIN `GET /work-orders/{{work_order_id}}` → `200`। Timeline সর্বশেষ ১০০টি safe event, chronological order-এ। `GET /work-orders?status=ASSIGNED&serviceId={{service_id}}&page=1&limit=20&sort=scheduled_start_asc` scoped items/count দেয়। Optional literal `q` description/address/service name-এ; sort `newest` (default), `oldest`, `scheduled_start_asc`। Public query দিয়ে owner/technician scope বদলানো যায় না।
+6. Assigned TECHNICIAN `PATCH /work-orders/{{work_order_id}}/status` → `{ "version": 2, "status": "EN_ROUTE" }` → `200`; updated version extract করুন। এরপর `{ "version": 3, "status": "IN_PROGRESS" }` → `200`। Exact versions নিজের response থেকে নিন। Allowed sequence **ASSIGNED → EN_ROUTE → IN_PROGRESS**; skip/backward/repeat `409`, body-তে COMPLETED `400`। Completion/report + invoice আলাদা পরবর্তী stage।
+
+সব visit future-এ শুরু হবে, `start < end`, duration সর্বোচ্চ ৮ ঘণ্টা, timezoneসহ ISO datetime ও সর্বোচ্চ millisecond precision; response UTC। এক technician-এর active ASSIGNED/EN_ROUTE/IN_PROGRESS ranges overlap করতে পারে না; `[start,end)` হওয়ায় exact adjacent visits allowed। Service price assignment-এর সময় server থেকে snapshot হয়; body-তে price/currency/status দিলে `400`। একটি request-এর একটিই work order, cancelled history-ও retained থাকে। Cancelled request-এর replacement চাইলে নতুন request তৈরি করুন।
+
+| Negative/race test                                                | Expected                                        |
+| ----------------------------------------------------------------- | ----------------------------------------------- |
+| Non-ADMIN skills/availability/assignment/schedule                 | `403`                                           |
+| Customer/ADMIN status update                                      | `403`; ADMIN bypass নেই                         |
+| Foreign customer অথবা former/unassigned technician details/status | `404`                                           |
+| Invalid timestamp/range/UUID/extra field/version                  | `400`                                           |
+| Pending/rejected/cancelled request assignment; missing skill      | `409`                                           |
+| Suspended/deleted/wrong-role technician; unavailable service      | `404`                                           |
+| Duplicate assignment অথবা overlapping visit                       | `409`; state/price/audit অপরিবর্তিত             |
+| Same-version parallel reschedule/status                           | একটি `200`, অন্য `409`                          |
+| Approved request-এর assigned work cancel                          | `200`; request + work CANCELLED, slot available |
+| Customer cancel বনাম technician EN_ROUTE race                     | একটি `200`, অন্য `409`; partial cancellation নয় |
+| Work শুরু হয়ে গেলে cancel/reschedule                              | `409`                                           |
+| Revoked/expired session বা suspended/deleted actor                | `401`                                           |
+
+Reassignment-এর পরে পুরোনো technician access হারায়। Existing catalog service soft-delete হলেও work history/progress চলে; নতুন assignment/reschedule-এর জন্য active service চাই। Request soft-delete হলে linked work read/mutation `404`। Work-order ও technician response/error `Cache-Control: no-store`; Redis এখানে ব্যবহৃত হয় না।
+
+Shared request lock, sorted technician locks, bounded Serializable retries (সর্বোচ্চ ৪ attempts), DB exclusion constraint এবং একই transaction-এর typed audits scheduling/cancellation races protect করে। Retry-তে external side effects নেই; retries exhausted হলে `503`, client সামান্য বিরতি দিয়ে latest state fetch করবে। Audit failure state/version rollback করে; metadata-তে address/report/credentials থাকে না। Future role-changing code-ও technician User lock নিতে হবে। [PostgreSQL range constraints](https://www.postgresql.org/docs/18/rangetypes.html), [Serializable transactions](https://www.postgresql.org/docs/18/transaction-iso.html)
 
 ## Checks
 
@@ -281,7 +331,7 @@ npm run start:prod
 
 [Backend CI](.github/workflows/ci.yml) push to `main`, pull request ও manual run-এ locked install, client generation, schema/type/lint checks, unit tests, fresh PostgreSQL migrations, real Redis integration tests, build এবং compiled HTTP request flow চালাবে। Production secrets লাগে না; signing key প্রতি run-এ নতুন এবং DB/Redis service containers temporary। Official actions immutable commit SHA-তে pinned; workflow read-only permissions নেয়। [GitHub service container guide](https://docs.github.com/en/actions/tutorials/use-containerized-services)
 
-`npm run test:compiled` build-এর পরে চালান। শুধু separate `_test` DB এবং optional Redis index >0 ব্যবহার হয়; native built Nest app temporary loopback port-এ customer/admin login, scoped reads, edit → approve → cancel, stale version ও atomic audit verify করে। Script নিজের fixtures cleanup করে; main DB reset হয় না। GitHub-hosted run push-এর পরে verify করতে হবে; local checks remote CI success প্রমাণ করে না।
+`npm run test:compiled` build-এর পরে চালান। শুধু separate `_test` DB এবং optional Redis index >0 ব্যবহার হয়; test environment নির্ধারণের পরে native built Nest app import হয়; actual database name assert করা হয়। Temporary loopback port-এ safe ADMIN/TECHNICIAN bootstrap, password login, request lifecycle, skills/availability, assignment/reschedule, scoped reads, progress, cancellation ও audits verify হয়। Script নিজের fixtures cleanup করে; main DB reset হয় না। GitHub-hosted run push-এর পরে verify করতে হবে; local checks remote CI success প্রমাণ করে না।
 
 ## Schema changes
 
@@ -292,14 +342,14 @@ npm run db:migrate -- --name describe_your_change
 npm run db:generate
 ```
 
-Migration files Git-এ রাখতে হবে। `.env`, `node_modules/`, `dist/`, coverage, TypeScript cache, generated Prisma Client ও local agent skills ignored থাকবে। Auto-generated files disk-এ তৈরি হওয়া স্বাভাবিক; সেগুলো commit করার দরকার নেই। Shared `AGENTS.md`, `.github/copilot-instructions.md`, source, configs এবং `package-lock.json` Git-এ থাকবে।
+Scheduling migration-এর `btree_gist` extension ও custom exclusion/check constraints পরের migrations-এ preserve করতে হবে; শুধু `db push` দিয়ে এটি recreate করবেন না। PostgreSQL host-এ extension create permission লাগবে। Migration files Git-এ রাখতে হবে। `.env`, `node_modules/`, `dist/`, coverage, TypeScript cache, generated Prisma Client ও local agent skills ignored থাকবে। Auto-generated files disk-এ তৈরি হওয়া স্বাভাবিক; সেগুলো commit করার দরকার নেই। Shared `AGENTS.md`, `.github/copilot-instructions.md`, source, configs এবং `package-lock.json` Git-এ থাকবে।
 
 ## Requirements and plan
 
 - [Assignment source](https://github.com/Apollo-Level2-Web-Dev/B7A6)
 - [Reviewed Notion plan](https://app.notion.com/p/3f14ab5df14481b9bdccd1349fd83a18)
 
-পরবর্তী কাজ: Technician skills/availability, assignment ও conflict-safe scheduling; তারপর work-order progress/completion/invoicing।
+পরবর্তী কাজ: atomic completion/report + immutable invoice; তারপর SSLCommerz initiation/validation/idempotent settlement। বর্তমানে ২৫টি domain API + ২টি health route আছে; payment/deployment/submission review বাকি।
 
 ## Known dependency advisories
 
