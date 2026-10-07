@@ -96,6 +96,7 @@ export class PaymentsService {
           throw new ConflictException(
             'Invoice already has an active or unresolved payment; reuse its Idempotency-Key',
           );
+        const identity = this.gateway.identity();
         const profile = await tx.user.findUniqueOrThrow({
           where: { id: user.id },
           select: { name: true, email: true, phone: true },
@@ -108,7 +109,6 @@ export class PaymentsService {
           throw new ConflictException(
             'Gateway customer name and email must each fit within 50 characters',
           );
-        const identity = this.gateway.identity();
         const row = await tx.payment.create({
           data: {
             invoiceId,

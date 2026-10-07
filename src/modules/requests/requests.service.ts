@@ -334,6 +334,6 @@ export class RequestsService {
 
   private assertPreferredStart(value: Date) {
     if (!Number.isFinite(value.getTime()) || value.getTime() <= Date.now())
-      throw new BadRequestException('preferredStart must be in the future');
+      throw new BadRequestException(['preferredStart must be in the future']);
   }
 }

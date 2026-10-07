@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  BadGatewayException,
   InternalServerErrorException,
   Logger,
   ServiceUnavailableException,
@@ -24,7 +25,7 @@ describe('HttpExceptionFilter', () => {
   afterEach(() => vi.restoreAllMocks());
 
   it.each([
-    [new BadRequestException('Invalid input'), 400, 'Invalid input', []],
+    [new BadRequestException('Invalid input'), 400, 'Invalid request', []],
     [
       new BadRequestException(['Email is invalid']),
       400,
@@ -35,6 +36,12 @@ describe('HttpExceptionFilter', () => {
       new InternalServerErrorException('Private database detail'),
       500,
       'Internal server error',
+      [],
+    ],
+    [
+      new BadGatewayException('store_passwd=private-secret'),
+      502,
+      'Payment gateway unavailable or verification failed',
       [],
     ],
     [new Error('Private credentials'), 500, 'Internal server error', []],

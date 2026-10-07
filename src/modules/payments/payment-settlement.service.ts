@@ -8,7 +8,10 @@ import { AuditService } from '../../common/audit/audit.service.js';
 import type { Prisma } from '../../generated/prisma/client.js';
 import { PrismaService } from '../../infrastructure/prisma/prisma.service.js';
 import { SslCommerzService } from '../../infrastructure/sslcommerz/sslcommerz.service.js';
-import type { GatewayObservation } from '../../infrastructure/sslcommerz/sslcommerz.types.js';
+import type {
+  GatewayObservation,
+  VerifiedCharge,
+} from '../../infrastructure/sslcommerz/sslcommerz.types.js';
 import { lockInvoice, lockPayment } from './payment.lock.js';
 import type { PaymentCallback } from './payment.schema.js';
 import { paymentSelect, paymentView } from './payment.select.js';
@@ -76,11 +79,16 @@ export class PaymentSettlementService {
       throw new BadGatewayException(
         'Verified transaction does not match this payment',
       );
-    const charges = [
-      ...new Map(
-        observation.charges.map((charge) => [charge.providerTranId, charge]),
-      ).values(),
-    ];
+    const byProvider = new Map<string, VerifiedCharge>();
+    for (const charge of observation.charges) {
+      const previous = byProvider.get(charge.providerTranId);
+      if (previous && JSON.stringify(previous) !== JSON.stringify(charge))
+        throw new BadGatewayException(
+          'Gateway returned contradictory transaction evidence',
+        );
+      byProvider.set(charge.providerTranId, charge);
+    }
+    const charges = [...byProvider.values()];
     return this.prisma.$transaction(
       async (tx) => {
         const bill = await lockInvoice(tx, attempt.invoiceId);

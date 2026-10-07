@@ -21,9 +21,9 @@ export function assertVisitWindow(start: Date, end: Date) {
     end <= start ||
     end.getTime() - start.getTime() > 8 * 3600000
   )
-    throw new BadRequestException(
+    throw new BadRequestException([
       'Visit must start in the future and last at most 8 hours',
-    );
+    ]);
 }
 
 // Every skill/assignment writer takes these locks, in UUID order, after the request lock.

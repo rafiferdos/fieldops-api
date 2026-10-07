@@ -1,3 +1,4 @@
+import { BadGatewayException } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
 import request from 'supertest';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -189,9 +190,11 @@ describe('Verified payment settlement', () => {
     ).toBe(0);
   });
   it('preserves unresolved states when verification is unavailable', async () => {
-    ctx.json.mockRejectedValue(new Error('Verification unavailable'));
+    ctx.json.mockRejectedValue(
+      new BadGatewayException('Verification unavailable'),
+    );
     await notify(ctx, 'ipn', payment.merchantTranId, { val_id: 'v' }).expect(
-      500,
+      502,
     );
     expect((await row()).status).toBe('PENDING');
     expect((await bill()).status).toBe('UNPAID');
@@ -289,6 +292,25 @@ describe('Verified payment settlement', () => {
         where: { entityId: payment.id, action: 'PAYMENT_RECEIPT_REVIEW' },
       }),
     ).toBe(1);
+  });
+  it('rejects contradictory evidence for the same provider transaction before writing money facts', async () => {
+    const first = verifiedCharge(payment.merchantTranId);
+    const contradictory = {
+      ...first,
+      val_id: 'different-validation',
+      amount: '1.00',
+    };
+    providerEvidence(ctx, [first, contradictory]);
+    await expect(
+      ctx.app.get(PaymentSettlementService).reconcile(payment.id),
+    ).rejects.toMatchObject({ status: 502 });
+    expect((await bill()).status).toBe('UNPAID');
+    expect((await row()).status).toBe('PENDING');
+    expect(
+      await ctx.prisma.paymentReceipt.count({
+        where: { paymentId: payment.id },
+      }),
+    ).toBe(0);
   });
   it('holds multiple captures from reconciliation for review', async () => {
     providerEvidence(ctx, [
