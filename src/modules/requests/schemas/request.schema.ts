@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { RequestStatus } from '../../../generated/prisma/enums.js';
 import { paginationQueryShape } from '../../../common/http/pagination.js';
 import { uuidSchema } from '../../../common/validation/uuid.schema.js';
+import { versionSchema } from '../../../common/validation/version.schema.js';
 
 export const requestFields = {
   description: z.string().trim().min(10).max(2000),
@@ -10,7 +11,7 @@ export const requestFields = {
     .datetime({ offset: true })
     .transform((value) => new Date(value))
     .refine(
-      (value) => value.getTime() > Date.now(),
+      (value) => value instanceof Date && value.getTime() > Date.now(),
       'preferredStart must be in the future',
     ),
 };
@@ -18,11 +19,11 @@ export const createRequestSchema = z.strictObject({
   serviceId: uuidSchema,
   ...requestFields,
 });
-export const requestVersionSchema = z.number().int().min(1).max(2147483646);
+
 const reasonSchema = z.string().trim().min(3).max(500);
 export const updateRequestSchema = z
   .strictObject({
-    version: requestVersionSchema,
+    version: versionSchema,
     description: requestFields.description.optional(),
     address: requestFields.address.optional(),
     preferredStart: requestFields.preferredStart.optional(),
@@ -36,7 +37,7 @@ export const updateRequestSchema = z
   );
 export const reviewRequestSchema = z
   .strictObject({
-    version: requestVersionSchema,
+    version: versionSchema,
     decision: z.enum(['APPROVE', 'REJECT']),
     reason: reasonSchema.optional(),
   })
@@ -45,7 +46,7 @@ export const reviewRequestSchema = z
     { message: 'A rejection reason is required', path: ['reason'] },
   );
 export const cancelRequestSchema = z.strictObject({
-  version: requestVersionSchema,
+  version: versionSchema,
   reason: reasonSchema,
 });
 export const requestQuerySchema = z.strictObject({
