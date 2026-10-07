@@ -34,16 +34,25 @@ enum RequestStatus {
   CANCELLED
 }
 
+enum WorkOrderStatus {
+  ASSIGNED
+  EN_ROUTE
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
 model Service {
-  id             String           @id @default(uuid()) @db.Uuid
-  name           String           @db.VarChar(100)
-  description    String           @db.VarChar(2000)
-  basePriceMinor Int
-  currency       Currency         @default(BDT)
-  deletedAt      DateTime?        @db.Timestamptz(3)
-  createdAt      DateTime         @default(now()) @db.Timestamptz(3)
-  updatedAt      DateTime         @updatedAt @db.Timestamptz(3)
-  requests       ServiceRequest[]
+  id               String            @id @default(uuid()) @db.Uuid
+  name             String            @db.VarChar(100)
+  description      String            @db.VarChar(2000)
+  basePriceMinor   Int
+  currency         Currency          @default(BDT)
+  deletedAt        DateTime?         @db.Timestamptz(3)
+  createdAt        DateTime          @default(now()) @db.Timestamptz(3)
+  updatedAt        DateTime          @updatedAt @db.Timestamptz(3)
+  requests         ServiceRequest[]
+  technicianSkills TechnicianSkill[]
 
   @@index([deletedAt, createdAt, id])
   @@index([deletedAt, basePriceMinor, id])
@@ -67,10 +76,44 @@ model ServiceRequest {
   updatedAt          DateTime      @updatedAt @db.Timestamptz(3)
   customer           User          @relation(fields: [customerId], references: [id], onDelete: Restrict)
   service            Service       @relation(fields: [serviceId], references: [id], onDelete: Restrict)
+  workOrder          WorkOrder?
 
   @@index([customerId, deletedAt, status, createdAt, id])
   @@index([deletedAt, status, createdAt, id])
   @@index([serviceId, deletedAt, createdAt, id])
+}
+
+model TechnicianSkill {
+  userId     String   @db.Uuid
+  serviceId  String   @db.Uuid
+  createdAt  DateTime @default(now()) @db.Timestamptz(3)
+  technician User     @relation(fields: [userId], references: [id], onDelete: Restrict)
+  service    Service  @relation(fields: [serviceId], references: [id], onDelete: Restrict)
+
+  @@id([userId, serviceId])
+  @@index([serviceId, userId])
+}
+
+model WorkOrder {
+  id               String          @id @default(uuid()) @db.Uuid
+  requestId        String          @unique @db.Uuid
+  technicianId     String          @db.Uuid
+  status           WorkOrderStatus @default(ASSIGNED)
+  scheduledStart   DateTime        @db.Timestamptz(3)
+  scheduledEnd     DateTime        @db.Timestamptz(3)
+  agreedPriceMinor Int
+  currency         Currency        @default(BDT)
+  version          Int             @default(1)
+  completedAt      DateTime?       @db.Timestamptz(3)
+  report           String?         @db.VarChar(2000)
+  cancelledAt      DateTime?       @db.Timestamptz(3)
+  createdAt        DateTime        @default(now()) @db.Timestamptz(3)
+  updatedAt        DateTime        @updatedAt @db.Timestamptz(3)
+  request          ServiceRequest  @relation(fields: [requestId], references: [id], onDelete: Restrict)
+  technician       User            @relation(fields: [technicianId], references: [id], onDelete: Restrict)
+
+  @@index([technicianId, status, scheduledStart, id])
+  @@index([status, scheduledStart, id])
 }
 
 // Durable cache generation; incremented in every catalog write transaction.
@@ -80,20 +123,22 @@ model CatalogRevision {
 }
 
 model User {
-  id           String           @id @default(uuid()) @db.Uuid
-  email        String           @unique
-  name         String
-  phone        String?
-  passwordHash String?
-  role         Role             @default(CUSTOMER)
-  status       UserStatus       @default(ACTIVE)
-  deletedAt    DateTime?        @db.Timestamptz(3)
-  createdAt    DateTime         @default(now()) @db.Timestamptz(3)
-  updatedAt    DateTime         @updatedAt @db.Timestamptz(3)
-  sessions     Session[]
-  identities   AuthIdentity[]
-  auditLogs    AuditLog[]
-  requests     ServiceRequest[]
+  id               String            @id @default(uuid()) @db.Uuid
+  email            String            @unique
+  name             String
+  phone            String?
+  passwordHash     String?
+  role             Role              @default(CUSTOMER)
+  status           UserStatus        @default(ACTIVE)
+  deletedAt        DateTime?         @db.Timestamptz(3)
+  createdAt        DateTime          @default(now()) @db.Timestamptz(3)
+  updatedAt        DateTime          @updatedAt @db.Timestamptz(3)
+  sessions         Session[]
+  identities       AuthIdentity[]
+  auditLogs        AuditLog[]
+  requests         ServiceRequest[]
+  technicianSkills TechnicianSkill[]
+  workOrders       WorkOrder[]
 
   @@index([role, status])
 }
