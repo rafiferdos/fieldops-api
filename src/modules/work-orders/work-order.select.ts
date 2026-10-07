@@ -1,4 +1,5 @@
 import type { Prisma } from '../../generated/prisma/client.js';
+import { invoiceSelect, invoiceView } from '../invoices/invoice.select.js';
 
 export const workOrderSummarySelect = {
   id: true,
@@ -9,6 +10,7 @@ export const workOrderSummarySelect = {
   scheduledEnd: true,
   agreedPriceMinor: true,
   currency: true,
+  invoice: { select: invoiceSelect },
 } satisfies Prisma.WorkOrderSelect;
 export const workOrderSelect = {
   ...workOrderSummarySelect,
@@ -37,6 +39,7 @@ export function workOrderSummaryView(
 ) {
   return {
     ...order,
+    invoice: order.invoice ? invoiceView(order.invoice) : null,
     scheduledStart: order.scheduledStart.toISOString(),
     scheduledEnd: order.scheduledEnd.toISOString(),
   };
@@ -46,6 +49,7 @@ export function workOrderView(
 ) {
   return {
     ...order,
+    invoice: order.invoice ? invoiceView(order.invoice) : null,
     scheduledStart: order.scheduledStart.toISOString(),
     scheduledEnd: order.scheduledEnd.toISOString(),
     createdAt: order.createdAt.toISOString(),

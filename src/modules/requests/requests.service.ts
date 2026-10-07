@@ -21,7 +21,6 @@ import type {
   CancelRequestInput,
 } from './schemas/request.schema.js';
 import { lockRequest } from './request.lock.js';
-import { serializable } from '../../common/database/serializable.js';
 import { requestSelect, requestView } from './request.select.js';
 
 @Injectable()
@@ -221,7 +220,7 @@ export class RequestsService {
   }
 
   async cancel(actor: AuthActor, id: string, input: CancelRequestInput) {
-    return serializable(this.prisma, async (tx) => {
+    return this.prisma.$transaction(async (tx) => {
       const user = await requireActiveActor(tx, actor, [
         Role.CUSTOMER,
         Role.ADMIN,

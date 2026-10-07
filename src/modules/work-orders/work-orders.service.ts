@@ -3,6 +3,7 @@ import {
   Inject,
   Injectable,
   NotFoundException,
+  InternalServerErrorException,
 } from '@nestjs/common';
 import { Prisma } from '../../generated/prisma/client.js';
 import type { Role } from '../../generated/prisma/enums.js';
@@ -27,7 +28,7 @@ import { pagination } from '../../common/http/pagination.js';
 import { literalSearch } from '../../common/validation/literal-search.js';
 import type { WorkOrderQuery, ProgressInput } from './scheduling.schema.js';
 import type { CompletionInput } from './completion.schema.js';
-import { invoiceSelect, invoiceView } from '../invoices/invoice.select.js';
+import { invoiceSelect } from '../invoices/invoice.select.js';
 
 @Injectable()
 export class WorkOrdersService {
@@ -138,7 +139,8 @@ export class WorkOrdersService {
   }
 
   progress(actor: AuthActor, id: string, input: ProgressInput) {
-    return serializable(this.prisma, async (tx) => {
+    // The request/order locks serialize these state transitions without predicate conflicts.
+    return this.prisma.$transaction(async (tx) => {
       const technician = await requireActiveActor(tx, actor, ['TECHNICIAN']);
       const order = await this.lockOrder(tx, id, technician);
       this.assertVersion(order.version, input.version);
@@ -170,7 +172,8 @@ export class WorkOrdersService {
   }
 
   complete(actor: AuthActor, id: string, input: CompletionInput) {
-    return serializable(this.prisma, async (tx) => {
+    // Lock the shared request then work order; the unique invoice and deferred constraint guard commit.
+    return this.prisma.$transaction(async (tx) => {
       const technician = await requireActiveActor(tx, actor, ['TECHNICIAN']);
       const order = await this.lockOrder(tx, id, technician);
       if (order.status === 'COMPLETED') {
@@ -183,11 +186,11 @@ export class WorkOrdersService {
           throw new ConflictException(
             'Work already completed; report and invoice are frozen',
           );
-        const invoice = await tx.invoice.findUniqueOrThrow({
-          where: { workOrderId: id },
-          select: invoiceSelect,
-        });
-        return { ...workOrderView(order), invoice: invoiceView(invoice) };
+        if (!order.invoice)
+          throw new InternalServerErrorException(
+            'Completion invoice is missing',
+          );
+        return workOrderView(order);
       }
       this.assertVersion(order.version, input.version);
       if (order.status !== 'IN_PROGRESS' || order.request.status !== 'APPROVED')
@@ -248,7 +251,7 @@ export class WorkOrdersService {
           status: 'UNPAID',
         },
       });
-      return { ...(await this.view(tx, id)), invoice: invoiceView(invoice) };
+      return this.view(tx, id);
     });
   }
 
