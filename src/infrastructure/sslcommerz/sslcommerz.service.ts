@@ -251,7 +251,10 @@ export class SslCommerzService {
     }
     if (
       (session.status === 'FAILED' || session.status === 'CANCEL') &&
-      session.currency === 'BDT'
+      session.currency === 'BDT' &&
+      parseGatewayAmount(session.amount) === reference.amountMinor &&
+      session.currency_type === 'BDT' &&
+      parseGatewayAmount(session.currency_amount) === reference.amountMinor
     ) {
       return {
         charges: [],

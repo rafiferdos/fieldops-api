@@ -236,29 +236,53 @@ model RefreshToken {
 }
 
 model Payment {
-  id             String        @id @default(uuid()) @db.Uuid
-  invoiceId      String        @db.Uuid
-  userId         String        @db.Uuid
+  id             String           @id @default(uuid()) @db.Uuid
+  invoiceId      String           @db.Uuid
+  userId         String           @db.Uuid
   gatewayMode    GatewayMode
-  gatewayStoreId String        @db.VarChar(30)
-  merchantTranId String        @unique @db.Char(24)
-  providerTranId String?       @unique @db.VarChar(80)
-  sessionKey     String?       @db.VarChar(50)
-  checkoutUrl    String?       @db.VarChar(255)
+  gatewayStoreId String           @db.VarChar(30)
+  merchantTranId String           @unique @db.Char(24)
+  providerTranId String?          @unique @db.VarChar(80)
+  sessionKey     String?          @db.VarChar(50)
+  checkoutUrl    String?          @db.VarChar(255)
   amountMinor    Int
-  currency       Currency      @default(BDT)
-  status         PaymentStatus @default(INITIATING)
-  reviewReason   String?       @db.VarChar(50)
-  idempotencyKey String        @db.VarChar(100)
-  requestHash    String        @db.Char(64)
-  verifiedAt     DateTime?     @db.Timestamptz(3)
-  settledAt      DateTime?     @db.Timestamptz(3)
-  createdAt      DateTime      @default(now()) @db.Timestamptz(3)
-  updatedAt      DateTime      @updatedAt @db.Timestamptz(3)
-  invoice        Invoice       @relation(fields: [invoiceId], references: [id], onDelete: Restrict)
-  user           User          @relation(fields: [userId], references: [id], onDelete: Restrict)
+  currency       Currency         @default(BDT)
+  status         PaymentStatus    @default(INITIATING)
+  reviewReason   String?          @db.VarChar(50)
+  idempotencyKey String           @db.VarChar(100)
+  requestHash    String           @db.Char(64)
+  verifiedAt     DateTime?        @db.Timestamptz(3)
+  settledAt      DateTime?        @db.Timestamptz(3)
+  createdAt      DateTime         @default(now()) @db.Timestamptz(3)
+  updatedAt      DateTime         @updatedAt @db.Timestamptz(3)
+  invoice        Invoice          @relation(fields: [invoiceId], references: [id], onDelete: Restrict)
+  user           User             @relation(fields: [userId], references: [id], onDelete: Restrict)
+  receipts       PaymentReceipt[]
 
   @@unique([userId, idempotencyKey])
   @@index([invoiceId, status])
   @@index([userId, createdAt, id])
+}
+
+enum ReceiptDisposition {
+  SETTLED
+  REVIEW
+}
+
+model PaymentReceipt {
+  id                  String             @id @default(uuid()) @db.Uuid
+  paymentId           String             @db.Uuid
+  providerTranId      String             @unique @db.VarChar(80)
+  validationId        String             @unique @db.VarChar(50)
+  amountMinor         Int
+  currency            String             @db.VarChar(3)
+  originalAmountMinor Int
+  originalCurrency    String             @db.VarChar(3)
+  risky               Boolean
+  disposition         ReceiptDisposition
+  reviewReason        String?            @db.VarChar(50)
+  verifiedAt          DateTime           @default(now()) @db.Timestamptz(3)
+  payment             Payment            @relation(fields: [paymentId], references: [id], onDelete: Restrict)
+
+  @@index([paymentId, disposition])
 }

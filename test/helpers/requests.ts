@@ -110,7 +110,23 @@ export async function closeRequestContext(context: RequestContext | undefined) {
           },
         },
       });
+      await tx.paymentReceipt.deleteMany({
+        where: { payment: { userId: { in: ids } } },
+      });
       await tx.payment.deleteMany({ where: { userId: { in: ids } } });
+      await tx.auditLog.deleteMany({
+        where: {
+          entityType: 'INVOICE',
+          entityId: {
+            in: (
+              await tx.invoice.findMany({
+                where: { customerId: { in: ids } },
+                select: { id: true },
+              })
+            ).map((row) => row.id),
+          },
+        },
+      });
       await tx.invoice.deleteMany({ where: { customerId: { in: ids } } });
       await tx.workOrder.deleteMany({
         where: { request: { customerId: { in: ids } } },

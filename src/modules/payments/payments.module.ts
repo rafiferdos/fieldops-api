@@ -7,11 +7,24 @@ import {
   PaymentsController,
   PaymentSessionsController,
 } from './payments.controller.js';
+import { PaymentSettlementService } from './payment-settlement.service.js';
+import { PaymentCallbacksController } from './payment-callbacks.controller.js';
+import { PaymentCallbackGuard } from './payment-callbacks.guard.js';
 import { PaymentsService } from './payments.service.js';
 @Module({
   imports: [PrismaModule, AuditModule],
-  controllers: [PaymentsController, PaymentSessionsController],
-  providers: [GatewayHttpService, SslCommerzService, PaymentsService],
-  exports: [PaymentsService],
+  controllers: [
+    PaymentsController,
+    PaymentSessionsController,
+    PaymentCallbacksController,
+  ],
+  providers: [
+    GatewayHttpService,
+    SslCommerzService,
+    PaymentsService,
+    PaymentSettlementService,
+    PaymentCallbackGuard,
+  ],
+  exports: [PaymentsService, PaymentSettlementService],
 })
 export class PaymentsModule {}

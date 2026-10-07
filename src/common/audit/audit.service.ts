@@ -19,6 +19,26 @@ type AuditTarget = {
 export type AuditEvent = AuditTarget &
   (
     | {
+        action: 'PAYMENT_SETTLED';
+        entityType: 'PAYMENT';
+        metadata: {
+          invoiceId: string;
+          receiptId: string;
+          amountMinor: number;
+          currency: 'BDT';
+        };
+      }
+    | {
+        action: 'INVOICE_PAID';
+        entityType: 'INVOICE';
+        metadata: { paymentId: string; amountMinor: number; currency: 'BDT' };
+      }
+    | {
+        action: 'PAYMENT_RECEIPT_REVIEW';
+        entityType: 'PAYMENT';
+        metadata: { invoiceId: string; receiptId: string; reason: string };
+      }
+    | {
         action: 'PAYMENT_INITIATED';
         entityType: 'PAYMENT';
         metadata: {

@@ -5,6 +5,7 @@ export type GatewayIdentity = {
 };
 export type GatewayReference = GatewayIdentity & {
   merchantTranId: string;
+  amountMinor: number;
   sessionKey: string | null;
 };
 export type CheckoutInput = GatewayIdentity & {

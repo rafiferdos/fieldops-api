@@ -67,3 +67,93 @@ export function createCheckout(
     .set('Idempotency-Key', key)
     .send(input);
 }
+
+export type GatewayFixtureCharge = {
+  APIConnect: string;
+  status: string;
+  tran_id: string;
+  bank_tran_id: string;
+  val_id: string;
+  amount: string;
+  currency: string;
+  currency_type: string;
+  currency_amount: string;
+  risk_level: string;
+};
+export function verifiedCharge(
+  merchantTranId: string,
+  changes: Partial<GatewayFixtureCharge> = {},
+): GatewayFixtureCharge {
+  return {
+    APIConnect: 'DONE',
+    status: 'VALID',
+    tran_id: merchantTranId,
+    bank_tran_id: `bank-${randomBytes(12).toString('hex')}`,
+    val_id: `val-${randomBytes(12).toString('hex')}`,
+    amount: '1500.00',
+    currency: 'BDT',
+    currency_type: 'BDT',
+    currency_amount: '1500.00',
+    risk_level: '0',
+    ...changes,
+  };
+}
+export function providerEvidence(
+  ctx: PaymentContext,
+  charges: GatewayFixtureCharge[],
+  terminal = 'PENDING',
+) {
+  ctx.json.mockImplementation(async (url, form) => {
+    if (form)
+      return {
+        status: 'SUCCESS',
+        sessionkey: 'fixture-session',
+        GatewayPageURL:
+          'https://sandbox.sslcommerz.com/gwprocess/v4/gw.php?SESSIONKEY=fixture-session',
+      };
+    const validationId = url.searchParams.get('val_id');
+    if (validationId)
+      return (
+        charges.find((c) => c.val_id === validationId) ?? {
+          APIConnect: 'DONE',
+          status: 'INVALID_TRANSACTION',
+        }
+      );
+    const tranId = url.searchParams.get('tran_id');
+    if (tranId) {
+      const elements = charges.filter((c) => c.tran_id === tranId);
+      return {
+        APIConnect: 'DONE',
+        no_of_trans_found: elements.length,
+        element: elements,
+      };
+    }
+    const payment = await ctx.prisma.payment.findFirstOrThrow({
+      where: {
+        sessionKey: url.searchParams.get('sessionkey')!,
+        invoiceId: ctx.invoiceId,
+      },
+    });
+    return {
+      APIConnect: 'DONE',
+      status: terminal,
+      sessionkey: payment.sessionKey,
+      tran_id: payment.merchantTranId,
+      amount: '1500.00',
+      currency: 'BDT',
+      currency_type: 'BDT',
+      currency_amount: '1500.00',
+    };
+  });
+}
+export function notify(
+  ctx: PaymentContext,
+  kind: string,
+  merchantTranId: string,
+  values: object = {},
+) {
+  return request(ctx.app.getHttpServer())
+    .post(`/api/v1/payments/sslcommerz/${kind}`)
+    .type('form')
+    .send({ tran_id: merchantTranId, ...values });
+}

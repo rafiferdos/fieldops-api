@@ -170,6 +170,7 @@ describe('SSLCommerz adapter', () => {
       await service.lookup({
         ...identity,
         merchantTranId: input.merchantTranId,
+        amountMinor: 150000,
         sessionKey: 's',
       }),
     ).toEqual({ charges: [], terminal: null });
@@ -193,6 +194,7 @@ describe('SSLCommerz adapter', () => {
         await service.lookup({
           ...identity,
           merchantTranId: input.merchantTranId,
+          amountMinor: 150000,
           sessionKey: null,
         })
       ).charges,
@@ -214,6 +216,7 @@ describe('SSLCommerz adapter', () => {
       service.lookup({
         ...identity,
         merchantTranId: input.merchantTranId,
+        amountMinor: 150000,
         sessionKey: null,
       }),
     ).rejects.toMatchObject({ status: 502 });

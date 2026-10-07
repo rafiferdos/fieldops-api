@@ -12,6 +12,7 @@ export const paymentSelect = {
   updatedAt: true,
   verifiedAt: true,
   settledAt: true,
+  receipts: { where: { disposition: 'REVIEW' }, select: { id: true }, take: 1 },
   invoice: { select: { status: true } },
 } satisfies Prisma.PaymentSelect;
 export function paymentView(
@@ -30,6 +31,7 @@ export function paymentView(
         ? row.checkoutUrl
         : null,
     reviewReason: row.reviewReason,
+    requiresReview: row.status === 'REVIEW' || row.receipts.length > 0,
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
     verifiedAt: row.verifiedAt?.toISOString() ?? null,
