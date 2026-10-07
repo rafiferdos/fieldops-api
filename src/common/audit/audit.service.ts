@@ -2,6 +2,15 @@ import { Injectable } from '@nestjs/common';
 import type { Prisma } from '../../generated/prisma/client.js';
 
 // Add explicit event variants as domains grow; arbitrary JSON is not accepted.
+type PaymentState =
+  | 'INITIATING'
+  | 'PENDING'
+  | 'SUCCEEDED'
+  | 'FAILED'
+  | 'CANCELLED'
+  | 'REVIEW'
+  | 'UNKNOWN';
+
 type AuditTarget = {
   actorId: string | null;
   entityId: string;
@@ -9,6 +18,25 @@ type AuditTarget = {
 
 export type AuditEvent = AuditTarget &
   (
+    | {
+        action: 'PAYMENT_INITIATED';
+        entityType: 'PAYMENT';
+        metadata: {
+          invoiceId: string;
+          amountMinor: number;
+          currency: 'BDT';
+          status: 'INITIATING';
+        };
+      }
+    | {
+        action: 'PAYMENT_STATE_CHANGED';
+        entityType: 'PAYMENT';
+        metadata: {
+          invoiceId: string;
+          fromStatus: PaymentState;
+          toStatus: PaymentState;
+        };
+      }
     | {
         action: 'WORK_ORDER_COMPLETED';
         entityType: 'WORK_ORDER';

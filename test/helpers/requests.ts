@@ -1,3 +1,4 @@
+import type { TestingModuleBuilder } from '@nestjs/testing';
 import { randomUUID } from 'node:crypto';
 import request from 'supertest';
 import type { Role } from '../../src/generated/prisma/enums.js';
@@ -38,8 +39,10 @@ async function authenticatedFixture(
   return { id: user.id, email: user.email, token: tokens.accessToken, actor };
 }
 
-export async function createRequestContext() {
-  const api = await createTestApi();
+export async function createRequestContext(
+  configure?: (builder: TestingModuleBuilder) => void,
+) {
+  const api = await createTestApi([], configure);
   const owner = await authenticatedFixture(api, 'CUSTOMER');
   const other = await authenticatedFixture(api, 'CUSTOMER');
   const admin = await authenticatedFixture(api, 'ADMIN');
