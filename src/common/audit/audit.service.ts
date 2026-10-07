@@ -2,13 +2,43 @@ import { Injectable } from '@nestjs/common';
 import type { Prisma } from '../../generated/prisma/client.js';
 
 // Add explicit event variants as domains grow; arbitrary JSON is not accepted.
-export type AuditEvent = {
+type AuditTarget = {
   actorId: string | null;
-  action: 'USER_PROFILE_UPDATED';
-  entityType: 'USER';
   entityId: string;
-  metadata: { updatedFields: Array<'name' | 'phone'> };
 };
+
+export type AuditEvent = AuditTarget &
+  (
+    | {
+        action: 'USER_PROFILE_UPDATED';
+        entityType: 'USER';
+        metadata: { updatedFields: Array<'name' | 'phone'> };
+      }
+    | {
+        action: 'ADMIN_BOOTSTRAPPED';
+        entityType: 'USER';
+        metadata: Record<string, never>;
+      }
+    | {
+        action: 'SERVICE_CREATED';
+        entityType: 'SERVICE';
+        metadata: { basePriceMinor: number; currency: 'BDT' };
+      }
+    | {
+        action: 'SERVICE_UPDATED';
+        entityType: 'SERVICE';
+        metadata: {
+          updatedFields: Array<'name' | 'description' | 'basePriceMinor'>;
+          previousBasePriceMinor: number;
+          basePriceMinor: number;
+        };
+      }
+    | {
+        action: 'SERVICE_DELETED';
+        entityType: 'SERVICE';
+        metadata: Record<string, never>;
+      }
+  );
 
 @Injectable()
 export class AuditService {

@@ -50,6 +50,9 @@ npm run start:dev
 | POST   | `/api/v1/auth/logout`   | Bearer দিয়ে current session revoke    |
 | GET    | `/api/v1/users/me`      | Authenticated own profile             |
 | PATCH  | `/api/v1/users/me`      | নিজের name/phone update ও audit       |
+| POST   | `/api/v1/services`      | ADMIN service তৈরি ও audit            |
+| PATCH  | `/api/v1/services/:id`  | ADMIN service update ও audit          |
+| DELETE | `/api/v1/services/:id`  | ADMIN service soft delete ও audit     |
 
 Success: `{ success: true, message, data }`। Error: `{ success: false, message, errors: [] }`।
 
@@ -151,7 +154,31 @@ Authentication guard default-এ সব registered route protect করে; publ
 
 `RolesGuard` global authentication guard-এর পরে চলে। Private route-এ `@Roles(Role.ADMIN)` বা `@Roles(Role.ADMIN, Role.TECHNICIAN)` দিন; controller-level default method-level roles দিয়ে override করা যায়। Role current DB actor থেকে আসে, client input/JWT role থেকে নয়। Missing/invalid session `401`, allowed list-এর বাইরে role `403`; ADMIN-এর automatic bypass নেই। `@Public()` ও `@Roles()` একসঙ্গে দেবেন না—actor না থাকলে request deny হবে।
 
-`/users/me` তিনটি role-এর জন্য খোলা। Resource ownership domain service-এর query-তে enforce করতে হবে; `@Roles()` ownership check-এর বিকল্প নয়। Role-restricted admin/domain endpoints পরবর্তী stage; integration tests-এর role-check routes production app-এ নেই। [NestJS guards](https://docs.nestjs.com/guards)
+`/users/me` তিনটি role-এর জন্য খোলা; service mutations শুধু ADMIN। Resource ownership domain service-এর query-তে enforce করতে হবে; `@Roles()` ownership check-এর বিকল্প নয়। Integration tests-এর synthetic role-check routes production app-এ নেই। [NestJS guards](https://docs.nestjs.com/guards)
+
+### Admin setup and Apidog: service mutations
+
+`.env`-এ নিজের `SEED_ADMIN_EMAIL`, strong `SEED_ADMIN_PASSWORD` (১৫–১২৮ characters) এবং optional `SEED_ADMIN_NAME` বসিয়ে `npm run seed:admin` চালান। Script নতুন ADMIN ও system audit একই transaction-এ তৈরি করে। Existing active ADMIN থাকলে password বদলায় না; existing CUSTOMER/TECHNICIAN, suspended/deleted account modify করে না। Credentials Git/Apidog shared values-এ রাখবেন না। এটি local bootstrap; submission-এর dedicated demo admin credentials পরে আলাদা করে প্রস্তুত করতে হবে।
+
+Apidog-এ ওই email/password দিয়ে `/auth/login` করে `admin_access_token = $.data.accessToken` extract করুন। নিচের তিনটি endpoint-এ Bearer `{{admin_access_token}}` দিন।
+
+`POST {{base_url}}/services` → JSON:
+
+```json
+{
+  "name": "AC Maintenance",
+  "description": "Inspect and clean the air conditioner.",
+  "basePriceMinor": 150000
+}
+```
+
+Expected `201`; `service_id = $.data.id` extract করুন। `basePriceMinor` integer পয়সা: `150000` = ৳1,500; accepted range `0–1000000000`। Currency server-fixed `BDT`; body-তে currency দেওয়া যাবে না। Name trim করে ২–১০০ এবং description ১০–২০০০ characters। Response: `id`, `name`, `description`, `basePriceMinor`, `currency`, ISO `createdAt`/`updatedAt`।
+
+- `PATCH {{base_url}}/services/{{service_id}}` → `{ "basePriceMinor": 175000 }`: `200`; অন্তত একটি allowed field দিতে হবে, omitted fields অক্ষত থাকে।
+- `DELETE {{base_url}}/services/{{service_id}}`: `200`, `data: null`; database row retained থাকে। একই ID delete/update আবার করলে `404`।
+- No Auth/invalid session `401`; CUSTOMER/TECHNICIAN `403`; unknown fields/empty PATCH/invalid price or UUID `400`; missing service `404`।
+
+প্রতিটি mutation-এ current account/session/ADMIN role transaction-এর ভিতরে আবার check হয়। Service write, typed audit ও catalog revision একসঙ্গে commit হয়; audit fail হলে rollback। Price update-এর old/new snapshots row lock দিয়ে concurrent edits-এর সঙ্গেও সঠিক থাকে। Deleted services ভবিষ্যৎ work/invoice references-এর জন্য retained থাকবে।
 
 ### Registration
 
@@ -201,7 +228,7 @@ Migration files Git-এ রাখতে হবে। `.env`, `node_modules/`, `d
 - [Assignment source](https://github.com/Apollo-Level2-Web-Dev/B7A6)
 - [Reviewed Notion plan](https://app.notion.com/p/3f14ab5df14481b9bdccd1349fd83a18)
 
-পরবর্তী কাজ: Service catalog CRUD, search/pagination ও Redis cache; তারপর service requests ও ownership rules।
+পরবর্তী কাজ: Public catalog search/pagination ও Redis cache; তারপর service requests ও ownership rules।
 
 ## Known dependency advisories
 

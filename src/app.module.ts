@@ -7,6 +7,7 @@ import { HttpExceptionFilter } from './common/filters/http-exception.filter.js';
 import { validateEnv } from './config/env.validation.js';
 import { AuthModule } from './modules/auth/auth.module.js';
 import { HealthModule } from './modules/health/health.module.js';
+import { ServicesModule } from './modules/services/services.module.js';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { HealthModule } from './modules/health/health.module.js';
     }),
     HealthModule,
     AuthModule,
+    ServicesModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },
