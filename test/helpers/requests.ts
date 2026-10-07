@@ -94,6 +94,20 @@ export async function closeRequestContext(context: RequestContext | undefined) {
   ].map((user) => user.id);
   try {
     await context.prisma.$transaction(async (tx) => {
+      await tx.auditLog.deleteMany({
+        where: {
+          entityType: 'PAYMENT',
+          entityId: {
+            in: (
+              await tx.payment.findMany({
+                where: { userId: { in: ids } },
+                select: { id: true },
+              })
+            ).map((row) => row.id),
+          },
+        },
+      });
+      await tx.payment.deleteMany({ where: { userId: { in: ids } } });
       await tx.invoice.deleteMany({ where: { customerId: { in: ids } } });
       await tx.workOrder.deleteMany({
         where: { request: { customerId: { in: ids } } },

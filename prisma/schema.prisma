@@ -39,6 +39,21 @@ enum InvoiceStatus {
   PAID
 }
 
+enum PaymentStatus {
+  INITIATING
+  PENDING
+  SUCCEEDED
+  FAILED
+  CANCELLED
+  REVIEW
+  UNKNOWN
+}
+
+enum GatewayMode {
+  SANDBOX
+  LIVE
+}
+
 enum WorkOrderStatus {
   ASSIGNED
   EN_ROUTE
@@ -134,6 +149,8 @@ model Invoice {
   workOrder   WorkOrder     @relation(fields: [workOrderId], references: [id], onDelete: Restrict)
   customer    User          @relation(fields: [customerId], references: [id], onDelete: Restrict)
 
+  payments Payment[]
+
   @@index([customerId, issuedAt, id])
   @@index([status, issuedAt, id])
 }
@@ -162,6 +179,7 @@ model User {
   technicianSkills TechnicianSkill[]
   workOrders       WorkOrder[]
   invoices         Invoice[]
+  payments         Payment[]
 
   @@index([role, status])
 }
@@ -215,4 +233,32 @@ model RefreshToken {
 
   @@index([sessionId])
   @@index([expiresAt])
+}
+
+model Payment {
+  id             String        @id @default(uuid()) @db.Uuid
+  invoiceId      String        @db.Uuid
+  userId         String        @db.Uuid
+  gatewayMode    GatewayMode
+  gatewayStoreId String        @db.VarChar(30)
+  merchantTranId String        @unique @db.Char(24)
+  providerTranId String?       @unique @db.VarChar(80)
+  sessionKey     String?       @db.VarChar(50)
+  checkoutUrl    String?       @db.VarChar(255)
+  amountMinor    Int
+  currency       Currency      @default(BDT)
+  status         PaymentStatus @default(INITIATING)
+  reviewReason   String?       @db.VarChar(50)
+  idempotencyKey String        @db.VarChar(100)
+  requestHash    String        @db.Char(64)
+  verifiedAt     DateTime?     @db.Timestamptz(3)
+  settledAt      DateTime?     @db.Timestamptz(3)
+  createdAt      DateTime      @default(now()) @db.Timestamptz(3)
+  updatedAt      DateTime      @updatedAt @db.Timestamptz(3)
+  invoice        Invoice       @relation(fields: [invoiceId], references: [id], onDelete: Restrict)
+  user           User          @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@unique([userId, idempotencyKey])
+  @@index([invoiceId, status])
+  @@index([userId, createdAt, id])
 }
