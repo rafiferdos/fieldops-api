@@ -1,6 +1,6 @@
 # FieldOps API
 
-Programming Hero Assignment 6-এর Field Service Management backend। Authentication, sessions, own profile, audited catalog, request lifecycle এবং technician scheduling/progress প্রস্তুত। Completion, invoicing ও payments পরবর্তী stage; Assignment 7 frontend পরে হবে।
+Programming Hero Assignment 6-এর Field Service Management backend। Authentication, sessions, own profile, audited catalog, request lifecycle এবং technician scheduling/progress, atomic completion ও immutable invoices প্রস্তুত। Payments পরবর্তী stage; Assignment 7 frontend পরে হবে।
 
 ## Stack
 
@@ -68,6 +68,8 @@ npm run start:dev
 | GET    | `/api/v1/work-orders/:id`          | Scoped details ও recent safe timeline           |
 | PATCH  | `/api/v1/work-orders/:id/schedule` | ADMIN versioned reschedule/reassignment         |
 | PATCH  | `/api/v1/work-orders/:id/status`   | Assigned TECHNICIAN ordered progress            |
+| POST   | `/api/v1/work-orders/:id/complete` | Assigned TECHNICIAN atomic completion + invoice |
+| GET    | `/api/v1/invoices/:id`             | CUSTOMER own / ADMIN frozen invoice details     |
 
 Success: `{ success: true, message, data }`। Error: `{ success: false, message, errors: [] }`।
 
@@ -285,7 +287,7 @@ Apidog variables: `service_id`, `request_id`, `technician_id`, `admin_access_tok
 
 4. ADMIN `PATCH /work-orders/{{work_order_id}}/schedule` → একই JSON-এর সঙ্গে numeric `"version": 1` → `200`। নতুন start/end বা skilled technician দিন; নিজের existing slot-ও allowed। `work_order_version = $.data.version` extract করুন। শুধু ASSIGNED work reschedule হয়; agreed price/currency অপরিবর্তিত থাকে।
 5. CUSTOMER/assigned TECHNICIAN/ADMIN `GET /work-orders/{{work_order_id}}` → `200`। Timeline সর্বশেষ ১০০টি safe event, chronological order-এ। `GET /work-orders?status=ASSIGNED&serviceId={{service_id}}&page=1&limit=20&sort=scheduled_start_asc` scoped items/count দেয়। Optional literal `q` description/address/service name-এ; sort `newest` (default), `oldest`, `scheduled_start_asc`। Public query দিয়ে owner/technician scope বদলানো যায় না।
-6. Assigned TECHNICIAN `PATCH /work-orders/{{work_order_id}}/status` → `{ "version": 2, "status": "EN_ROUTE" }` → `200`; updated version extract করুন। এরপর `{ "version": 3, "status": "IN_PROGRESS" }` → `200`। Exact versions নিজের response থেকে নিন। Allowed sequence **ASSIGNED → EN_ROUTE → IN_PROGRESS**; skip/backward/repeat `409`, body-তে COMPLETED `400`। Completion/report + invoice আলাদা পরবর্তী stage।
+6. Assigned TECHNICIAN `PATCH /work-orders/{{work_order_id}}/status` → `{ "version": 2, "status": "EN_ROUTE" }` → `200`; updated version extract করুন। এরপর `{ "version": 3, "status": "IN_PROGRESS" }` → `200`। Exact versions নিজের response থেকে নিন। Allowed sequence **ASSIGNED → EN_ROUTE → IN_PROGRESS**; skip/backward/repeat `409`, body-তে COMPLETED `400`। Completion/report + invoice নিচের dedicated endpoint-এ।
 
 সব visit future-এ শুরু হবে, `start < end`, duration সর্বোচ্চ ৮ ঘণ্টা, timezoneসহ ISO datetime ও সর্বোচ্চ millisecond precision; response UTC। এক technician-এর active ASSIGNED/EN_ROUTE/IN_PROGRESS ranges overlap করতে পারে না; `[start,end)` হওয়ায় exact adjacent visits allowed। Service price assignment-এর সময় server থেকে snapshot হয়; body-তে price/currency/status দিলে `400`। একটি request-এর একটিই work order, cancelled history-ও retained থাকে। Cancelled request-এর replacement চাইলে নতুন request তৈরি করুন।
 
@@ -304,9 +306,57 @@ Apidog variables: `service_id`, `request_id`, `technician_id`, `admin_access_tok
 | Work শুরু হয়ে গেলে cancel/reschedule                              | `409`                                           |
 | Revoked/expired session বা suspended/deleted actor                | `401`                                           |
 
-Reassignment-এর পরে পুরোনো technician access হারায়। Existing catalog service soft-delete হলেও work history/progress চলে; নতুন assignment/reschedule-এর জন্য active service চাই। Request soft-delete হলে linked work read/mutation `404`। Work-order ও technician response/error `Cache-Control: no-store`; Redis এখানে ব্যবহৃত হয় না।
+Reassignment-এর পরে পুরোনো technician access হারায়। Existing catalog service soft-delete হলেও work history/progress চলে; নতুন assignment/reschedule-এর জন্য active service চাই। Request soft-delete হলে linked work read/mutation `404`। Work-order, invoice ও technician response/error `Cache-Control: no-store`; Redis এখানে ব্যবহৃত হয় না।
 
-Shared request lock, sorted technician locks, bounded Serializable retries (সর্বোচ্চ ৪ attempts), DB exclusion constraint এবং একই transaction-এর typed audits scheduling/cancellation races protect করে। Retry-তে external side effects নেই; retries exhausted হলে `503`, client সামান্য বিরতি দিয়ে latest state fetch করবে। Audit failure state/version rollback করে; metadata-তে address/report/credentials থাকে না। Future role-changing code-ও technician User lock নিতে হবে। [PostgreSQL range constraints](https://www.postgresql.org/docs/18/rangetypes.html), [Serializable transactions](https://www.postgresql.org/docs/18/transaction-iso.html)
+Scheduling ও skill replacement-এ sorted technician locks, bounded Serializable retries (সর্বোচ্চ ৪ attempts; exponential backoff + jitter) এবং DB exclusion constraint থাকে। Progress/cancel/complete একই request → work-order row locks নিয়ে latest state/version check করে; আলাদা invoice writes-এর predicate conflicts এসব state transitions-এ লাগে না। Typed audits একই transaction-এ commit হয়। Retry-তে external side effects নেই; retries exhausted হলে `503`, client সামান্য বিরতি দিয়ে latest state fetch করবে। Audit failure state/version rollback করে; metadata-তে address/report/credentials থাকে না। Future role-changing code-ও technician User lock নিতে হবে। [PostgreSQL range constraints](https://www.postgresql.org/docs/18/rangetypes.html), [Serializable transactions](https://www.postgresql.org/docs/18/transaction-iso.html)
+
+### Apidog: complete work and read the frozen invoice
+
+Assigned TECHNICIAN-ই `IN_PROGRESS` work complete করতে পারবেন। আগের reschedule flow অনুসরণ করলে নিচের example-এর মতো version ৪ হবে; reschedule skip করলে ৩। নিজের actual **latest** `work_order_version` ব্যবহার করুন।
+
+`POST {{base_url}}/work-orders/{{work_order_id}}/complete` → Bearer `{{technician_access_token}}` → JSON:
+
+```json
+{
+  "version": 4,
+  "report": "Inspected, cleaned and repaired the cooling unit."
+}
+```
+
+Expected **`200`**; order `COMPLETED`, version এক বাড়বে, `report` trim হয়ে frozen থাকবে এবং `completedAt` server time হবে। Nested `invoice` থেকে `invoice_id = $.data.invoice.id` ও নতুন `work_order_version = $.data.version` extract করুন। Report trim করার পরে ১০–২০০০ characters; extra amount/customerId/currency/status/paidAt গ্রহণ হয় না। Invoice fixed service fee-এর **assignment snapshot** থেকে হয়, current catalog price থেকে নয়। Completion request-এ amount দিতে হবে না।
+
+```json
+{
+  "id": "<invoice UUID>",
+  "workOrderId": "<work-order UUID>",
+  "customerId": "<owner UUID>",
+  "amountMinor": 150000,
+  "currency": "BDT",
+  "status": "UNPAID",
+  "issuedAt": "<UTC ISO timestamp>",
+  "paidAt": null
+}
+```
+
+Invoice তৈরি, work completion ও `WORK_ORDER_COMPLETED`/`INVOICE_ISSUED` audits এক transaction-এ হয়। Failure হলে report/status/version/invoice/audits সব rollback হয়। DB-তে এক work order-এর এক invoice, frozen owner/amount/currency/issue time এবং completed work/report অপরিবর্তনীয়। Completed work invoice ছাড়া commit হতে পারে না; invoice একা hard-delete করাও DB constraint reject করে। নতুন invoice creation-এর সময় আগে work COMPLETED হয়, তারপর তার price/owner snapshot validate করে invoice insert হয়; invoice-presence final state COMMIT-এ verify হয়। [PostgreSQL constraint triggers](https://www.postgresql.org/docs/18/sql-createtrigger.html)
+
+- একই report ও original completion version আবার পাঠালে **`200`, একই invoice ID**; timestamps/version/audits আবার লেখা হয় না। Committed current version দিয়েও একই report retry করা যায়। ভিন্ন report অথবা অন্য stale version `409`। নতুন completion version body-তে string নয়, JSON number দিন।
+- `GET {{base_url}}/invoices/{{invoice_id}}` → CUSTOMER owner Bearer অথবা ADMIN Bearer → `200`, উপরের safe invoice projection। অন্য customer `404`; TECHNICIAN `403`; No Auth/expired/revoked/suspended account `401`; invalid UUID `400`।
+- `GET /work-orders/:id`, scoped `GET /work-orders`, request list/details-এর `workOrder` summary-তেও একই nullable `invoice` projection থাকে। Complete হওয়ার আগে null। Assigned technician work-order view থেকে নিজের job invoice দেখতে পারবেন; finance endpoint C/A-এর জন্য।
+- Catalog/request soft-delete হলেও owned invoice financial history retained/readable থাকে। Request soft-delete হলে work-order view/mutation আগের মতো `404`। Invoice data Redis-এ রাখা হয় না এবং সব response/error `no-store`।
+- Invoice শুরুতে **UNPAID**; frontend/admin input দিয়ে PAID করার API নেই। Real provider validation/settlement পরবর্তী stage; কোনো real payment এই stage-এ নেয়নি। Tests-এ PAID fixture শুধু DB state reflection/irreversibility যাচাই করে।
+
+| Test                                                                           | Expected                                          |
+| ------------------------------------------------------------------------------ | ------------------------------------------------- |
+| ASSIGNED/EN_ROUTE work complete                                                | `409`                                             |
+| CUSTOMER/ADMIN complete                                                        | `403`                                             |
+| Unassigned/former technician complete                                          | `404`                                             |
+| Invalid/short/long report, unknown price/status field, missing/invalid version | `400`                                             |
+| Two identical concurrent completion calls                                      | দুটো `200`, একটি invoice ও একটি audit প্রতি event |
+| Concurrent different reports                                                   | একটি `200`, অন্য `409`                            |
+| Catalog price update → complete                                                | আগের agreed price-ই invoice amount                |
+| Completed work cancel/reschedule/report rewrite                                | `409`; persisted facts অক্ষত                      |
+| Final audit failure                                                            | Completion/invoice/দুই audit rollback             |
 
 ## Checks
 
@@ -321,7 +371,7 @@ npm run build
 npm run test:compiled
 ```
 
-E2E tests-এর জন্য `.env`-এ আলাদা `TEST_DATABASE_URL` দিন; database name `_test` দিয়ে শেষ হবে (example: `fieldops_test`)। `db:test:setup` প্রয়োজন হলে test database তৈরি করে committed migrations apply করে; existing data reset করে না। Database user-এর `CREATEDB` permission লাগবে। Tests নিজেদের registration/service fixtures cleanup করে; main `DATABASE_URL`-এর database ব্যবহার করে না। Real cache tests-এর জন্য `TEST_REDIS_URL=redis://localhost:6379/1` দিন—index অবশ্যই `0`-এর বেশি; main Redis URL tests ব্যবহার করে না এবং flush command চালায় না। URL absent হলে real Redis tests skip হয়, public API/DB fallback tests চলে। Unit tests-এ DB/Redis লাগে না। Build স্বয়ংক্রিয়ভাবে Prisma Client generate করে; production entrypoint `dist/main.js`।
+E2E tests-এর জন্য `.env`-এ আলাদা `TEST_DATABASE_URL` দিন; database name `_test` দিয়ে শেষ হবে (example: `fieldops_test`)। `db:test:setup` প্রয়োজন হলে test database তৈরি করে committed migrations apply করে; existing data reset করে না। Database user-এর `CREATEDB` permission লাগবে। Tests নিজেদের user/service/request/work/invoice fixtures একই cleanup transaction-এ সরায়; main `DATABASE_URL`-এর database ব্যবহার করে না। Real cache tests-এর জন্য `TEST_REDIS_URL=redis://localhost:6379/1` দিন—index অবশ্যই `0`-এর বেশি; main Redis URL tests ব্যবহার করে না এবং flush command চালায় না। URL absent হলে real Redis tests skip হয়, public API/DB fallback tests চলে। Integration file workers সর্বোচ্চ ৪টি, যাতে প্রতি Nest fixture-এর pool মিলিয়ে CI database connection budget মেনে চলে; explicit concurrent API race tests parallel-ই চলে। Unit tests-এ DB/Redis লাগে না। Build স্বয়ংক্রিয়ভাবে Prisma Client generate করে; production entrypoint `dist/main.js`।
 
 ```bash
 npm run start:prod
@@ -331,7 +381,7 @@ npm run start:prod
 
 [Backend CI](.github/workflows/ci.yml) push to `main`, pull request ও manual run-এ locked install, client generation, schema/type/lint checks, unit tests, fresh PostgreSQL migrations, real Redis integration tests, build এবং compiled HTTP request flow চালাবে। Production secrets লাগে না; signing key প্রতি run-এ নতুন এবং DB/Redis service containers temporary। Official actions immutable commit SHA-তে pinned; workflow read-only permissions নেয়। [GitHub service container guide](https://docs.github.com/en/actions/tutorials/use-containerized-services)
 
-`npm run test:compiled` build-এর পরে চালান। শুধু separate `_test` DB এবং optional Redis index >0 ব্যবহার হয়; test environment নির্ধারণের পরে native built Nest app import হয়; actual database name assert করা হয়। Temporary loopback port-এ safe ADMIN/TECHNICIAN bootstrap, password login, request lifecycle, skills/availability, assignment/reschedule, scoped reads, progress, cancellation ও audits verify হয়। Script নিজের fixtures cleanup করে; main DB reset হয় না। GitHub-hosted run push-এর পরে verify করতে হবে; local checks remote CI success প্রমাণ করে না।
+`npm run test:compiled` build-এর পরে চালান। শুধু separate `_test` DB এবং optional Redis index >0 ব্যবহার হয়; test environment নির্ধারণের পরে native built Nest app import হয়; actual database name assert করা হয়। Temporary loopback port-এ safe ADMIN/TECHNICIAN bootstrap, password login, request lifecycle, skills/availability, assignment/reschedule, scoped reads, progress, cancellation, completion retries, private invoice reads ও audits verify হয়। Script নিজের fixtures cleanup করে; main DB reset হয় না। GitHub-hosted run push-এর পরে verify করতে হবে; local checks remote CI success প্রমাণ করে না।
 
 ## Schema changes
 
@@ -342,15 +392,17 @@ npm run db:migrate -- --name describe_your_change
 npm run db:generate
 ```
 
-Scheduling migration-এর `btree_gist` extension ও custom exclusion/check constraints পরের migrations-এ preserve করতে হবে; শুধু `db push` দিয়ে এটি recreate করবেন না। PostgreSQL host-এ extension create permission লাগবে। Migration files Git-এ রাখতে হবে। `.env`, `node_modules/`, `dist/`, coverage, TypeScript cache, generated Prisma Client ও local agent skills ignored থাকবে। Auto-generated files disk-এ তৈরি হওয়া স্বাভাবিক; সেগুলো commit করার দরকার নেই। Shared `AGENTS.md`, `.github/copilot-instructions.md`, source, configs এবং `package-lock.json` Git-এ থাকবে।
+Migrations-এর `btree_gist` extension, custom exclusion/check constraints, immutable snapshot triggers ও deferred invoice-presence constraints পরের migrations-এ preserve করতে হবে; শুধু `db push` দিয়ে এটি recreate করবেন না। PostgreSQL host-এ extension create permission লাগবে। Migration files Git-এ রাখতে হবে। `.env`, `node_modules/`, `dist/`, coverage, TypeScript cache, generated Prisma Client ও local agent skills ignored থাকবে। Auto-generated files disk-এ তৈরি হওয়া স্বাভাবিক; সেগুলো commit করার দরকার নেই। Shared `AGENTS.md`, `.github/copilot-instructions.md`, source, configs এবং `package-lock.json` Git-এ থাকবে।
 
 ## Requirements and plan
 
 - [Assignment source](https://github.com/Apollo-Level2-Web-Dev/B7A6)
 - [Reviewed Notion plan](https://app.notion.com/p/3f14ab5df14481b9bdccd1349fd83a18)
 
-পরবর্তী কাজ: atomic completion/report + immutable invoice; তারপর SSLCommerz initiation/validation/idempotent settlement। বর্তমানে ২৫টি domain API + ২টি health route আছে; payment/deployment/submission review বাকি।
+পরবর্তী কাজ: SSLCommerz initiation/validation/idempotent settlement ও uncertain gateway outcomes reconciliation। বর্তমানে ২৭টি domain API + ২টি health route আছে; payment/deployment/submission review বাকি।
 
 ## Known dependency advisories
 
 2026-10-07-এর dependency install check-এ Prisma 7.10 tooling-এর `deepmerge-ts` ও `mysql2` dependency paths থেকে আগের ৪টি high package warning রয়ে গেছে। Runtime PostgreSQL adapter ব্যবহার করে; audit এখনো clean নয়। Suggested forced Prisma downgrade বর্তমান setup-এর সঙ্গে compatible নয়, তাই প্রয়োগ করা হয়নি।
+
+বর্তমান Prisma 7 / pg 8 relation reads-এ query-queue deprecation warning দেখা গেছে; checks pass করে। pg 9 upgrade-এর আগে adapter compatibility recheck করতে হবে; warning suppress বা incompatible dependency upgrade করা হয়নি।
