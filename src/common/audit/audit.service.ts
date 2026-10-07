@@ -10,12 +10,65 @@ type AuditTarget = {
 export type AuditEvent = AuditTarget &
   (
     | {
+        action: 'WORK_ORDER_ASSIGNED';
+        entityType: 'WORK_ORDER';
+        metadata: {
+          requestId: string;
+          technicianId: string;
+          start: string;
+          end: string;
+          agreedPriceMinor: number;
+          currency: 'BDT';
+          version: 1;
+        };
+      }
+    | {
+        action: 'WORK_ORDER_RESCHEDULED';
+        entityType: 'WORK_ORDER';
+        metadata: {
+          previousTechnicianId: string;
+          technicianId: string;
+          previousStart: string;
+          previousEnd: string;
+          start: string;
+          end: string;
+          previousVersion: number;
+          version: number;
+        };
+      }
+    | {
+        action: 'WORK_ORDER_STATUS_CHANGED';
+        entityType: 'WORK_ORDER';
+        metadata: {
+          fromStatus: 'ASSIGNED' | 'EN_ROUTE';
+          toStatus: 'EN_ROUTE' | 'IN_PROGRESS';
+          previousVersion: number;
+          version: number;
+        };
+      }
+    | {
+        action: 'WORK_ORDER_CANCELLED';
+        entityType: 'WORK_ORDER';
+        metadata: {
+          requestId: string;
+          fromStatus: 'ASSIGNED';
+          toStatus: 'CANCELLED';
+          previousVersion: number;
+          version: number;
+        };
+      }
+    | {
         action: 'USER_PROFILE_UPDATED';
         entityType: 'USER';
         metadata: { updatedFields: Array<'name' | 'phone'> };
       }
     | {
-        action: 'ADMIN_BOOTSTRAPPED';
+        action: 'TECHNICIAN_SKILLS_UPDATED';
+        entityType: 'USER';
+        metadata: { serviceIds: string[] };
+      }
+    | {
+        action: 'ADMIN_BOOTSTRAPPED' | 'TECHNICIAN_BOOTSTRAPPED';
         entityType: 'USER';
         metadata: Record<string, never>;
       }
