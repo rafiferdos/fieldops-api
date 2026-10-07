@@ -1,0 +1,3753 @@
+{
+  "info": {
+    "name": "FieldOps API \u2014 Completed endpoints",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "34 implemented domain APIs + 2 health routes, with extra login examples for the three roles. Import into Apidog Settings > Import Data > Postman. This is English documentation for manual testing, not an automatic collection runner. Run workflow requests deliberately: registration/login -> profile -> catalog -> request/review -> skill/availability/assignment -> progress/completion -> actual gateway checkout -> invoice/payment state -> feedback. Cancellation/deletion/logout are separate scenarios. Saved response examples are illustrative placeholders, not live results. No real credentials/tokens are included. Keep all secrets only in local environment values; do not publish populated environments. Backend README contains detailed domain rules and manual negative checks."
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3000/api/v1",
+      "type": "string",
+      "description": "API origin plus /api/v1; no trailing slash."
+    },
+    {
+      "key": "customer_email",
+      "value": "",
+      "type": "string",
+      "description": "Use your test account; store credentials in local environment values."
+    },
+    {
+      "key": "customer_password",
+      "value": "",
+      "type": "string",
+      "description": "Blank template. Set only as a local environment secret; registration requires 15\u2013128 characters."
+    },
+    {
+      "key": "admin_email",
+      "value": "",
+      "type": "string",
+      "description": "Use the dedicated safe-seeded admin."
+    },
+    {
+      "key": "admin_password",
+      "value": "",
+      "type": "string",
+      "description": "Blank template; local secret only."
+    },
+    {
+      "key": "technician_email",
+      "value": "",
+      "type": "string",
+      "description": "Use the dedicated safe-seeded technician."
+    },
+    {
+      "key": "technician_password",
+      "value": "",
+      "type": "string",
+      "description": "Blank template; local secret only."
+    },
+    {
+      "key": "access_token",
+      "value": "",
+      "type": "string",
+      "description": "Customer Bearer access token from login; local secret only."
+    },
+    {
+      "key": "admin_access_token",
+      "value": "",
+      "type": "string",
+      "description": "Admin Bearer token; local secret only."
+    },
+    {
+      "key": "technician_access_token",
+      "value": "",
+      "type": "string",
+      "description": "Technician Bearer token; local secret only."
+    },
+    {
+      "key": "refresh_token",
+      "value": "",
+      "type": "string",
+      "description": "Current one-use 43-character refresh token; local secret only."
+    },
+    {
+      "key": "google_credential",
+      "value": "",
+      "type": "string",
+      "description": "Real Google ID token for configured audience; local secret only."
+    },
+    {
+      "key": "customer_id",
+      "value": "",
+      "type": "string",
+      "description": "Extract customer profile ID."
+    },
+    {
+      "key": "service_id",
+      "value": "",
+      "type": "string",
+      "description": "Extract service creation data.id."
+    },
+    {
+      "key": "request_id",
+      "value": "",
+      "type": "string",
+      "description": "Extract request creation data.id."
+    },
+    {
+      "key": "technician_id",
+      "value": "",
+      "type": "string",
+      "description": "Technician user ID from login/profile."
+    },
+    {
+      "key": "work_order_id",
+      "value": "",
+      "type": "string",
+      "description": "Extract assignment data.id."
+    },
+    {
+      "key": "invoice_id",
+      "value": "",
+      "type": "string",
+      "description": "Extract completion data.invoice.id."
+    },
+    {
+      "key": "payment_id",
+      "value": "",
+      "type": "string",
+      "description": "Extract checkout data.id."
+    },
+    {
+      "key": "feedback_id",
+      "value": "",
+      "type": "string",
+      "description": "Extract feedback data.id."
+    },
+    {
+      "key": "request_version",
+      "value": "1",
+      "type": "string",
+      "description": "Update from each request write; assignment returns request.version."
+    },
+    {
+      "key": "work_order_version",
+      "value": "1",
+      "type": "string",
+      "description": "Update from each work write; stale versions return 409."
+    },
+    {
+      "key": "preferred_start",
+      "value": "",
+      "type": "string",
+      "description": "Set a future ISO timestamp with explicit offset."
+    },
+    {
+      "key": "visit_start",
+      "value": "",
+      "type": "string",
+      "description": "Set future ISO timestamp; at most millisecond precision."
+    },
+    {
+      "key": "visit_end",
+      "value": "",
+      "type": "string",
+      "description": "Set after visit_start, within 8 hours."
+    },
+    {
+      "key": "idempotency_key",
+      "value": "",
+      "type": "string",
+      "description": "Set a new UUID per intended checkout; retain across retries of the same invoice/body."
+    },
+    {
+      "key": "merchant_tran_id",
+      "value": "",
+      "type": "string",
+      "description": "Provider callback only: stored 24-hex merchant reference, not exposed by customer payment API."
+    },
+    {
+      "key": "validation_id",
+      "value": "",
+      "type": "string",
+      "description": "Provider callback only: actual provider validation reference; no fabricated evidence."
+    },
+    {
+      "key": "admin_id",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "01 Health",
+      "item": [
+        {
+          "name": "Liveness",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/health",
+              "host": ["{{base_url}}"],
+              "path": ["health"]
+            },
+            "description": "Access: PUBLIC. Expected success: 200.\n\nLiveness does not query PostgreSQL.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request."
+          },
+          "response": [
+            {
+              "name": "Success example (illustrative)",
+              "originalRequest": {
+                "method": "GET",
+                "auth": {
+                  "type": "noauth"
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/health",
+                  "host": ["{{base_url}}"],
+                  "path": ["health"]
+                },
+                "description": "Access: PUBLIC. Expected success: 200.\n\nLiveness does not query PostgreSQL.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request."
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"API is running\",\n  \"data\": {\n    \"status\": \"ok\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Database readiness",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/health/ready",
+              "host": ["{{base_url}}"],
+              "path": ["health", "ready"]
+            },
+            "description": "Access: PUBLIC. Expected success: 200.\n\nChecks PostgreSQL. Database outage returns 503.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request."
+          },
+          "response": [
+            {
+              "name": "Success example (illustrative)",
+              "originalRequest": {
+                "method": "GET",
+                "auth": {
+                  "type": "noauth"
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/health/ready",
+                  "host": ["{{base_url}}"],
+                  "path": ["health", "ready"]
+                },
+                "description": "Access: PUBLIC. Expected success: 200.\n\nChecks PostgreSQL. Database outage returns 503.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request."
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"API is ready\",\n  \"data\": {\n    \"database\": \"up\"\n  }\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "02 Authentication",
+      "item": [
+        {
+          "name": "Register customer",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/register",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "register"]
+            },
+            "description": "Access: PUBLIC. Expected success: 201.\n\nName 2\u2013100 trimmed characters; normalized email up to 254; password 15\u2013128 characters. Registration creates a CUSTOMER profile; log in separately for tokens. Client role/phone/extra fields are rejected. Existing reserved email returns 409.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Demo Customer\",\n  \"email\": \"{{customer_email}}\",\n  \"password\": \"{{customer_password}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Success example (illustrative)",
+              "originalRequest": {
+                "method": "POST",
+                "auth": {
+                  "type": "noauth"
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/auth/register",
+                  "host": ["{{base_url}}"],
+                  "path": ["auth", "register"]
+                },
+                "description": "Access: PUBLIC. Expected success: 201.\n\nName 2\u2013100 trimmed characters; normalized email up to 254; password 15\u2013128 characters. Registration creates a CUSTOMER profile; log in separately for tokens. Client role/phone/extra fields are rejected. Existing reserved email returns 409.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Demo Customer\",\n  \"email\": \"{{customer_email}}\",\n  \"password\": \"{{customer_password}}\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-store"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Account created successfully\",\n  \"data\": {\n    \"id\": \"{{customer_id}}\",\n    \"name\": \"Demo Customer\",\n    \"email\": \"{{customer_email}}\",\n    \"role\": \"CUSTOMER\",\n    \"createdAt\": \"2026-10-07T10:00:00.000Z\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Login customer",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "login"]
+            },
+            "description": "Access: PUBLIC. Expected success: 200.\n\nLog in with an active CUSTOMER account. Prepare admin/technician via safe bootstrap scripts; public registration cannot choose roles. Extract accessToken/refreshToken into local environment values, never shared values. Generic credential/account failure returns 401.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{customer_email}}\",\n  \"password\": \"{{customer_password}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Success example (illustrative)",
+              "originalRequest": {
+                "method": "POST",
+                "auth": {
+                  "type": "noauth"
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/auth/login",
+                  "host": ["{{base_url}}"],
+                  "path": ["auth", "login"]
+                },
+                "description": "Access: PUBLIC. Expected success: 200.\n\nLog in with an active CUSTOMER account. Prepare admin/technician via safe bootstrap scripts; public registration cannot choose roles. Extract accessToken/refreshToken into local environment values, never shared values. Generic credential/account failure returns 401.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"{{customer_email}}\",\n  \"password\": \"{{customer_password}}\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-store"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Signed in successfully\",\n  \"data\": {\n    \"user\": {\n      \"id\": \"{{customer_id}}\",\n      \"name\": \"Demo Customer\",\n      \"email\": \"{{customer_email}}\",\n      \"role\": \"CUSTOMER\",\n      \"createdAt\": \"2026-10-07T10:00:00.000Z\"\n    },\n    \"accessToken\": \"<access token returned by the server>\",\n    \"refreshToken\": \"<rotated refresh token returned by the server>\",\n    \"tokenType\": \"Bearer\",\n    \"expiresIn\": 900,\n    \"refreshExpiresAt\": \"2026-10-14T10:00:00.000Z\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Login admin",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "login"]
+            },
+            "description": "Access: PUBLIC. Expected success: 200.\n\nLog in with an active ADMIN account. Prepare admin/technician via safe bootstrap scripts; public registration cannot choose roles. Extract accessToken/refreshToken into local environment values, never shared values. Generic credential/account failure returns 401.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{admin_email}}\",\n  \"password\": \"{{admin_password}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Success example (illustrative)",
+              "originalRequest": {
+                "method": "POST",
+                "auth": {
+                  "type": "noauth"
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/auth/login",
+                  "host": ["{{base_url}}"],
+                  "path": ["auth", "login"]
+                },
+                "description": "Access: PUBLIC. Expected success: 200.\n\nLog in with an active ADMIN account. Prepare admin/technician via safe bootstrap scripts; public registration cannot choose roles. Extract accessToken/refreshToken into local environment values, never shared values. Generic credential/account failure returns 401.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"{{admin_email}}\",\n  \"password\": \"{{admin_password}}\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-store"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Signed in successfully\",\n  \"data\": {\n    \"user\": {\n      \"id\": \"{{admin_id}}\",\n      \"name\": \"Demo Admin\",\n      \"email\": \"{{admin_email}}\",\n      \"role\": \"ADMIN\",\n      \"createdAt\": \"2026-10-07T10:00:00.000Z\"\n    },\n    \"accessToken\": \"<access token returned by the server>\",\n    \"refreshToken\": \"<rotated refresh token returned by the server>\",\n    \"tokenType\": \"Bearer\",\n    \"expiresIn\": 900,\n    \"refreshExpiresAt\": \"2026-10-14T10:00:00.000Z\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Login technician",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "login"]
+            },
+            "description": "Access: PUBLIC. Expected success: 200.\n\nLog in with an active TECHNICIAN account. Prepare admin/technician via safe bootstrap scripts; public registration cannot choose roles. Extract accessToken/refreshToken into local environment values, never shared values. Generic credential/account failure returns 401.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{technician_email}}\",\n  \"password\": \"{{technician_password}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Success example (illustrative)",
+              "originalRequest": {
+                "method": "POST",
+                "auth": {
+                  "type": "noauth"
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/auth/login",
+                  "host": ["{{base_url}}"],
+                  "path": ["auth", "login"]
+                },
+                "description": "Access: PUBLIC. Expected success: 200.\n\nLog in with an active TECHNICIAN account. Prepare admin/technician via safe bootstrap scripts; public registration cannot choose roles. Extract accessToken/refreshToken into local environment values, never shared values. Generic credential/account failure returns 401.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"{{technician_email}}\",\n  \"password\": \"{{technician_password}}\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-store"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Signed in successfully\",\n  \"data\": {\n    \"user\": {\n      \"id\": \"{{technician_id}}\",\n      \"name\": \"Demo Technician\",\n      \"email\": \"{{technician_email}}\",\n      \"role\": \"TECHNICIAN\",\n      \"createdAt\": \"2026-10-07T10:00:00.000Z\"\n    },\n    \"accessToken\": \"<access token returned by the server>\",\n    \"refreshToken\": \"<rotated refresh token returned by the server>\",\n    \"tokenType\": \"Bearer\",\n    \"expiresIn\": 900,\n    \"refreshExpiresAt\": \"2026-10-14T10:00:00.000Z\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Verified Google login",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/google",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "google"]
+            },
+            "description": "Access: PUBLIC. Expected success: 200.\n\nUse a real Google ID token obtained through npm run google:test and the configured OAuth client. The server verifies signature/audience/issuer/expiry/email and binds provider subject. Disabled Google configuration 503; invalid credential 401; existing unlinked email 409; non-JSON/untrusted origin 415/403. This example does not fabricate a Google credential.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"credential\": \"{{google_credential}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Success example (illustrative)",
+              "originalRequest": {
+                "method": "POST",
+                "auth": {
+                  "type": "noauth"
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/auth/google",
+                  "host": ["{{base_url}}"],
+                  "path": ["auth", "google"]
+                },
+                "description": "Access: PUBLIC. Expected success: 200.\n\nUse a real Google ID token obtained through npm run google:test and the configured OAuth client. The server verifies signature/audience/issuer/expiry/email and binds provider subject. Disabled Google configuration 503; invalid credential 401; existing unlinked email 409; non-JSON/untrusted origin 415/403. This example does not fabricate a Google credential.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"credential\": \"{{google_credential}}\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-store"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Signed in successfully\",\n  \"data\": {\n    \"user\": {\n      \"id\": \"{{customer_id}}\",\n      \"name\": \"Demo Customer\",\n      \"email\": \"{{customer_email}}\",\n      \"role\": \"CUSTOMER\",\n      \"createdAt\": \"2026-10-07T10:00:00.000Z\"\n    },\n    \"accessToken\": \"<access token returned by the server>\",\n    \"refreshToken\": \"<rotated refresh token returned by the server>\",\n    \"tokenType\": \"Bearer\",\n    \"expiresIn\": 900,\n    \"refreshExpiresAt\": \"2026-10-14T10:00:00.000Z\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Rotate refresh token",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/refresh",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "refresh"]
+            },
+            "description": "Access: PUBLIC. Expected success: 200.\n\nRefresh token is a 43-character URL-safe opaque value. Use it once and replace the saved refresh token with the returned token. Replay revokes its session family and returns 401.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refresh_token}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Success example (illustrative)",
+              "originalRequest": {
+                "method": "POST",
+                "auth": {
+                  "type": "noauth"
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/auth/refresh",
+                  "host": ["{{base_url}}"],
+                  "path": ["auth", "refresh"]
+                },
+                "description": "Access: PUBLIC. Expected success: 200.\n\nRefresh token is a 43-character URL-safe opaque value. Use it once and replace the saved refresh token with the returned token. Replay revokes its session family and returns 401.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"refreshToken\": \"{{refresh_token}}\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-store"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Session refreshed successfully\",\n  \"data\": {\n    \"user\": {\n      \"id\": \"{{customer_id}}\",\n      \"name\": \"Demo Customer\",\n      \"email\": \"{{customer_email}}\",\n      \"role\": \"CUSTOMER\",\n      \"createdAt\": \"2026-10-07T10:00:00.000Z\"\n    },\n    \"accessToken\": \"<access token returned by the server>\",\n    \"refreshToken\": \"<rotated refresh token returned by the server>\",\n    \"tokenType\": \"Bearer\",\n    \"expiresIn\": 900,\n    \"refreshExpiresAt\": \"2026-10-14T10:00:00.000Z\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Logout current session",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/logout",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "logout"]
+            },
+            "description": "Access: CUSTOMER. Expected success: 200.\n\nAllowed for CUSTOMER/TECHNICIAN/ADMIN with the corresponding token. Revokes the current session; run after other requests for that session.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request."
+          },
+          "response": [
+            {
+              "name": "Success example (illustrative)",
+              "originalRequest": {
+                "method": "POST",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{access_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/auth/logout",
+                  "host": ["{{base_url}}"],
+                  "path": ["auth", "logout"]
+                },
+                "description": "Access: CUSTOMER. Expected success: 200.\n\nAllowed for CUSTOMER/TECHNICIAN/ADMIN with the corresponding token. Revokes the current session; run after other requests for that session.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request."
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-store"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Signed out successfully\",\n  \"data\": null\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "03 Profile",
+      "item": [
+        {
+          "name": "Read own profile",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/users/me",
+              "host": ["{{base_url}}"],
+              "path": ["users", "me"]
+            },
+            "description": "Access: CUSTOMER. Expected success: 200.\n\nAny authenticated primary role may read its own safe profile. Switch the Bearer variable for technician/admin.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request."
+          },
+          "response": [
+            {
+              "name": "Success example (illustrative)",
+              "originalRequest": {
+                "method": "GET",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{access_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/users/me",
+                  "host": ["{{base_url}}"],
+                  "path": ["users", "me"]
+                },
+                "description": "Access: CUSTOMER. Expected success: 200.\n\nAny authenticated primary role may read its own safe profile. Switch the Bearer variable for technician/admin.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request."
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-store"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Profile fetched successfully\",\n  \"data\": {\n    \"id\": \"{{customer_id}}\",\n    \"name\": \"Demo Customer\",\n    \"email\": \"{{customer_email}}\",\n    \"role\": \"CUSTOMER\",\n    \"createdAt\": \"2026-10-07T10:00:00.000Z\",\n    \"phone\": null\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update own profile",
+          "request": {
+            "method": "PATCH",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/users/me",
+              "host": ["{{base_url}}"],
+              "path": ["users", "me"]
+            },
+            "description": "Access: CUSTOMER. Expected success: 200.\n\nAllowlisted name/phone only; at least one field. Name 2\u2013100 characters. Phone uses international format; null clears it. Cannot update role/status/email/password. Payment checkout requires a valid phone and name/email at most 50 characters.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Demo Customer\",\n  \"phone\": \"+8801712345678\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Success example (illustrative)",
+              "originalRequest": {
+                "method": "PATCH",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{access_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/users/me",
+                  "host": ["{{base_url}}"],
+                  "path": ["users", "me"]
+                },
+                "description": "Access: CUSTOMER. Expected success: 200.\n\nAllowlisted name/phone only; at least one field. Name 2\u2013100 characters. Phone uses international format; null clears it. Cannot update role/status/email/password. Payment checkout requires a valid phone and name/email at most 50 characters.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Demo Customer\",\n  \"phone\": \"+8801712345678\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-store"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Profile updated successfully\",\n  \"data\": {\n    \"id\": \"{{customer_id}}\",\n    \"name\": \"Demo Customer\",\n    \"email\": \"{{customer_email}}\",\n    \"role\": \"CUSTOMER\",\n    \"createdAt\": \"2026-10-07T10:00:00.000Z\",\n    \"phone\": \"+8801712345678\"\n  }\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "04 Service catalog",
+      "item": [
+        {
+          "name": "Search active services",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/services?page=1&limit=20&sort=newest",
+              "host": ["{{base_url}}"],
+              "path": ["services"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Integer 1\u2013100000; default 1.",
+                  "disabled": false
+                },
+                {
+                  "key": "limit",
+                  "value": "20",
+                  "description": "Integer 1\u2013100; default 20.",
+                  "disabled": false
+                },
+                {
+                  "key": "sort",
+                  "value": "newest",
+                  "description": "newest / oldest / name_asc / price_asc / price_desc",
+                  "disabled": false
+                },
+                {
+                  "key": "q",
+                  "value": "cooling",
+                  "description": "Literal search in service name/description, up to 100 trimmed characters.",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Access: PUBLIC. Expected success: 200.\n\nPublic catalog only; soft-deleted services excluded. Public data may use Redis; outage falls back to PostgreSQL.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request."
+          },
+          "response": [
+            {
+              "name": "Success example (illustrative)",
+              "originalRequest": {
+                "method": "GET",
+                "auth": {
+                  "type": "noauth"
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/services?page=1&limit=20&sort=newest",
+                  "host": ["{{base_url}}"],
+                  "path": ["services"],
+                  "query": [
+                    {
+                      "key": "page",
+                      "value": "1",
+                      "description": "Integer 1\u2013100000; default 1.",
+                      "disabled": false
+                    },
+                    {
+                      "key": "limit",
+                      "value": "20",
+                      "description": "Integer 1\u2013100; default 20.",
+                      "disabled": false
+                    },
+                    {
+                      "key": "sort",
+                      "value": "newest",
+                      "description": "newest / oldest / name_asc / price_asc / price_desc",
+                      "disabled": false
+                    },
+                    {
+                      "key": "q",
+                      "value": "cooling",
+                      "description": "Literal search in service name/description, up to 100 trimmed characters.",
+                      "disabled": true
+                    }
+                  ]
+                },
+                "description": "Access: PUBLIC. Expected success: 200.\n\nPublic catalog only; soft-deleted services excluded. Public data may use Redis; outage falls back to PostgreSQL.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request."
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Services retrieved successfully\",\n  \"data\": {\n    \"items\": [\n      {\n        \"id\": \"{{service_id}}\",\n        \"name\": \"Cooling unit inspection\",\n        \"description\": \"Inspect and repair the cooling unit.\",\n        \"basePriceMinor\": 150000,\n        \"currency\": \"BDT\",\n        \"createdAt\": \"2026-10-07T10:00:00.000Z\",\n        \"updatedAt\": \"2026-10-07T10:00:00.000Z\"\n      }\n    ],\n    \"pagination\": {\n      \"page\": 1,\n      \"limit\": 20,\n      \"total\": 1,\n      \"totalPages\": 1\n    }\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Read active service",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/services/{{service_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["services", "{{service_id}}"]
+            },
+            "description": "Access: PUBLIC. Expected success: 200.\n\nActive public service. Invalid UUID 400; missing/deleted service 404.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request."
+          },
+          "response": [
+            {
+              "name": "Success example (illustrative)",
+              "originalRequest": {
+                "method": "GET",
+                "auth": {
+                  "type": "noauth"
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/services/{{service_id}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["services", "{{service_id}}"]
+                },
+                "description": "Access: PUBLIC. Expected success: 200.\n\nActive public service. Invalid UUID 400; missing/deleted service 404.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request."
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Service retrieved successfully\",\n  \"data\": {\n    \"id\": \"{{service_id}}\",\n    \"name\": \"Cooling unit inspection\",\n    \"description\": \"Inspect and repair the cooling unit.\",\n    \"basePriceMinor\": 150000,\n    \"currency\": \"BDT\",\n    \"createdAt\": \"2026-10-07T10:00:00.000Z\",\n    \"updatedAt\": \"2026-10-07T10:00:00.000Z\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Create service",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/services",
+              "host": ["{{base_url}}"],
+              "path": ["services"]
+            },
+            "description": "Access: ADMIN. Expected success: 201.\n\nName 2\u2013100, description 10\u20132000 trimmed characters; price integer 0\u20131000000000 paisa; BDT fixed by server. Extract data.id as service_id. Audit/cache revision update is atomic. SSLCommerz checkout supports only BDT 10\u2013500000; unsupported invoice amounts return 409.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Cooling unit inspection\",\n  \"description\": \"Inspect and repair the cooling unit.\",\n  \"basePriceMinor\": 150000\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Success example (illustrative)",
+              "originalRequest": {
+                "method": "POST",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{admin_access_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/services",
+                  "host": ["{{base_url}}"],
+                  "path": ["services"]
+                },
+                "description": "Access: ADMIN. Expected success: 201.\n\nName 2\u2013100, description 10\u20132000 trimmed characters; price integer 0\u20131000000000 paisa; BDT fixed by server. Extract data.id as service_id. Audit/cache revision update is atomic. SSLCommerz checkout supports only BDT 10\u2013500000; unsupported invoice amounts return 409.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Cooling unit inspection\",\n  \"description\": \"Inspect and repair the cooling unit.\",\n  \"basePriceMinor\": 150000\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Service created successfully\",\n  \"data\": {\n    \"id\": \"{{service_id}}\",\n    \"name\": \"Cooling unit inspection\",\n    \"description\": \"Inspect and repair the cooling unit.\",\n    \"basePriceMinor\": 150000,\n    \"currency\": \"BDT\",\n    \"createdAt\": \"2026-10-07T10:00:00.000Z\",\n    \"updatedAt\": \"2026-10-07T10:00:00.000Z\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update service",
+          "request": {
+            "method": "PATCH",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/services/{{service_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["services", "{{service_id}}"]
+            },
+            "description": "Access: ADMIN. Expected success: 200.\n\nAt least one name/description/basePriceMinor field; same bounds as creation. Historical agreed prices and invoices stay frozen.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"Inspect, clean and repair the cooling unit.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Success example (illustrative)",
+              "originalRequest": {
+                "method": "PATCH",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{admin_access_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/services/{{service_id}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["services", "{{service_id}}"]
+                },
+                "description": "Access: ADMIN. Expected success: 200.\n\nAt least one name/description/basePriceMinor field; same bounds as creation. Historical agreed prices and invoices stay frozen.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"description\": \"Inspect, clean and repair the cooling unit.\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Service updated successfully\",\n  \"data\": {\n    \"id\": \"{{service_id}}\",\n    \"name\": \"Cooling unit inspection\",\n    \"description\": \"Inspect and repair the cooling unit.\",\n    \"basePriceMinor\": 150000,\n    \"currency\": \"BDT\",\n    \"createdAt\": \"2026-10-07T10:00:00.000Z\",\n    \"updatedAt\": \"2026-10-07T10:00:00.000Z\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Soft-delete service",
+          "request": {
+            "method": "DELETE",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/services/{{service_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["services", "{{service_id}}"]
+            },
+            "description": "Access: ADMIN. Expected success: 200.\n\nRun after creating the service/request/work fixtures. Soft deletion preserves historical work/invoices/feedback; public reads return 404.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request."
+          },
+          "response": [
+            {
+              "name": "Success example (illustrative)",
+              "originalRequest": {
+                "method": "DELETE",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{admin_access_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/services/{{service_id}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["services", "{{service_id}}"]
+                },
+                "description": "Access: ADMIN. Expected success: 200.\n\nRun after creating the service/request/work fixtures. Soft deletion preserves historical work/invoices/feedback; public reads return 404.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request."
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Service deleted successfully\",\n  \"data\": null\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "05 Service requests",
+      "item": [
+        {
+          "name": "Create customer request",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/requests",
+              "host": ["{{base_url}}"],
+              "path": ["requests"]
+            },
+            "description": "Access: CUSTOMER. Expected success: 201.\n\nActive service UUID, description 10\u20132000, address 10\u2013500 trimmed characters, future ISO time with timezone offset. Owner is taken from session. Extract data.id and data.version as request_id/request_version.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"serviceId\": \"{{service_id}}\",\n  \"description\": \"The cooling unit needs inspection.\",\n  \"address\": \"House 12, Road 3, Dhaka\",\n  \"preferredStart\": \"{{preferred_start}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Success example (illustrative)",
+              "originalRequest": {
+                "method": "POST",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{access_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/requests",
+                  "host": ["{{base_url}}"],
+                  "path": ["requests"]
+                },
+                "description": "Access: CUSTOMER. Expected success: 201.\n\nActive service UUID, description 10\u20132000, address 10\u2013500 trimmed characters, future ISO time with timezone offset. Owner is taken from session. Extract data.id and data.version as request_id/request_version.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"serviceId\": \"{{service_id}}\",\n  \"description\": \"The cooling unit needs inspection.\",\n  \"address\": \"House 12, Road 3, Dhaka\",\n  \"preferredStart\": \"{{preferred_start}}\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-store"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Request created successfully\",\n  \"data\": {\n    \"id\": \"{{request_id}}\",\n    \"customerId\": \"{{customer_id}}\",\n    \"serviceId\": \"{{service_id}}\",\n    \"description\": \"The cooling unit needs inspection.\",\n    \"address\": \"House 12, Road 3, Dhaka\",\n    \"preferredStart\": \"{{preferred_start}}\",\n    \"status\": \"PENDING\",\n    \"version\": 1,\n    \"reviewReason\": null,\n    \"reviewedAt\": null,\n    \"cancellationReason\": null,\n    \"cancelledAt\": null,\n    \"createdAt\": \"2026-10-07T10:00:00.000Z\",\n    \"updatedAt\": \"2026-10-07T10:00:00.000Z\",\n    \"service\": {\n      \"id\": \"{{service_id}}\",\n      \"name\": \"Cooling unit inspection\"\n    },\n    \"workOrder\": null\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "List scoped requests",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/requests?page=1&limit=20&sort=newest",
+              "host": ["{{base_url}}"],
+              "path": ["requests"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Integer 1\u2013100000; default 1.",
+                  "disabled": false
+                },
+                {
+                  "key": "limit",
+                  "value": "20",
+                  "description": "Integer 1\u2013100; default 20.",
+                  "disabled": false
+                },
+                {
+                  "key": "sort",
+                  "value": "newest",
+                  "description": "newest / oldest / preferred_start_asc",
+                  "disabled": false
+                },
+                {
+                  "key": "status",
+                  "value": "PENDING",
+                  "description": "Optional lifecycle filter.",
+                  "disabled": true
+                },
+                {
+                  "key": "serviceId",
+                  "value": "{{service_id}}",
+                  "description": "Optional service UUID.",
+                  "disabled": true
+                },
+                {
+                  "key": "q",
+                  "value": "cooling",
+                  "description": "Optional literal search, max 100.",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Access: CUSTOMER. Expected success: 200.\n\nC own / A all active requests; TECHNICIAN 403. Status PENDING/APPROVED/REJECTED/CANCELLED; literal search checks description/address/service name. Unrelated customer sees an empty list.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request."
+          },
+          "response": [
+            {
+              "name": "Success example (illustrative)",
+              "originalRequest": {
+                "method": "GET",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{access_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/requests?page=1&limit=20&sort=newest",
+                  "host": ["{{base_url}}"],
+                  "path": ["requests"],
+                  "query": [
+                    {
+                      "key": "page",
+                      "value": "1",
+                      "description": "Integer 1\u2013100000; default 1.",
+                      "disabled": false
+                    },
+                    {
+                      "key": "limit",
+                      "value": "20",
+                      "description": "Integer 1\u2013100; default 20.",
+                      "disabled": false
+                    },
+                    {
+                      "key": "sort",
+                      "value": "newest",
+                      "description": "newest / oldest / preferred_start_asc",
+                      "disabled": false
+                    },
+                    {
+                      "key": "status",
+                      "value": "PENDING",
+                      "description": "Optional lifecycle filter.",
+                      "disabled": true
+                    },
+                    {
+                      "key": "serviceId",
+                      "value": "{{service_id}}",
+                      "description": "Optional service UUID.",
+                      "disabled": true
+                    },
+                    {
+                      "key": "q",
+                      "value": "cooling",
+                      "description": "Optional literal search, max 100.",
+                      "disabled": true
+                    }
+                  ]
+                },
+                "description": "Access: CUSTOMER. Expected success: 200.\n\nC own / A all active requests; TECHNICIAN 403. Status PENDING/APPROVED/REJECTED/CANCELLED; literal search checks description/address/service name. Unrelated customer sees an empty list.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request."
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-store"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Requests retrieved successfully\",\n  \"data\": {\n    \"items\": [\n      {\n        \"id\": \"{{request_id}}\",\n        \"customerId\": \"{{customer_id}}\",\n        \"serviceId\": \"{{service_id}}\",\n        \"description\": \"The cooling unit needs inspection.\",\n        \"address\": \"House 12, Road 3, Dhaka\",\n        \"preferredStart\": \"{{preferred_start}}\",\n        \"status\": \"PENDING\",\n        \"version\": 1,\n        \"reviewReason\": null,\n        \"reviewedAt\": null,\n        \"cancellationReason\": null,\n        \"cancelledAt\": null,\n        \"createdAt\": \"2026-10-07T10:00:00.000Z\",\n        \"updatedAt\": \"2026-10-07T10:00:00.000Z\",\n        \"service\": {\n          \"id\": \"{{service_id}}\",\n          \"name\": \"Cooling unit inspection\"\n        },\n        \"workOrder\": null\n      }\n    ],\n    \"pagination\": {\n      \"page\": 1,\n      \"limit\": 20,\n      \"total\": 1,\n      \"totalPages\": 1\n    }\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Read scoped request",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/requests/{{request_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["requests", "{{request_id}}"]
+            },
+            "description": "Access: CUSTOMER. Expected success: 200.\n\nC own / A. Foreign/missing/soft-deleted request 404; T 403. Nullable work summary includes its current invoice/feedback.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request."
+          },
+          "response": [
+            {
+              "name": "Success example (illustrative)",
+              "originalRequest": {
+                "method": "GET",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{access_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/requests/{{request_id}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["requests", "{{request_id}}"]
+                },
+                "description": "Access: CUSTOMER. Expected success: 200.\n\nC own / A. Foreign/missing/soft-deleted request 404; T 403. Nullable work summary includes its current invoice/feedback.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request."
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-store"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Request retrieved successfully\",\n  \"data\": {\n    \"id\": \"{{request_id}}\",\n    \"customerId\": \"{{customer_id}}\",\n    \"serviceId\": \"{{service_id}}\",\n    \"description\": \"The cooling unit needs inspection.\",\n    \"address\": \"House 12, Road 3, Dhaka\",\n    \"preferredStart\": \"{{preferred_start}}\",\n    \"status\": \"PENDING\",\n    \"version\": 1,\n    \"reviewReason\": null,\n    \"reviewedAt\": null,\n    \"cancellationReason\": null,\n    \"cancelledAt\": null,\n    \"createdAt\": \"2026-10-07T10:00:00.000Z\",\n    \"updatedAt\": \"2026-10-07T10:00:00.000Z\",\n    \"service\": {\n      \"id\": \"{{service_id}}\",\n      \"name\": \"Cooling unit inspection\"\n    },\n    \"workOrder\": null\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Edit pending request",
+          "request": {
+            "method": "PATCH",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/requests/{{request_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["requests", "{{request_id}}"]
+            },
+            "description": "Access: CUSTOMER. Expected success: 200.\n\nOnly owner and PENDING state. Send latest integer version (1\u20132147483646) plus at least one description/address/preferredStart. Extract returned version; stale version or ineligible state 409.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"version\": {{request_version}},\n  \"address\": \"House 25, Road 4, Dhaka\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Success example (illustrative)",
+              "originalRequest": {
+                "method": "PATCH",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{access_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/requests/{{request_id}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["requests", "{{request_id}}"]
+                },
+                "description": "Access: CUSTOMER. Expected success: 200.\n\nOnly owner and PENDING state. Send latest integer version (1\u20132147483646) plus at least one description/address/preferredStart. Extract returned version; stale version or ineligible state 409.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"version\": {{request_version}},\n  \"address\": \"House 25, Road 4, Dhaka\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-store"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Request updated successfully\",\n  \"data\": {\n    \"id\": \"{{request_id}}\",\n    \"customerId\": \"{{customer_id}}\",\n    \"serviceId\": \"{{service_id}}\",\n    \"description\": \"The cooling unit needs inspection.\",\n    \"address\": \"House 25, Road 4, Dhaka\",\n    \"preferredStart\": \"{{preferred_start}}\",\n    \"status\": \"PENDING\",\n    \"version\": 2,\n    \"reviewReason\": null,\n    \"reviewedAt\": null,\n    \"cancellationReason\": null,\n    \"cancelledAt\": null,\n    \"createdAt\": \"2026-10-07T10:00:00.000Z\",\n    \"updatedAt\": \"2026-10-07T10:00:00.000Z\",\n    \"service\": {\n      \"id\": \"{{service_id}}\",\n      \"name\": \"Cooling unit inspection\"\n    },\n    \"workOrder\": null\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Review pending request",
+          "request": {
+            "method": "PATCH",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/requests/{{request_id}}/review",
+              "host": ["{{base_url}}"],
+              "path": ["requests", "{{request_id}}", "review"]
+            },
+            "description": "Access: ADMIN. Expected success: 200.\n\nDecision APPROVE/REJECT with latest version. REJECT requires a 3\u2013500-character reason. Only PENDING; stale version/state 409. Save latest version.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"version\": {{request_version}},\n  \"decision\": \"APPROVE\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Success example (illustrative)",
+              "originalRequest": {
+                "method": "PATCH",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{admin_access_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/requests/{{request_id}}/review",
+                  "host": ["{{base_url}}"],
+                  "path": ["requests", "{{request_id}}", "review"]
+                },
+                "description": "Access: ADMIN. Expected success: 200.\n\nDecision APPROVE/REJECT with latest version. REJECT requires a 3\u2013500-character reason. Only PENDING; stale version/state 409. Save latest version.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"version\": {{request_version}},\n  \"decision\": \"APPROVE\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-store"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Request reviewed successfully\",\n  \"data\": {\n    \"id\": \"{{request_id}}\",\n    \"customerId\": \"{{customer_id}}\",\n    \"serviceId\": \"{{service_id}}\",\n    \"description\": \"The cooling unit needs inspection.\",\n    \"address\": \"House 12, Road 3, Dhaka\",\n    \"preferredStart\": \"{{preferred_start}}\",\n    \"status\": \"APPROVED\",\n    \"version\": 3,\n    \"reviewReason\": null,\n    \"reviewedAt\": \"2026-10-07T10:00:00.000Z\",\n    \"cancellationReason\": null,\n    \"cancelledAt\": null,\n    \"createdAt\": \"2026-10-07T10:00:00.000Z\",\n    \"updatedAt\": \"2026-10-07T10:00:00.000Z\",\n    \"service\": {\n      \"id\": \"{{service_id}}\",\n      \"name\": \"Cooling unit inspection\"\n    },\n    \"workOrder\": null\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Cancel unstarted request",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/requests/{{request_id}}/cancel",
+              "host": ["{{base_url}}"],
+              "path": ["requests", "{{request_id}}", "cancel"]
+            },
+            "description": "Access: CUSTOMER. Expected success: 200.\n\nC own / A. PENDING/APPROVED only; an ASSIGNED order is cancelled atomically. EN_ROUTE/IN_PROGRESS/COMPLETED cannot be cancelled (409). Test on a separate request; this is an alternative to the paid-work workflow.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"version\": {{request_version}},\n  \"reason\": \"Visit no longer needed.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Success example (illustrative)",
+              "originalRequest": {
+                "method": "POST",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{access_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/requests/{{request_id}}/cancel",
+                  "host": ["{{base_url}}"],
+                  "path": ["requests", "{{request_id}}", "cancel"]
+                },
+                "description": "Access: CUSTOMER. Expected success: 200.\n\nC own / A. PENDING/APPROVED only; an ASSIGNED order is cancelled atomically. EN_ROUTE/IN_PROGRESS/COMPLETED cannot be cancelled (409). Test on a separate request; this is an alternative to the paid-work workflow.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"version\": {{request_version}},\n  \"reason\": \"Visit no longer needed.\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-store"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Request cancelled successfully\",\n  \"data\": {\n    \"id\": \"{{request_id}}\",\n    \"customerId\": \"{{customer_id}}\",\n    \"serviceId\": \"{{service_id}}\",\n    \"description\": \"The cooling unit needs inspection.\",\n    \"address\": \"House 12, Road 3, Dhaka\",\n    \"preferredStart\": \"{{preferred_start}}\",\n    \"status\": \"CANCELLED\",\n    \"version\": 2,\n    \"reviewReason\": null,\n    \"reviewedAt\": null,\n    \"cancellationReason\": \"Visit no longer needed.\",\n    \"cancelledAt\": \"2026-10-07T10:00:00.000Z\",\n    \"createdAt\": \"2026-10-07T10:00:00.000Z\",\n    \"updatedAt\": \"2026-10-07T10:00:00.000Z\",\n    \"service\": {\n      \"id\": \"{{service_id}}\",\n      \"name\": \"Cooling unit inspection\"\n    },\n    \"workOrder\": null\n  }\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "06 Technician dispatch",
+      "item": [
+        {
+          "name": "Replace technician skills",
+          "request": {
+            "method": "PUT",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/technicians/{{technician_id}}/skills",
+              "host": ["{{base_url}}"],
+              "path": ["technicians", "{{technician_id}}", "skills"]
+            },
+            "description": "Access: ADMIN. Expected success: 200.\n\nTarget must be active TECHNICIAN. serviceIds contains at most 100 unique active service UUIDs; [] clears skills unless active work depends on one. Removing a required skill returns 409. Use the technician profile ID, not a customer ID.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"serviceIds\": [\n    \"{{service_id}}\"\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Success example (illustrative)",
+              "originalRequest": {
+                "method": "PUT",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{admin_access_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/technicians/{{technician_id}}/skills",
+                  "host": ["{{base_url}}"],
+                  "path": ["technicians", "{{technician_id}}", "skills"]
+                },
+                "description": "Access: ADMIN. Expected success: 200.\n\nTarget must be active TECHNICIAN. serviceIds contains at most 100 unique active service UUIDs; [] clears skills unless active work depends on one. Removing a required skill returns 409. Use the technician profile ID, not a customer ID.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"serviceIds\": [\n    \"{{service_id}}\"\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-store"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Technician skills updated successfully\",\n  \"data\": {\n    \"technicianId\": \"{{technician_id}}\",\n    \"serviceIds\": [\n      \"{{service_id}}\"\n    ]\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Find available technicians",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/technicians?serviceId={{service_id}}&start={{visit_start}}&end={{visit_end}}&page=1&limit=20",
+              "host": ["{{base_url}}"],
+              "path": ["technicians"],
+              "query": [
+                {
+                  "key": "serviceId",
+                  "value": "{{service_id}}",
+                  "description": "Required active service UUID.",
+                  "disabled": false
+                },
+                {
+                  "key": "start",
+                  "value": "{{visit_start}}",
+                  "description": "Required future ISO date/time with timezone offset.",
+                  "disabled": false
+                },
+                {
+                  "key": "end",
+                  "value": "{{visit_end}}",
+                  "description": "Required end after start, at most 8 hours.",
+                  "disabled": false
+                },
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Integer 1\u2013100000; default 1.",
+                  "disabled": false
+                },
+                {
+                  "key": "limit",
+                  "value": "20",
+                  "description": "Integer 1\u2013100; default 20.",
+                  "disabled": false
+                }
+              ]
+            },
+            "description": "Access: ADMIN. Expected success: 200.\n\nRequired serviceId/start/end. Future ISO times with offset and at most millisecond precision; end > start, visit at most 8 hours. Only active matching-skill technicians with no overlapping active visit are returned. This read does not reserve availability.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request."
+          },
+          "response": [
+            {
+              "name": "Success example (illustrative)",
+              "originalRequest": {
+                "method": "GET",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{admin_access_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/technicians?serviceId={{service_id}}&start={{visit_start}}&end={{visit_end}}&page=1&limit=20",
+                  "host": ["{{base_url}}"],
+                  "path": ["technicians"],
+                  "query": [
+                    {
+                      "key": "serviceId",
+                      "value": "{{service_id}}",
+                      "description": "Required active service UUID.",
+                      "disabled": false
+                    },
+                    {
+                      "key": "start",
+                      "value": "{{visit_start}}",
+                      "description": "Required future ISO date/time with timezone offset.",
+                      "disabled": false
+                    },
+                    {
+                      "key": "end",
+                      "value": "{{visit_end}}",
+                      "description": "Required end after start, at most 8 hours.",
+                      "disabled": false
+                    },
+                    {
+                      "key": "page",
+                      "value": "1",
+                      "description": "Integer 1\u2013100000; default 1.",
+                      "disabled": false
+                    },
+                    {
+                      "key": "limit",
+                      "value": "20",
+                      "description": "Integer 1\u2013100; default 20.",
+                      "disabled": false
+                    }
+                  ]
+                },
+                "description": "Access: ADMIN. Expected success: 200.\n\nRequired serviceId/start/end. Future ISO times with offset and at most millisecond precision; end > start, visit at most 8 hours. Only active matching-skill technicians with no overlapping active visit are returned. This read does not reserve availability.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request."
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-store"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Available technicians retrieved successfully\",\n  \"data\": {\n    \"items\": [\n      {\n        \"id\": \"{{technician_id}}\",\n        \"name\": \"Demo Technician\"\n      }\n    ],\n    \"pagination\": {\n      \"page\": 1,\n      \"limit\": 20,\n      \"total\": 1,\n      \"totalPages\": 1\n    }\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Assign approved request",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/requests/{{request_id}}/assignment",
+              "host": ["{{base_url}}"],
+              "path": ["requests", "{{request_id}}", "assignment"]
+            },
+            "description": "Access: ADMIN. Expected success: 201.\n\nAPPROVED request, active skilled technician and valid future window. Overlap/duplicate assignment/ineligible state 409. Price is snapshotted. Extract work_order_id, work_order_version and request.version as request_version.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"technicianId\": \"{{technician_id}}\",\n  \"start\": \"{{visit_start}}\",\n  \"end\": \"{{visit_end}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Success example (illustrative)",
+              "originalRequest": {
+                "method": "POST",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{admin_access_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/requests/{{request_id}}/assignment",
+                  "host": ["{{base_url}}"],
+                  "path": ["requests", "{{request_id}}", "assignment"]
+                },
+                "description": "Access: ADMIN. Expected success: 201.\n\nAPPROVED request, active skilled technician and valid future window. Overlap/duplicate assignment/ineligible state 409. Price is snapshotted. Extract work_order_id, work_order_version and request.version as request_version.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"technicianId\": \"{{technician_id}}\",\n  \"start\": \"{{visit_start}}\",\n  \"end\": \"{{visit_end}}\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-store"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Work order assigned successfully\",\n  \"data\": {\n    \"id\": \"{{work_order_id}}\",\n    \"technicianId\": \"{{technician_id}}\",\n    \"status\": \"ASSIGNED\",\n    \"version\": 1,\n    \"scheduledStart\": \"{{visit_start}}\",\n    \"scheduledEnd\": \"{{visit_end}}\",\n    \"agreedPriceMinor\": 150000,\n    \"currency\": \"BDT\",\n    \"invoice\": null,\n    \"feedback\": null,\n    \"requestId\": \"{{request_id}}\",\n    \"completedAt\": null,\n    \"report\": null,\n    \"cancelledAt\": null,\n    \"createdAt\": \"2026-10-07T10:00:00.000Z\",\n    \"updatedAt\": \"2026-10-07T10:00:00.000Z\",\n    \"technician\": {\n      \"id\": \"{{technician_id}}\",\n      \"name\": \"Demo Technician\"\n    },\n    \"request\": {\n      \"id\": \"{{request_id}}\",\n      \"customerId\": \"{{customer_id}}\",\n      \"serviceId\": \"{{service_id}}\",\n      \"status\": \"APPROVED\",\n      \"version\": 3,\n      \"description\": \"The cooling unit needs inspection.\",\n      \"address\": \"House 12, Road 3, Dhaka\",\n      \"service\": {\n        \"id\": \"{{service_id}}\",\n        \"name\": \"Cooling unit inspection\"\n      }\n    }\n  }\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "07 Work orders",
+      "item": [
+        {
+          "name": "List scoped work orders",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/work-orders?page=1&limit=20&sort=newest",
+              "host": ["{{base_url}}"],
+              "path": ["work-orders"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Integer 1\u2013100000; default 1.",
+                  "disabled": false
+                },
+                {
+                  "key": "limit",
+                  "value": "20",
+                  "description": "Integer 1\u2013100; default 20.",
+                  "disabled": false
+                },
+                {
+                  "key": "sort",
+                  "value": "newest",
+                  "description": "newest / oldest / scheduled_start_asc",
+                  "disabled": false
+                },
+                {
+                  "key": "status",
+                  "value": "ASSIGNED",
+                  "description": "Optional work status.",
+                  "disabled": true
+                },
+                {
+                  "key": "serviceId",
+                  "value": "{{service_id}}",
+                  "description": "Optional service UUID.",
+                  "disabled": true
+                },
+                {
+                  "key": "q",
+                  "value": "cooling",
+                  "description": "Optional literal search, max 100.",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Access: CUSTOMER. Expected success: 200.\n\nC own / assigned T / A. Status ASSIGNED/EN_ROUTE/IN_PROGRESS/COMPLETED/CANCELLED; serviceId and literal description/address/service-name search. Every item has safe nullable invoice/feedback.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request."
+          },
+          "response": [
+            {
+              "name": "Success example (illustrative)",
+              "originalRequest": {
+                "method": "GET",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{access_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/work-orders?page=1&limit=20&sort=newest",
+                  "host": ["{{base_url}}"],
+                  "path": ["work-orders"],
+                  "query": [
+                    {
+                      "key": "page",
+                      "value": "1",
+                      "description": "Integer 1\u2013100000; default 1.",
+                      "disabled": false
+                    },
+                    {
+                      "key": "limit",
+                      "value": "20",
+                      "description": "Integer 1\u2013100; default 20.",
+                      "disabled": false
+                    },
+                    {
+                      "key": "sort",
+                      "value": "newest",
+                      "description": "newest / oldest / scheduled_start_asc",
+                      "disabled": false
+                    },
+                    {
+                      "key": "status",
+                      "value": "ASSIGNED",
+                      "description": "Optional work status.",
+                      "disabled": true
+                    },
+                    {
+                      "key": "serviceId",
+                      "value": "{{service_id}}",
+                      "description": "Optional service UUID.",
+                      "disabled": true
+                    },
+                    {
+                      "key": "q",
+                      "value": "cooling",
+                      "description": "Optional literal search, max 100.",
+                      "disabled": true
+                    }
+                  ]
+                },
+                "description": "Access: CUSTOMER. Expected success: 200.\n\nC own / assigned T / A. Status ASSIGNED/EN_ROUTE/IN_PROGRESS/COMPLETED/CANCELLED; serviceId and literal description/address/service-name search. Every item has safe nullable invoice/feedback.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request."
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-store"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Work orders retrieved successfully\",\n  \"data\": {\n    \"items\": [\n      {\n        \"id\": \"{{work_order_id}}\",\n        \"technicianId\": \"{{technician_id}}\",\n        \"status\": \"ASSIGNED\",\n        \"version\": 1,\n        \"scheduledStart\": \"{{visit_start}}\",\n        \"scheduledEnd\": \"{{visit_end}}\",\n        \"agreedPriceMinor\": 150000,\n        \"currency\": \"BDT\",\n        \"invoice\": null,\n        \"feedback\": null,\n        \"requestId\": \"{{request_id}}\",\n        \"completedAt\": null,\n        \"report\": null,\n        \"cancelledAt\": null,\n        \"createdAt\": \"2026-10-07T10:00:00.000Z\",\n        \"updatedAt\": \"2026-10-07T10:00:00.000Z\",\n        \"technician\": {\n          \"id\": \"{{technician_id}}\",\n          \"name\": \"Demo Technician\"\n        },\n        \"request\": {\n          \"id\": \"{{request_id}}\",\n          \"customerId\": \"{{customer_id}}\",\n          \"serviceId\": \"{{service_id}}\",\n          \"status\": \"APPROVED\",\n          \"version\": 3,\n          \"description\": \"The cooling unit needs inspection.\",\n          \"address\": \"House 12, Road 3, Dhaka\",\n          \"service\": {\n            \"id\": \"{{service_id}}\",\n            \"name\": \"Cooling unit inspection\"\n          }\n        }\n      }\n    ],\n    \"pagination\": {\n      \"page\": 1,\n      \"limit\": 20,\n      \"total\": 1,\n      \"totalPages\": 1\n    }\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Read scoped work order and timeline",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/work-orders/{{work_order_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["work-orders", "{{work_order_id}}"]
+            },
+            "description": "Access: CUSTOMER. Expected success: 200.\n\nC own / currently assigned T / A. Other customer/unassigned technician/soft-deleted request 404. Safe timeline returns latest 100 work-order events, chronologically. Feedback null until submission. Save latest work version.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request."
+          },
+          "response": [
+            {
+              "name": "Success example (illustrative)",
+              "originalRequest": {
+                "method": "GET",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{access_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/work-orders/{{work_order_id}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["work-orders", "{{work_order_id}}"]
+                },
+                "description": "Access: CUSTOMER. Expected success: 200.\n\nC own / currently assigned T / A. Other customer/unassigned technician/soft-deleted request 404. Safe timeline returns latest 100 work-order events, chronologically. Feedback null until submission. Save latest work version.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request."
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-store"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Work order retrieved successfully\",\n  \"data\": {\n    \"id\": \"{{work_order_id}}\",\n    \"technicianId\": \"{{technician_id}}\",\n    \"status\": \"ASSIGNED\",\n    \"version\": 1,\n    \"scheduledStart\": \"{{visit_start}}\",\n    \"scheduledEnd\": \"{{visit_end}}\",\n    \"agreedPriceMinor\": 150000,\n    \"currency\": \"BDT\",\n    \"invoice\": null,\n    \"feedback\": null,\n    \"requestId\": \"{{request_id}}\",\n    \"completedAt\": null,\n    \"report\": null,\n    \"cancelledAt\": null,\n    \"createdAt\": \"2026-10-07T10:00:00.000Z\",\n    \"updatedAt\": \"2026-10-07T10:00:00.000Z\",\n    \"technician\": {\n      \"id\": \"{{technician_id}}\",\n      \"name\": \"Demo Technician\"\n    },\n    \"request\": {\n      \"id\": \"{{request_id}}\",\n      \"customerId\": \"{{customer_id}}\",\n      \"serviceId\": \"{{service_id}}\",\n      \"status\": \"APPROVED\",\n      \"version\": 3,\n      \"description\": \"The cooling unit needs inspection.\",\n      \"address\": \"House 12, Road 3, Dhaka\",\n      \"service\": {\n        \"id\": \"{{service_id}}\",\n        \"name\": \"Cooling unit inspection\"\n      }\n    },\n    \"timeline\": []\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Reschedule or reassign unstarted work",
+          "request": {
+            "method": "PATCH",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/work-orders/{{work_order_id}}/schedule",
+              "host": ["{{base_url}}"],
+              "path": ["work-orders", "{{work_order_id}}", "schedule"]
+            },
+            "description": "Access: ADMIN. Expected success: 200.\n\nOnly ASSIGNED with APPROVED request. Latest version and valid skilled active technician/window; overlap 409. Reassignment removes former technician access; agreed price stays frozen. Save returned version.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"version\": {{work_order_version}},\n  \"technicianId\": \"{{technician_id}}\",\n  \"start\": \"{{visit_start}}\",\n  \"end\": \"{{visit_end}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Success example (illustrative)",
+              "originalRequest": {
+                "method": "PATCH",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{admin_access_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/work-orders/{{work_order_id}}/schedule",
+                  "host": ["{{base_url}}"],
+                  "path": ["work-orders", "{{work_order_id}}", "schedule"]
+                },
+                "description": "Access: ADMIN. Expected success: 200.\n\nOnly ASSIGNED with APPROVED request. Latest version and valid skilled active technician/window; overlap 409. Reassignment removes former technician access; agreed price stays frozen. Save returned version.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"version\": {{work_order_version}},\n  \"technicianId\": \"{{technician_id}}\",\n  \"start\": \"{{visit_start}}\",\n  \"end\": \"{{visit_end}}\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-store"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Work order rescheduled successfully\",\n  \"data\": {\n    \"id\": \"{{work_order_id}}\",\n    \"technicianId\": \"{{technician_id}}\",\n    \"status\": \"ASSIGNED\",\n    \"version\": 2,\n    \"scheduledStart\": \"{{visit_start}}\",\n    \"scheduledEnd\": \"{{visit_end}}\",\n    \"agreedPriceMinor\": 150000,\n    \"currency\": \"BDT\",\n    \"invoice\": null,\n    \"feedback\": null,\n    \"requestId\": \"{{request_id}}\",\n    \"completedAt\": null,\n    \"report\": null,\n    \"cancelledAt\": null,\n    \"createdAt\": \"2026-10-07T10:00:00.000Z\",\n    \"updatedAt\": \"2026-10-07T10:00:00.000Z\",\n    \"technician\": {\n      \"id\": \"{{technician_id}}\",\n      \"name\": \"Demo Technician\"\n    },\n    \"request\": {\n      \"id\": \"{{request_id}}\",\n      \"customerId\": \"{{customer_id}}\",\n      \"serviceId\": \"{{service_id}}\",\n      \"status\": \"APPROVED\",\n      \"version\": 3,\n      \"description\": \"The cooling unit needs inspection.\",\n      \"address\": \"House 12, Road 3, Dhaka\",\n      \"service\": {\n        \"id\": \"{{service_id}}\",\n        \"name\": \"Cooling unit inspection\"\n      }\n    }\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Advance assigned technician progress",
+          "request": {
+            "method": "PATCH",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{technician_access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/work-orders/{{work_order_id}}/status",
+              "host": ["{{base_url}}"],
+              "path": ["work-orders", "{{work_order_id}}", "status"]
+            },
+            "description": "Access: TECHNICIAN. Expected success: 200.\n\nAssigned T only. Explicit sequence ASSIGNED -> EN_ROUTE -> IN_PROGRESS. Send status EN_ROUTE first, then change to IN_PROGRESS with the returned latest version. Invalid/skipped transition/stale version 409; C/A 403.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"version\": {{work_order_version}},\n  \"status\": \"EN_ROUTE\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Success example (illustrative)",
+              "originalRequest": {
+                "method": "PATCH",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{technician_access_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/work-orders/{{work_order_id}}/status",
+                  "host": ["{{base_url}}"],
+                  "path": ["work-orders", "{{work_order_id}}", "status"]
+                },
+                "description": "Access: TECHNICIAN. Expected success: 200.\n\nAssigned T only. Explicit sequence ASSIGNED -> EN_ROUTE -> IN_PROGRESS. Send status EN_ROUTE first, then change to IN_PROGRESS with the returned latest version. Invalid/skipped transition/stale version 409; C/A 403.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"version\": {{work_order_version}},\n  \"status\": \"EN_ROUTE\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-store"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Work order status updated successfully\",\n  \"data\": {\n    \"id\": \"{{work_order_id}}\",\n    \"technicianId\": \"{{technician_id}}\",\n    \"status\": \"EN_ROUTE\",\n    \"version\": 2,\n    \"scheduledStart\": \"{{visit_start}}\",\n    \"scheduledEnd\": \"{{visit_end}}\",\n    \"agreedPriceMinor\": 150000,\n    \"currency\": \"BDT\",\n    \"invoice\": null,\n    \"feedback\": null,\n    \"requestId\": \"{{request_id}}\",\n    \"completedAt\": null,\n    \"report\": null,\n    \"cancelledAt\": null,\n    \"createdAt\": \"2026-10-07T10:00:00.000Z\",\n    \"updatedAt\": \"2026-10-07T10:00:00.000Z\",\n    \"technician\": {\n      \"id\": \"{{technician_id}}\",\n      \"name\": \"Demo Technician\"\n    },\n    \"request\": {\n      \"id\": \"{{request_id}}\",\n      \"customerId\": \"{{customer_id}}\",\n      \"serviceId\": \"{{service_id}}\",\n      \"status\": \"APPROVED\",\n      \"version\": 3,\n      \"description\": \"The cooling unit needs inspection.\",\n      \"address\": \"House 12, Road 3, Dhaka\",\n      \"service\": {\n        \"id\": \"{{service_id}}\",\n        \"name\": \"Cooling unit inspection\"\n      }\n    }\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Complete in-progress work and issue invoice",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{technician_access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/work-orders/{{work_order_id}}/complete",
+              "host": ["{{base_url}}"],
+              "path": ["work-orders", "{{work_order_id}}", "complete"]
+            },
+            "description": "Access: TECHNICIAN. Expected success: 200.\n\nAssigned T only, IN_PROGRESS and APPROVED request. Report 10\u20132000 trimmed characters, latest version. Completion/report/unique invoice/audits commit together. Same report plus original or current completion version replays safely (200); changed report/stale version 409. Extract invoice_id.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"version\": {{work_order_version}},\n  \"report\": \"Inspected, cleaned and repaired the cooling unit.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Success example (illustrative)",
+              "originalRequest": {
+                "method": "POST",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{technician_access_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/work-orders/{{work_order_id}}/complete",
+                  "host": ["{{base_url}}"],
+                  "path": ["work-orders", "{{work_order_id}}", "complete"]
+                },
+                "description": "Access: TECHNICIAN. Expected success: 200.\n\nAssigned T only, IN_PROGRESS and APPROVED request. Report 10\u20132000 trimmed characters, latest version. Completion/report/unique invoice/audits commit together. Same report plus original or current completion version replays safely (200); changed report/stale version 409. Extract invoice_id.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"version\": {{work_order_version}},\n  \"report\": \"Inspected, cleaned and repaired the cooling unit.\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-store"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Work order completed successfully\",\n  \"data\": {\n    \"id\": \"{{work_order_id}}\",\n    \"technicianId\": \"{{technician_id}}\",\n    \"status\": \"COMPLETED\",\n    \"version\": 4,\n    \"scheduledStart\": \"{{visit_start}}\",\n    \"scheduledEnd\": \"{{visit_end}}\",\n    \"agreedPriceMinor\": 150000,\n    \"currency\": \"BDT\",\n    \"invoice\": {\n      \"id\": \"{{invoice_id}}\",\n      \"workOrderId\": \"{{work_order_id}}\",\n      \"customerId\": \"{{customer_id}}\",\n      \"amountMinor\": 150000,\n      \"currency\": \"BDT\",\n      \"status\": \"UNPAID\",\n      \"issuedAt\": \"2026-10-07T10:00:00.000Z\",\n      \"paidAt\": null\n    },\n    \"feedback\": null,\n    \"requestId\": \"{{request_id}}\",\n    \"completedAt\": \"2026-10-07T10:00:00.000Z\",\n    \"report\": \"Inspected, cleaned and repaired the cooling unit.\",\n    \"cancelledAt\": null,\n    \"createdAt\": \"2026-10-07T10:00:00.000Z\",\n    \"updatedAt\": \"2026-10-07T10:00:00.000Z\",\n    \"technician\": {\n      \"id\": \"{{technician_id}}\",\n      \"name\": \"Demo Technician\"\n    },\n    \"request\": {\n      \"id\": \"{{request_id}}\",\n      \"customerId\": \"{{customer_id}}\",\n      \"serviceId\": \"{{service_id}}\",\n      \"status\": \"APPROVED\",\n      \"version\": 3,\n      \"description\": \"The cooling unit needs inspection.\",\n      \"address\": \"House 12, Road 3, Dhaka\",\n      \"service\": {\n        \"id\": \"{{service_id}}\",\n        \"name\": \"Cooling unit inspection\"\n      }\n    }\n  }\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "08 Invoices and payments",
+      "item": [
+        {
+          "name": "Read frozen invoice",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/invoices/{{invoice_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["invoices", "{{invoice_id}}"]
+            },
+            "description": "Access: CUSTOMER. Expected success: 200.\n\nC own / A, T 403. Frozen amount/currency/customer/work identity; financial history survives catalog/request soft deletion. PAID requires server-verified provider settlement; never set status manually.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request."
+          },
+          "response": [
+            {
+              "name": "Success example (illustrative)",
+              "originalRequest": {
+                "method": "GET",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{access_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/invoices/{{invoice_id}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["invoices", "{{invoice_id}}"]
+                },
+                "description": "Access: CUSTOMER. Expected success: 200.\n\nC own / A, T 403. Frozen amount/currency/customer/work identity; financial history survives catalog/request soft deletion. PAID requires server-verified provider settlement; never set status manually.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request."
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-store"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Invoice retrieved successfully\",\n  \"data\": {\n    \"id\": \"{{invoice_id}}\",\n    \"workOrderId\": \"{{work_order_id}}\",\n    \"customerId\": \"{{customer_id}}\",\n    \"amountMinor\": 150000,\n    \"currency\": \"BDT\",\n    \"status\": \"UNPAID\",\n    \"issuedAt\": \"2026-10-07T10:00:00.000Z\",\n    \"paidAt\": null\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Create or recover idempotent checkout",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "{{idempotency_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/invoices/{{invoice_id}}/payment-session",
+              "host": ["{{base_url}}"],
+              "path": ["invoices", "{{invoice_id}}", "payment-session"]
+            },
+            "description": "Access: CUSTOMER. Expected success: 201.\n\nC own only. Idempotency-Key: 16\u2013100 safe ASCII letters/digits/._:-, first alphanumeric. Billing address 5\u201350, city 2\u201350, postcode 1\u201330; Bangladesh fixed. Requires E.164 phone and name/email <=50 characters; invoice BDT 10\u2013500000. Client amount/status/owner rejected. New attempt 201; same key/body replay 200. Do not change keys after timeout (502/UNKNOWN). After 15s, replay reconciles existing attempt without creating another charge. Key reuse with changed invoice/billing or another unresolved attempt/paid invoice returns 409. Extract payment_id/checkoutUrl and use the real gateway URL manually.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"billing\": {\n    \"address\": \"House 12, Road 3\",\n    \"city\": \"Dhaka\",\n    \"postcode\": \"1000\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Success example (illustrative)",
+              "originalRequest": {
+                "method": "POST",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{access_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Idempotency-Key",
+                    "value": "{{idempotency_key}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/invoices/{{invoice_id}}/payment-session",
+                  "host": ["{{base_url}}"],
+                  "path": ["invoices", "{{invoice_id}}", "payment-session"]
+                },
+                "description": "Access: CUSTOMER. Expected success: 201.\n\nC own only. Idempotency-Key: 16\u2013100 safe ASCII letters/digits/._:-, first alphanumeric. Billing address 5\u201350, city 2\u201350, postcode 1\u201330; Bangladesh fixed. Requires E.164 phone and name/email <=50 characters; invoice BDT 10\u2013500000. Client amount/status/owner rejected. New attempt 201; same key/body replay 200. Do not change keys after timeout (502/UNKNOWN). After 15s, replay reconciles existing attempt without creating another charge. Key reuse with changed invoice/billing or another unresolved attempt/paid invoice returns 409. Extract payment_id/checkoutUrl and use the real gateway URL manually.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"billing\": {\n    \"address\": \"House 12, Road 3\",\n    \"city\": \"Dhaka\",\n    \"postcode\": \"1000\"\n  }\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-store"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Payment attempt created\",\n  \"data\": {\n    \"id\": \"{{payment_id}}\",\n    \"invoiceId\": \"{{invoice_id}}\",\n    \"amountMinor\": 150000,\n    \"currency\": \"BDT\",\n    \"gateway\": \"SSLCOMMERZ\",\n    \"mode\": \"SANDBOX\",\n    \"status\": \"PENDING\",\n    \"checkoutUrl\": \"https://sandbox.sslcommerz.com/pay?session=example-provider-session\",\n    \"reviewReason\": null,\n    \"requiresReview\": false,\n    \"createdAt\": \"2026-10-07T10:00:00.000Z\",\n    \"updatedAt\": \"2026-10-07T10:00:00.000Z\",\n    \"verifiedAt\": null,\n    \"settledAt\": null\n  }\n}"
+            },
+            {
+              "name": "Replay example (illustrative)",
+              "originalRequest": {
+                "method": "POST",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{access_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Idempotency-Key",
+                    "value": "{{idempotency_key}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/invoices/{{invoice_id}}/payment-session",
+                  "host": ["{{base_url}}"],
+                  "path": ["invoices", "{{invoice_id}}", "payment-session"]
+                },
+                "description": "Access: CUSTOMER. Expected success: 201.\n\nC own only. Idempotency-Key: 16\u2013100 safe ASCII letters/digits/._:-, first alphanumeric. Billing address 5\u201350, city 2\u201350, postcode 1\u201330; Bangladesh fixed. Requires E.164 phone and name/email <=50 characters; invoice BDT 10\u2013500000. Client amount/status/owner rejected. New attempt 201; same key/body replay 200. Do not change keys after timeout (502/UNKNOWN). After 15s, replay reconciles existing attempt without creating another charge. Key reuse with changed invoice/billing or another unresolved attempt/paid invoice returns 409. Extract payment_id/checkoutUrl and use the real gateway URL manually.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"billing\": {\n    \"address\": \"House 12, Road 3\",\n    \"city\": \"Dhaka\",\n    \"postcode\": \"1000\"\n  }\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-store"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Payment attempt retrieved\",\n  \"data\": {\n    \"id\": \"{{payment_id}}\",\n    \"invoiceId\": \"{{invoice_id}}\",\n    \"amountMinor\": 150000,\n    \"currency\": \"BDT\",\n    \"gateway\": \"SSLCOMMERZ\",\n    \"mode\": \"SANDBOX\",\n    \"status\": \"PENDING\",\n    \"checkoutUrl\": \"https://sandbox.sslcommerz.com/pay?session=example-provider-session\",\n    \"reviewReason\": null,\n    \"requiresReview\": false,\n    \"createdAt\": \"2026-10-07T10:00:00.000Z\",\n    \"updatedAt\": \"2026-10-07T10:00:00.000Z\",\n    \"verifiedAt\": null,\n    \"settledAt\": null\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Read private payment state",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/payments/{{payment_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["payments", "{{payment_id}}"]
+            },
+            "description": "Access: CUSTOMER. Expected success: 200.\n\nC own / A, T 403. PostgreSQL state only; no provider call. Only unpaid PENDING exposes checkoutUrl; other states hide it. No merchant IDs/session keys/provider references/credentials. Check requiresReview independently of SUCCEEDED: a later additional captured charge can need review without reversing the original paid invoice.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request."
+          },
+          "response": [
+            {
+              "name": "Success example (illustrative)",
+              "originalRequest": {
+                "method": "GET",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{access_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/payments/{{payment_id}}",
+                  "host": ["{{base_url}}"],
+                  "path": ["payments", "{{payment_id}}"]
+                },
+                "description": "Access: CUSTOMER. Expected success: 200.\n\nC own / A, T 403. PostgreSQL state only; no provider call. Only unpaid PENDING exposes checkoutUrl; other states hide it. No merchant IDs/session keys/provider references/credentials. Check requiresReview independently of SUCCEEDED: a later additional captured charge can need review without reversing the original paid invoice.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request."
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-store"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Payment retrieved successfully\",\n  \"data\": {\n    \"id\": \"{{payment_id}}\",\n    \"invoiceId\": \"{{invoice_id}}\",\n    \"amountMinor\": 150000,\n    \"currency\": \"BDT\",\n    \"gateway\": \"SSLCOMMERZ\",\n    \"mode\": \"SANDBOX\",\n    \"status\": \"PENDING\",\n    \"checkoutUrl\": \"https://sandbox.sslcommerz.com/pay?session=example-provider-session\",\n    \"reviewReason\": null,\n    \"requiresReview\": false,\n    \"createdAt\": \"2026-10-07T10:00:00.000Z\",\n    \"updatedAt\": \"2026-10-07T10:00:00.000Z\",\n    \"verifiedAt\": null,\n    \"settledAt\": null\n  }\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "09 SSLCommerz callbacks",
+      "item": [
+        {
+          "name": "Provider ipn notification",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/payments/sslcommerz/ipn",
+              "host": ["{{base_url}}"],
+              "path": ["payments", "sslcommerz", "ipn"]
+            },
+            "description": "Access: PUBLIC. Expected success: 200.\n\nNormally sent by SSLCommerz, not by the customer. This public example uses URL-encoded form; JSON also supported. Obtain real tran_id/val_id from the stored merchant attempt and a real provider test transaction; never fabricate successful evidence. tran_id is 24 lowercase hexadecimal characters; val_id optional 1\u201350 characters. Callback claims never mark an invoice paid: the server validates/looks up the provider. A 200 acknowledgement can remain pending/review; read invoice/payment afterward. Unknown merchant 404; unsupported encoding 415; invalid/unavailable verification 502. Duplicates are idempotent; late failure/cancel cannot reverse success. Gateway normally supplies additional form fields that are ignored.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "tran_id",
+                  "value": "{{merchant_tran_id}}",
+                  "type": "text"
+                },
+                {
+                  "key": "val_id",
+                  "value": "{{validation_id}}",
+                  "type": "text"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Success example (illustrative)",
+              "originalRequest": {
+                "method": "POST",
+                "auth": {
+                  "type": "noauth"
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/x-www-form-urlencoded"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/payments/sslcommerz/ipn",
+                  "host": ["{{base_url}}"],
+                  "path": ["payments", "sslcommerz", "ipn"]
+                },
+                "description": "Access: PUBLIC. Expected success: 200.\n\nNormally sent by SSLCommerz, not by the customer. This public example uses URL-encoded form; JSON also supported. Obtain real tran_id/val_id from the stored merchant attempt and a real provider test transaction; never fabricate successful evidence. tran_id is 24 lowercase hexadecimal characters; val_id optional 1\u201350 characters. Callback claims never mark an invoice paid: the server validates/looks up the provider. A 200 acknowledgement can remain pending/review; read invoice/payment afterward. Unknown merchant 404; unsupported encoding 415; invalid/unavailable verification 502. Duplicates are idempotent; late failure/cancel cannot reverse success. Gateway normally supplies additional form fields that are ignored.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
+                "body": {
+                  "mode": "urlencoded",
+                  "urlencoded": [
+                    {
+                      "key": "tran_id",
+                      "value": "{{merchant_tran_id}}",
+                      "type": "text"
+                    },
+                    {
+                      "key": "val_id",
+                      "value": "{{validation_id}}",
+                      "type": "text"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-store"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Payment notification verified and processed\",\n  \"data\": {\n    \"received\": true\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Provider success notification",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/payments/sslcommerz/success",
+              "host": ["{{base_url}}"],
+              "path": ["payments", "sslcommerz", "success"]
+            },
+            "description": "Access: PUBLIC. Expected success: 200.\n\nNormally sent by SSLCommerz, not by the customer. This public example uses URL-encoded form; JSON also supported. Obtain real tran_id/val_id from the stored merchant attempt and a real provider test transaction; never fabricate successful evidence. tran_id is 24 lowercase hexadecimal characters; val_id optional 1\u201350 characters. Callback claims never mark an invoice paid: the server validates/looks up the provider. A 200 acknowledgement can remain pending/review; read invoice/payment afterward. Unknown merchant 404; unsupported encoding 415; invalid/unavailable verification 502. Duplicates are idempotent; late failure/cancel cannot reverse success. Gateway normally supplies additional form fields that are ignored.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "tran_id",
+                  "value": "{{merchant_tran_id}}",
+                  "type": "text"
+                },
+                {
+                  "key": "val_id",
+                  "value": "{{validation_id}}",
+                  "type": "text"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Success example (illustrative)",
+              "originalRequest": {
+                "method": "POST",
+                "auth": {
+                  "type": "noauth"
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/x-www-form-urlencoded"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/payments/sslcommerz/success",
+                  "host": ["{{base_url}}"],
+                  "path": ["payments", "sslcommerz", "success"]
+                },
+                "description": "Access: PUBLIC. Expected success: 200.\n\nNormally sent by SSLCommerz, not by the customer. This public example uses URL-encoded form; JSON also supported. Obtain real tran_id/val_id from the stored merchant attempt and a real provider test transaction; never fabricate successful evidence. tran_id is 24 lowercase hexadecimal characters; val_id optional 1\u201350 characters. Callback claims never mark an invoice paid: the server validates/looks up the provider. A 200 acknowledgement can remain pending/review; read invoice/payment afterward. Unknown merchant 404; unsupported encoding 415; invalid/unavailable verification 502. Duplicates are idempotent; late failure/cancel cannot reverse success. Gateway normally supplies additional form fields that are ignored.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
+                "body": {
+                  "mode": "urlencoded",
+                  "urlencoded": [
+                    {
+                      "key": "tran_id",
+                      "value": "{{merchant_tran_id}}",
+                      "type": "text"
+                    },
+                    {
+                      "key": "val_id",
+                      "value": "{{validation_id}}",
+                      "type": "text"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-store"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Payment notification verified and processed\",\n  \"data\": {\n    \"received\": true\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Provider fail notification",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/payments/sslcommerz/fail",
+              "host": ["{{base_url}}"],
+              "path": ["payments", "sslcommerz", "fail"]
+            },
+            "description": "Access: PUBLIC. Expected success: 200.\n\nNormally sent by SSLCommerz, not by the customer. This public example uses URL-encoded form; JSON also supported. Obtain real tran_id/val_id from the stored merchant attempt and a real provider test transaction; never fabricate successful evidence. tran_id is 24 lowercase hexadecimal characters; val_id optional 1\u201350 characters. Callback claims never mark an invoice paid: the server validates/looks up the provider. A 200 acknowledgement can remain pending/review; read invoice/payment afterward. Unknown merchant 404; unsupported encoding 415; invalid/unavailable verification 502. Duplicates are idempotent; late failure/cancel cannot reverse success. Gateway normally supplies additional form fields that are ignored.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "tran_id",
+                  "value": "{{merchant_tran_id}}",
+                  "type": "text"
+                },
+                {
+                  "key": "val_id",
+                  "value": "{{validation_id}}",
+                  "type": "text"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Success example (illustrative)",
+              "originalRequest": {
+                "method": "POST",
+                "auth": {
+                  "type": "noauth"
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/x-www-form-urlencoded"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/payments/sslcommerz/fail",
+                  "host": ["{{base_url}}"],
+                  "path": ["payments", "sslcommerz", "fail"]
+                },
+                "description": "Access: PUBLIC. Expected success: 200.\n\nNormally sent by SSLCommerz, not by the customer. This public example uses URL-encoded form; JSON also supported. Obtain real tran_id/val_id from the stored merchant attempt and a real provider test transaction; never fabricate successful evidence. tran_id is 24 lowercase hexadecimal characters; val_id optional 1\u201350 characters. Callback claims never mark an invoice paid: the server validates/looks up the provider. A 200 acknowledgement can remain pending/review; read invoice/payment afterward. Unknown merchant 404; unsupported encoding 415; invalid/unavailable verification 502. Duplicates are idempotent; late failure/cancel cannot reverse success. Gateway normally supplies additional form fields that are ignored.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
+                "body": {
+                  "mode": "urlencoded",
+                  "urlencoded": [
+                    {
+                      "key": "tran_id",
+                      "value": "{{merchant_tran_id}}",
+                      "type": "text"
+                    },
+                    {
+                      "key": "val_id",
+                      "value": "{{validation_id}}",
+                      "type": "text"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-store"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Payment notification verified and processed\",\n  \"data\": {\n    \"received\": true\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Provider cancel notification",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/payments/sslcommerz/cancel",
+              "host": ["{{base_url}}"],
+              "path": ["payments", "sslcommerz", "cancel"]
+            },
+            "description": "Access: PUBLIC. Expected success: 200.\n\nNormally sent by SSLCommerz, not by the customer. This public example uses URL-encoded form; JSON also supported. Obtain real tran_id/val_id from the stored merchant attempt and a real provider test transaction; never fabricate successful evidence. tran_id is 24 lowercase hexadecimal characters; val_id optional 1\u201350 characters. Callback claims never mark an invoice paid: the server validates/looks up the provider. A 200 acknowledgement can remain pending/review; read invoice/payment afterward. Unknown merchant 404; unsupported encoding 415; invalid/unavailable verification 502. Duplicates are idempotent; late failure/cancel cannot reverse success. Gateway normally supplies additional form fields that are ignored.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "tran_id",
+                  "value": "{{merchant_tran_id}}",
+                  "type": "text"
+                },
+                {
+                  "key": "val_id",
+                  "value": "{{validation_id}}",
+                  "type": "text"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Success example (illustrative)",
+              "originalRequest": {
+                "method": "POST",
+                "auth": {
+                  "type": "noauth"
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/x-www-form-urlencoded"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/payments/sslcommerz/cancel",
+                  "host": ["{{base_url}}"],
+                  "path": ["payments", "sslcommerz", "cancel"]
+                },
+                "description": "Access: PUBLIC. Expected success: 200.\n\nNormally sent by SSLCommerz, not by the customer. This public example uses URL-encoded form; JSON also supported. Obtain real tran_id/val_id from the stored merchant attempt and a real provider test transaction; never fabricate successful evidence. tran_id is 24 lowercase hexadecimal characters; val_id optional 1\u201350 characters. Callback claims never mark an invoice paid: the server validates/looks up the provider. A 200 acknowledgement can remain pending/review; read invoice/payment afterward. Unknown merchant 404; unsupported encoding 415; invalid/unavailable verification 502. Duplicates are idempotent; late failure/cancel cannot reverse success. Gateway normally supplies additional form fields that are ignored.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
+                "body": {
+                  "mode": "urlencoded",
+                  "urlencoded": [
+                    {
+                      "key": "tran_id",
+                      "value": "{{merchant_tran_id}}",
+                      "type": "text"
+                    },
+                    {
+                      "key": "val_id",
+                      "value": "{{validation_id}}",
+                      "type": "text"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-store"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Payment notification verified and processed\",\n  \"data\": {\n    \"received\": true\n  }\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "10 Customer feedback",
+      "item": [
+        {
+          "name": "Submit one review for completed paid work",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/work-orders/{{work_order_id}}/feedback",
+              "host": ["{{base_url}}"],
+              "path": ["work-orders", "{{work_order_id}}", "feedback"]
+            },
+            "description": "Access: CUSTOMER. Expected success: 201.\n\nC own COMPLETED + PAID work only. Rating integer 1\u20135; optional comment 1\u20131000 trimmed characters; no blank/null/unsafe control text. One immutable review per work order, with audit in same transaction. Duplicate/simultaneous repeat 409; unpaid/unfinished/cancelled/review-held payment 409; foreign/missing/soft-deleted request 404; T/A submission 403. Read feedback via scoped work-order detail/list or request work summary; public catalog excludes it.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"rating\": 5,\n  \"comment\": \"The technician explained the repair clearly.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Success example (illustrative)",
+              "originalRequest": {
+                "method": "POST",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{access_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/work-orders/{{work_order_id}}/feedback",
+                  "host": ["{{base_url}}"],
+                  "path": ["work-orders", "{{work_order_id}}", "feedback"]
+                },
+                "description": "Access: CUSTOMER. Expected success: 201.\n\nC own COMPLETED + PAID work only. Rating integer 1\u20135; optional comment 1\u20131000 trimmed characters; no blank/null/unsafe control text. One immutable review per work order, with audit in same transaction. Duplicate/simultaneous repeat 409; unpaid/unfinished/cancelled/review-held payment 409; foreign/missing/soft-deleted request 404; T/A submission 403. Read feedback via scoped work-order detail/list or request work summary; public catalog excludes it.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"rating\": 5,\n  \"comment\": \"The technician explained the repair clearly.\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-store"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Feedback submitted successfully\",\n  \"data\": {\n    \"id\": \"{{feedback_id}}\",\n    \"workOrderId\": \"{{work_order_id}}\",\n    \"rating\": 5,\n    \"comment\": \"The technician explained the repair clearly.\",\n    \"createdAt\": \"2026-10-07T10:00:00.000Z\"\n  }\n}"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -74,6 +74,18 @@ Success: `{ success: true, message, data }`. Error: `{ success: false, message, 
 
 ## Apidog setup and authentication
 
+### Import the completed API documentation
+
+Import [the Postman v2.1 collection](docs/fieldops.postman_collection.json) through **Settings → Import Data → Postman** in Apidog. It covers all 34 implemented domain APIs and two health routes, with 38 request examples including separate customer/admin/technician logins. Each request documents its input, authorization, lifecycle rules, expected success and relevant error scenarios. [Official import guide](https://docs.apidog.io/import-from-postman-635043m0)
+
+Set the imported variables in your local environment: `base_url`, account credentials, role-specific Bearer tokens and IDs extracted from actual responses. Keep secrets in **Local Value**. Set actual future scheduling dates and replace request/work-order versions after each mutation. Review Apidog's variable mapping after import.
+
+Run requests manually in workflow order: authentication → catalog → request/review → skills/assignment → progress/completion → verified gateway payment → feedback. Cancellation, deletion and logout are separate scenarios; do not run the entire collection as one sequence. Saved responses are illustrative examples, not test results. Save your actual responses after manual testing, then use Apidog's documentation sharing tools for submission. Real Google sign-in and SSLCommerz checkout require your own configured accounts.
+
+After changing an API or the collection, run `npm run build` and `npm run docs:check`. The offline checker compares coverage, authorization and success statuses with compiled Nest route metadata and checks request inputs through the actual validation pipes. It does not call the database/gateway or establish response correctness; integration tests and manual checks cover runtime behavior.
+
+### Configure local variables
+
 Set `base_url = http://localhost:3000/api/v1`. Keep credentials/tokens in **Local Value**, never shared environment values. Use Bearer `{{access_token}}` for customer requests and separate `admin_access_token` / `technician_access_token` variables for other accounts.
 
 ### Register and log in
@@ -162,7 +174,7 @@ Expected `201`; extract `service_id = $.data.id`. Prices are integer paisa: `150
 - `PATCH /services/{{service_id}}`, `{ "basePriceMinor": 175000 }` → `200`; at least one allowed field, omitted fields preserved.
 - `DELETE /services/{{service_id}}` → `200`, `data: null`; retained row, subsequent mutation/details `404`.
 - Non-ADMIN writes `403`; missing authentication `401`; invalid UUID/unknown fields/bad price `400`. Mutation and safe audit are atomic; historical request/work/invoice data remain intact.
-- Public `GET /services?q=AC&page=1&limit=20&sort=price_asc` returns `{ items, pagination }`; public detail returns an active service. Search is literal and case-insensitive; `%`, `_` and backslash are escaped. Sorts: `newest`, `oldest`, `price_asc`, `price_desc`. Page 1–100,000; limit 1–100; q up to 100 characters. Unknown query fields are rejected.
+- Public `GET /services?q=AC&page=1&limit=20&sort=price_asc` returns `{ items, pagination }`; public detail returns an active service. Search is literal and case-insensitive; `%`, `_` and backslash are escaped. Sorts: `newest`, `oldest`, `name_asc`, `price_asc`, `price_desc`. Page 1–100,000; limit 1–100; q up to 100 characters. Unknown query fields are rejected.
 
 Only public catalog projections are cached. Redis is optional; outages/timeouts fall back to PostgreSQL. Every read checks the database catalog revision; every audited mutation increments it in the same transaction. Revision-based keys prevent stale results after outages/in-flight reads. Cache TTL is 60 seconds; namespaces isolate database/schema. Database failure cannot serve unchecked stale cache data. No authentication, request or financial data enter Redis.
 
@@ -393,12 +405,13 @@ npm test
 npm run db:test:setup
 npm run test:e2e
 npm run build
+npm run docs:check
 npm run test:compiled
 ```
 
 E2E requires a separate `TEST_DATABASE_URL` whose database name ends in `_test`. Setup creates it if needed (CREATEDB permission required), applies committed migrations and never resets existing data. Fixtures clean up their own records; tests do not use the main database. Real Redis tests require `TEST_REDIS_URL` with index >0; without it they skip, while DB fallback tests run. No Redis flush commands. Integration file workers are bounded to four; explicit concurrency races remain parallel. Unit tests need no DB/Redis. Build regenerates Prisma Client; production entry is `dist/main.js` (`npm run start:prod`).
 
-[Backend CI](.github/workflows/ci.yml) runs on main pushes, pull requests and manual dispatch: locked install, generate/schema/type/lint, unit tests, fresh PostgreSQL migrations, real Redis integration, build and compiled native HTTP flow. Temporary services and a generated signing key need no production secrets. Official actions are pinned by immutable SHA; permissions are read-only. Remote CI must be verified after pushing; local success does not prove a hosted run.
+[Backend CI](.github/workflows/ci.yml) runs on main pushes, pull requests and manual dispatch: locked install, generate/schema/type/lint, unit tests, fresh PostgreSQL migrations, real Redis integration, build, API documentation contracts and compiled native HTTP flow. Temporary services and a generated signing key need no production secrets. Official actions are pinned by immutable SHA; permissions are read-only. Remote CI must be verified after pushing; local success does not prove a hosted run.
 
 `test:compiled` imports the built Nest app only after selecting the guarded test environment and asserting the actual database name. Its temporary loopback server verifies safe ADMIN/TECH bootstrap, real password login, request lifecycle, scheduling, scoped reads, cancellation/progress, completion retries, invoices, idempotent checkout/form callbacks, verified settlement, customer feedback and audits; it removes only its fixtures.
 

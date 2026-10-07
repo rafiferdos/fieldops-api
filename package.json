@@ -24,6 +24,7 @@
     "test:debug": "vitest --inspect-brk --no-file-parallelism",
     "test:e2e": "vitest run --config ./vitest.config.e2e.ts",
     "test:compiled": "node scripts/smoke-requests.mjs",
+    "docs:check": "node scripts/check-api-docs.mjs",
     "typecheck": "tsc --noEmit --incremental false",
     "db:validate": "prisma validate",
     "db:status": "prisma migrate status",
