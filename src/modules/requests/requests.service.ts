@@ -20,6 +20,7 @@ import type {
   ReviewRequestInput,
   CancelRequestInput,
 } from './schemas/request.schema.js';
+import { lockRequest } from './request.lock.js';
 import { requestSelect, requestView } from './request.select.js';
 
 @Injectable()
@@ -139,7 +140,7 @@ export class RequestsService {
     };
     return this.prisma.$transaction(async (tx) => {
       const customer = await requireActiveActor(tx, actor, [Role.CUSTOMER]);
-      const current = await this.lockRequest(tx, customer, id);
+      const current = await lockRequest(tx, id, customer.id);
       this.assertVersion(current.version, input.version);
       if (current.status !== RequestStatus.PENDING)
         throw new ConflictException('Only pending requests can be edited');
@@ -179,7 +180,7 @@ export class RequestsService {
   async review(actor: AuthActor, id: string, input: ReviewRequestInput) {
     return this.prisma.$transaction(async (tx) => {
       const admin = await requireActiveActor(tx, actor, [Role.ADMIN]);
-      const current = await this.lockRequest(tx, admin, id);
+      const current = await lockRequest(tx, id);
       this.assertVersion(current.version, input.version);
       if (current.status !== RequestStatus.PENDING)
         throw new ConflictException('Only pending requests can be reviewed');
@@ -224,7 +225,11 @@ export class RequestsService {
         Role.CUSTOMER,
         Role.ADMIN,
       ]);
-      const current = await this.lockRequest(tx, user, id);
+      const current = await lockRequest(
+        tx,
+        id,
+        user.role === Role.CUSTOMER ? user.id : undefined,
+      );
       this.assertVersion(current.version, input.version);
       if (
         current.status !== RequestStatus.PENDING &&
@@ -263,23 +268,6 @@ export class RequestsService {
       });
       return this.viewInTransaction(tx, id);
     });
-  }
-
-  private async lockRequest(
-    tx: Prisma.TransactionClient,
-    user: { id: string; role: Role },
-    id: string,
-  ) {
-    // All request transitions share one lock; scope is checked before revealing version or state.
-    const rows = await tx.$queryRaw<
-      Array<{ id: string; status: RequestStatus; version: number }>
-    >`
-      SELECT id, status, version FROM "ServiceRequest"
-      WHERE id = ${id}::uuid AND "deletedAt" IS NULL
-        AND (${user.role === Role.ADMIN} OR "customerId" = ${user.id}::uuid)
-      FOR UPDATE`;
-    if (!rows[0]) throw new NotFoundException('Request not found');
-    return rows[0];
   }
 
   private assertVersion(current: number, expected: number) {

@@ -8,6 +8,7 @@ import { validateEnv } from './config/env.validation.js';
 import { AuthModule } from './modules/auth/auth.module.js';
 import { HealthModule } from './modules/health/health.module.js';
 import { ServicesModule } from './modules/services/services.module.js';
+import { WorkOrdersModule } from './modules/work-orders/work-orders.module.js';
 import { TechniciansModule } from './modules/technicians/technicians.module.js';
 import { RequestsModule } from './modules/requests/requests.module.js';
 
@@ -26,6 +27,7 @@ import { RequestsModule } from './modules/requests/requests.module.js';
     ServicesModule,
     RequestsModule,
     TechniciansModule,
+    WorkOrdersModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },
