@@ -13,6 +13,7 @@ import { TechniciansModule } from './modules/technicians/technicians.module.js';
 import { RequestsModule } from './modules/requests/requests.module.js';
 import { PaymentsModule } from './modules/payments/payments.module.js';
 import { InvoicesModule } from './modules/invoices/invoices.module.js';
+import { FeedbackModule } from './modules/feedback/feedback.module.js';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { InvoicesModule } from './modules/invoices/invoices.module.js';
     WorkOrdersModule,
     InvoicesModule,
     PaymentsModule,
+    FeedbackModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },

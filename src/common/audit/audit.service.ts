@@ -19,6 +19,11 @@ type AuditTarget = {
 export type AuditEvent = AuditTarget &
   (
     | {
+        action: 'FEEDBACK_SUBMITTED';
+        entityType: 'WORK_ORDER';
+        metadata: { feedbackId: string; rating: number };
+      }
+    | {
         action: 'PAYMENT_SETTLED';
         entityType: 'PAYMENT';
         metadata: {
