@@ -260,6 +260,7 @@ model Payment {
   receipts       PaymentReceipt[]
 
   @@unique([userId, idempotencyKey])
+  @@unique([gatewayMode, gatewayStoreId, sessionKey])
   @@index([invoiceId, status])
   @@index([userId, createdAt, id])
 }

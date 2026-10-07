@@ -2,7 +2,11 @@ import { BadGatewayException, Injectable } from '@nestjs/common';
 
 @Injectable()
 export class GatewayHttpService {
-  async json(url: URL, form?: URLSearchParams): Promise<unknown> {
+  async json(
+    url: URL,
+    form?: URLSearchParams,
+    signal?: AbortSignal,
+  ): Promise<unknown> {
     // Never propagate fetch errors: their URLs can contain merchant credentials.
     try {
       const response = await fetch(url, {
@@ -13,7 +17,9 @@ export class GatewayHttpService {
               headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
             }
           : {}),
-        signal: AbortSignal.timeout(10_000),
+        signal: signal
+          ? AbortSignal.any([signal, AbortSignal.timeout(10_000)])
+          : AbortSignal.timeout(10_000),
         redirect: 'error',
       });
       if (!response.ok || !response.body)

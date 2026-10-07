@@ -31,7 +31,8 @@
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",
     "db:studio": "prisma studio",
-    "db:test:setup": "node scripts/setup-test-db.mjs"
+    "db:test:setup": "node scripts/setup-test-db.mjs",
+    "payment:reconcile": "npm run build && node scripts/reconcile-payment.mjs"
   },
   "dependencies": {
     "@nestjs/common": "^12.0.1",

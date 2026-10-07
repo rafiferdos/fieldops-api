@@ -48,9 +48,8 @@ export async function createPaymentContext(disabled = false) {
   const invoiceId = response.body.data.invoice.id as string;
   json.mockResolvedValue({
     status: 'SUCCESS',
-    sessionkey: 'fixture-session',
-    GatewayPageURL:
-      'https://sandbox.sslcommerz.com/gwprocess/v4/gw.php?SESSIONKEY=fixture-session',
+    sessionkey: `session-${randomBytes(8).toString('hex')}`,
+    GatewayPageURL: `https://sandbox.sslcommerz.com/pay?s=${randomBytes(8).toString('hex')}`,
   });
   return { ...ctx, json, gateway, invoiceId };
 }
@@ -107,7 +106,7 @@ export function providerEvidence(
     if (form)
       return {
         status: 'SUCCESS',
-        sessionkey: 'fixture-session',
+        sessionkey: `session-${randomBytes(8).toString('hex')}`,
         GatewayPageURL:
           'https://sandbox.sslcommerz.com/gwprocess/v4/gw.php?SESSIONKEY=fixture-session',
       };

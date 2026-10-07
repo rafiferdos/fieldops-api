@@ -17,7 +17,7 @@ import type {
   VerifiedCharge,
 } from './sslcommerz.types.js';
 
-const identifier = z.string().min(1).max(80);
+const identifier = z.string().max(80);
 const transaction = z.object({
   status: z.string().min(1).max(30),
   tran_id: z.string().max(30).optional(),
@@ -85,6 +85,7 @@ export class SslCommerzService {
     identity: GatewayIdentity,
     path: string,
     parameters: Record<string, string>,
+    signal?: AbortSignal,
   ) {
     const url = new URL(path, this.base(identity));
     url.search = new URLSearchParams({
@@ -92,7 +93,7 @@ export class SslCommerzService {
       ...parameters,
       format: 'json',
     }).toString();
-    return this.http.json(url);
+    return this.http.json(url, undefined, signal);
   }
   async initiate(input: CheckoutInput): Promise<CheckoutResult> {
     const callback = `${this.config.getOrThrow<string>('PUBLIC_API_URL')}/api/v1/payments/sslcommerz`;
@@ -157,12 +158,18 @@ export class SslCommerzService {
   async validate(
     identity: GatewayIdentity,
     validationId: string,
+    signal?: AbortSignal,
   ): Promise<VerifiedCharge> {
     const row = parsed(
       transaction,
-      await this.query(identity, '/validator/api/validationserverAPI.php', {
-        val_id: validationId,
-      }),
+      await this.query(
+        identity,
+        '/validator/api/validationserverAPI.php',
+        {
+          val_id: validationId,
+        },
+        signal,
+      ),
     );
     if (
       !['VALID', 'VALIDATED'].includes(row.status) ||
@@ -194,6 +201,7 @@ export class SslCommerzService {
     };
   }
   async lookup(reference: GatewayReference): Promise<GatewayObservation> {
+    const signal = AbortSignal.timeout(20_000);
     const response = parsed(
       z.object({
         APIConnect: z.literal('DONE'),
@@ -204,6 +212,7 @@ export class SslCommerzService {
         reference,
         '/validator/api/merchantTransIDvalidationAPI.php',
         { tran_id: reference.merchantTranId },
+        signal,
       ),
     );
     const rows = response.element ?? [];
@@ -222,7 +231,7 @@ export class SslCommerzService {
     if (validationIds.some((id) => !id) || validationIds.length > 10) invalid();
     const charges: VerifiedCharge[] = [];
     for (const id of validationIds) {
-      const charge = await this.validate(reference, id!);
+      const charge = await this.validate(reference, id!, signal);
       if (charge.merchantTranId !== reference.merchantTranId) invalid();
       charges.push(charge);
     }
@@ -235,6 +244,7 @@ export class SslCommerzService {
         reference,
         '/validator/api/merchantTransIDvalidationAPI.php',
         { sessionkey: reference.sessionKey },
+        signal,
       ),
     );
     if (
@@ -245,7 +255,7 @@ export class SslCommerzService {
       invalid();
     if (['VALID', 'VALIDATED'].includes(session.status)) {
       if (!session.val_id) invalid();
-      const charge = await this.validate(reference, session.val_id);
+      const charge = await this.validate(reference, session.val_id, signal);
       if (charge.merchantTranId !== reference.merchantTranId) invalid();
       return { charges: [charge], terminal: null };
     }

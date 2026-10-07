@@ -12,6 +12,7 @@ import { PrismaService } from '../../infrastructure/prisma/prisma.service.js';
 import { SslCommerzService } from '../../infrastructure/sslcommerz/sslcommerz.service.js';
 import type { CheckoutResult } from '../../infrastructure/sslcommerz/sslcommerz.types.js';
 import type { AuthActor } from '../auth/auth.types.js';
+import { PaymentSettlementService } from './payment-settlement.service.js';
 import { lockInvoice, lockPayment } from './payment.lock.js';
 import type { PaymentSessionInput } from './payment.schema.js';
 import { paymentSelect, paymentView } from './payment.select.js';
@@ -22,6 +23,8 @@ export class PaymentsService {
     @Inject(PrismaService) private readonly prisma: PrismaService,
     @Inject(AuditService) private readonly audit: AuditService,
     @Inject(SslCommerzService) private readonly gateway: SslCommerzService,
+    @Inject(PaymentSettlementService)
+    private readonly settlements: PaymentSettlementService,
   ) {}
 
   detail(actor: AuthActor, id: string) {
@@ -143,8 +146,21 @@ export class PaymentsService {
       },
       { maxWait: 5000, timeout: 10000 },
     );
-    if (!reservation.created)
-      return { created: false, payment: reservation.payment };
+    if (!reservation.created) {
+      // Never repeat initiation. Query the durable merchant ID after the original network window.
+      const existing = reservation.payment;
+      if (
+        ['INITIATING', 'UNKNOWN', 'PENDING'].includes(existing.status) &&
+        Date.now() - new Date(existing.createdAt).getTime() >= 15_000
+      ) {
+        await this.settlements.reconcile(existing.id);
+        return {
+          created: false,
+          payment: await this.detail(actor, existing.id),
+        };
+      }
+      return { created: false, payment: existing };
+    }
     let result: CheckoutResult;
     try {
       result = await this.gateway.initiate({
@@ -153,7 +169,8 @@ export class PaymentsService {
       });
     } catch {
       const payment = await this.saveInitiation(reservation.row.id, 'UNKNOWN');
-      if (payment.status === 'SUCCEEDED') return { created: true, payment };
+      if (payment.status === 'SUCCEEDED')
+        return { created: true, payment: await this.detail(actor, payment.id) };
       throw new BadGatewayException(
         'Payment initiation is uncertain; reuse the same Idempotency-Key and reconcile this attempt before creating another',
       );
@@ -163,7 +180,7 @@ export class PaymentsService {
       throw new BadGatewayException(
         'Payment gateway rejected session creation; a new key may be used',
       );
-    return { created: true, payment };
+    return { created: true, payment: await this.detail(actor, payment.id) };
   }
 
   private saveInitiation(id: string, result: CheckoutResult | 'UNKNOWN') {

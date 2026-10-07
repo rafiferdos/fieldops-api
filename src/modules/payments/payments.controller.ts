@@ -8,6 +8,7 @@ import {
   Post,
   Res,
 } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import type { Response } from 'express';
 import { success } from '../../common/http/success.js';
 import { ZodValidationPipe } from '../../common/pipes/zod-validation.pipe.js';
@@ -29,6 +30,7 @@ export class PaymentSessionsController {
     @Inject(PaymentsService) private readonly payments: PaymentsService,
   ) {}
   @Post(':id/payment-session')
+  @Throttle({ default: { ttl: 60_000, limit: 10 } })
   @Roles('CUSTOMER')
   async create(
     @CurrentActor() actor: AuthActor,
