@@ -23,8 +23,9 @@ describe('Optional catalog cache', () => {
   const schema = z.strictObject({ name: z.string() });
   const value = { name: 'Fresh DB data' };
   const database = 'postgresql://user:secret@localhost:5432/fieldops_test';
+  // Explicit blank prevents ConfigService falling back to a runner's REDIS_URL.
   const config = (url?: string) =>
-    new ConfigService({ DATABASE_URL: database, REDIS_URL: url });
+    new ConfigService({ DATABASE_URL: database, REDIS_URL: url ?? '' });
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -37,6 +38,15 @@ describe('Optional catalog cache', () => {
     cache = new RedisCacheService(config('redis://localhost:6379/1'));
   });
   afterEach(() => vi.restoreAllMocks());
+
+  it('treats a whitespace-only optional URL as disabled despite raw environment fallback', async () => {
+    vi.mocked(createClient).mockClear();
+    const disabled = new RedisCacheService(config('   '));
+    expect(
+      await disabled.remember('catalog:test', schema, async () => value),
+    ).toEqual(value);
+    expect(createClient).not.toHaveBeenCalled();
+  });
 
   it('returns validated hits without consulting the loader', async () => {
     redis.get.mockResolvedValue(JSON.stringify(value));

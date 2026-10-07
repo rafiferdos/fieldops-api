@@ -1,6 +1,6 @@
 # FieldOps API
 
-Programming Hero Assignment 6-এর Field Service Management backend। Authentication, sessions, own profile এবং audited service catalog প্রস্তুত; পরবর্তী domain APIs implementation চলছে। Assignment 7 frontend পরে হবে।
+Programming Hero Assignment 6-এর Field Service Management backend। Authentication, sessions, own profile, audited catalog এবং ownership/version-সহ request lifecycle প্রস্তুত। Scheduling ও payments পরবর্তী stage; Assignment 7 frontend পরে হবে।
 
 ## Stack
 
@@ -268,6 +268,7 @@ npm test
 npm run db:test:setup
 npm run test:e2e
 npm run build
+npm run test:compiled
 ```
 
 E2E tests-এর জন্য `.env`-এ আলাদা `TEST_DATABASE_URL` দিন; database name `_test` দিয়ে শেষ হবে (example: `fieldops_test`)। `db:test:setup` প্রয়োজন হলে test database তৈরি করে committed migrations apply করে; existing data reset করে না। Database user-এর `CREATEDB` permission লাগবে। Tests নিজেদের registration/service fixtures cleanup করে; main `DATABASE_URL`-এর database ব্যবহার করে না। Real cache tests-এর জন্য `TEST_REDIS_URL=redis://localhost:6379/1` দিন—index অবশ্যই `0`-এর বেশি; main Redis URL tests ব্যবহার করে না এবং flush command চালায় না। URL absent হলে real Redis tests skip হয়, public API/DB fallback tests চলে। Unit tests-এ DB/Redis লাগে না। Build স্বয়ংক্রিয়ভাবে Prisma Client generate করে; production entrypoint `dist/main.js`।
@@ -275,6 +276,12 @@ E2E tests-এর জন্য `.env`-এ আলাদা `TEST_DATABASE_URL` দ
 ```bash
 npm run start:prod
 ```
+
+### Continuous integration
+
+[Backend CI](.github/workflows/ci.yml) push to `main`, pull request ও manual run-এ locked install, client generation, schema/type/lint checks, unit tests, fresh PostgreSQL migrations, real Redis integration tests, build এবং compiled HTTP request flow চালাবে। Production secrets লাগে না; signing key প্রতি run-এ নতুন এবং DB/Redis service containers temporary। Official actions immutable commit SHA-তে pinned; workflow read-only permissions নেয়। [GitHub service container guide](https://docs.github.com/en/actions/tutorials/use-containerized-services)
+
+`npm run test:compiled` build-এর পরে চালান। শুধু separate `_test` DB এবং optional Redis index >0 ব্যবহার হয়; native built Nest app temporary loopback port-এ customer/admin login, scoped reads, edit → approve → cancel, stale version ও atomic audit verify করে। Script নিজের fixtures cleanup করে; main DB reset হয় না। GitHub-hosted run push-এর পরে verify করতে হবে; local checks remote CI success প্রমাণ করে না।
 
 ## Schema changes
 
@@ -292,7 +299,7 @@ Migration files Git-এ রাখতে হবে। `.env`, `node_modules/`, `d
 - [Assignment source](https://github.com/Apollo-Level2-Web-Dev/B7A6)
 - [Reviewed Notion plan](https://app.notion.com/p/3f14ab5df14481b9bdccd1349fd83a18)
 
-পরবর্তী কাজ: Customer service requests ও ownership rules; তারপর technician availability/scheduling।
+পরবর্তী কাজ: Technician skills/availability, assignment ও conflict-safe scheduling; তারপর work-order progress/completion/invoicing।
 
 ## Known dependency advisories
 

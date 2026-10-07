@@ -72,14 +72,17 @@ describe('Google ID token verification', () => {
     ).resolves.toMatchObject({ name: 'a'.repeat(100) });
   });
 
-  it('fails closed when the configured audience is absent', async () => {
-    const config = new ConfigService();
-    vi.spyOn(config, 'get').mockReturnValue(undefined);
-    const unconfigured = new GoogleTokenService(config);
-    await expect(unconfigured.verify(googleCredential())).rejects.toMatchObject(
-      { status: 503 },
-    );
-  });
+  it.each([undefined, '', '   '])(
+    'fails closed when the configured audience is absent/blank: %s',
+    async (audience) => {
+      const config = new ConfigService();
+      vi.spyOn(config, 'get').mockReturnValue(audience);
+      const unconfigured = new GoogleTokenService(config);
+      await expect(
+        unconfigured.verify(googleCredential()),
+      ).rejects.toMatchObject({ status: 503 });
+    },
+  );
 
   it('treats certificate download failures as temporary unavailability', async () => {
     vi.restoreAllMocks();

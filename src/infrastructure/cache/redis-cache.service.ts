@@ -26,7 +26,7 @@ export class RedisCacheService implements OnModuleInit, OnModuleDestroy {
       database.searchParams.get('schema') || 'public',
     ].join('|');
     this.prefix = `fieldops:${createHash('sha256').update(scope).digest('hex').slice(0, 16)}:`;
-    const url = config.get<string>('REDIS_URL');
+    const url = config.get<string>('REDIS_URL')?.trim();
     if (url) {
       this.client = createClient({
         url,

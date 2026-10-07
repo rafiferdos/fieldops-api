@@ -28,7 +28,7 @@ export class GoogleTokenService {
   constructor(@Inject(ConfigService) private readonly config: ConfigService) {}
 
   async verify(credential: string): Promise<GoogleProfile> {
-    const audience = this.config.get<string>('GOOGLE_CLIENT_ID');
+    const audience = this.config.get<string>('GOOGLE_CLIENT_ID')?.trim();
     if (!audience)
       throw new ServiceUnavailableException('Google login is not configured');
 
