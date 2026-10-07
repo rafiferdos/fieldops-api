@@ -34,17 +34,24 @@ if (redis) {
 process.env.DATABASE_URL = testUrl;
 process.env.REDIS_URL = redis ?? '';
 process.env.NODE_ENV = 'test';
+// Native tests use a fake merchant and replace HTTP transport before any payment request.
+process.env.SSLCOMMERZ_MODE = 'sandbox';
+process.env.SSLCOMMERZ_STORE_ID = 'compiled-fixture';
+process.env.SSLCOMMERZ_STORE_PASSWORD = 'compiled-fixture-password';
+process.env.PUBLIC_API_URL = 'https://api.example.com';
 
 // ConfigModule validates at module evaluation time. Select the test DB BEFORE importing it.
 const { AppModule } = await import('../dist/app.module.js');
 const { configureApp } = await import('../dist/config/app.config.js');
+const { GatewayHttpService } =
+  await import('../dist/infrastructure/sslcommerz/gateway-http.service.js');
 const { PrismaService } =
   await import('../dist/infrastructure/prisma/prisma.service.js');
 
 const app = await NestFactory.create(AppModule, { logger: false });
 configureApp(app);
 const prisma = app.get(PrismaService);
-const tag = randomUUID();
+const tag = randomUUID().replaceAll('-', '').slice(0, 12);
 const emails = ['owner', 'other', 'admin', 'technician'].map(
   (name) => `compiled-${name}-${tag}@example.com`,
 );
@@ -60,13 +67,18 @@ try {
   );
   await app.listen(0, '127.0.0.1');
   const base = `${await app.getUrl()}/api/v1`;
-  async function call(path, status, { method = 'GET', body, token } = {}) {
+  async function call(
+    path,
+    status,
+    { method = 'GET', body, token, headers = {} } = {},
+  ) {
     const response = await fetch(base + path, {
       method,
       signal: AbortSignal.timeout(5000),
       headers: {
         ...(body ? { 'Content-Type': 'application/json' } : {}),
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...headers,
       },
       ...(body ? { body: JSON.stringify(body) } : {}),
     });
@@ -76,9 +88,13 @@ try {
       `Unexpected HTTP status for ${method} ${path}`,
     );
     if (
-      ['/requests', '/work-orders', '/technicians', '/invoices'].some(
-        (prefix) => path.startsWith(prefix),
-      )
+      [
+        '/requests',
+        '/work-orders',
+        '/technicians',
+        '/invoices',
+        '/payments',
+      ].some((prefix) => path.startsWith(prefix))
     )
       assert.equal(response.headers.get('cache-control'), 'no-store');
     return (await response.json()).data;
@@ -328,8 +344,125 @@ try {
   });
   assert.deepEqual(finalWork.invoice, invoice);
   assert.equal(finalWork.timeline.length, 5);
+  await call('/users/me', 200, {
+    method: 'PATCH',
+    token: customer,
+    body: { phone: '+8801712345678' },
+  });
+  const gatewayCharges = new Map();
+  let initiations = 0;
+  app.get(GatewayHttpService).json = async (url, form) => {
+    if (form) {
+      initiations++;
+      assert.equal(form.get('total_amount'), '1500.00');
+      const merchantTranId = form.get('tran_id');
+      const persisted = await prisma.payment.findUniqueOrThrow({
+        where: { merchantTranId },
+      });
+      assert.equal(persisted.status, 'INITIATING');
+      gatewayCharges.set(merchantTranId, {
+        APIConnect: 'DONE',
+        status: 'VALID',
+        tran_id: merchantTranId,
+        val_id: `val-${tag}`,
+        bank_tran_id: `bank-${tag}`,
+        amount: '1500.00',
+        currency: 'BDT',
+        currency_type: 'BDT',
+        currency_amount: '1500.00',
+        risk_level: '0',
+      });
+      return {
+        status: 'SUCCESS',
+        sessionkey: `session-${tag}`,
+        GatewayPageURL: `https://sandbox.sslcommerz.com/pay?s=${tag}`,
+      };
+    }
+    assert.equal(url.origin, 'https://sandbox.sslcommerz.com');
+    if (url.searchParams.has('val_id'))
+      return [...gatewayCharges.values()].find(
+        (charge) => charge.val_id === url.searchParams.get('val_id'),
+      );
+    const charge = gatewayCharges.get(url.searchParams.get('tran_id'));
+    return {
+      APIConnect: 'DONE',
+      no_of_trans_found: charge ? 1 : 0,
+      element: charge ? [charge] : [],
+    };
+  };
+  const sessionPath = `/invoices/${invoice.id}/payment-session`;
+  const paymentBody = {
+    billing: { address: 'House 12, Road 3', city: 'Dhaka', postcode: '1000' },
+  };
+  const headers = { 'Idempotency-Key': randomUUID() };
+  const checkout = await call(sessionPath, 201, {
+    method: 'POST',
+    token: customer,
+    body: paymentBody,
+    headers,
+  });
+  assert.equal(checkout.status, 'PENDING');
+  assert.deepEqual(
+    await call(sessionPath, 200, {
+      method: 'POST',
+      token: customer,
+      body: paymentBody,
+      headers,
+    }),
+    checkout,
+  );
+  assert.equal(initiations, 1);
+  await call(`/payments/${checkout.id}`, 404, { token: other });
+  await call(`/payments/${checkout.id}`, 403, { token: technician });
+  const attempt = await prisma.payment.findUniqueOrThrow({
+    where: { id: checkout.id },
+  });
+  const charge = gatewayCharges.get(attempt.merchantTranId);
+  for (const kind of ['ipn', 'success']) {
+    const notification = await fetch(`${base}/payments/sslcommerz/${kind}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        tran_id: attempt.merchantTranId,
+        val_id: charge.val_id,
+        amount: '1.00',
+        status: 'FAILED',
+      }),
+      signal: AbortSignal.timeout(5000),
+    });
+    assert.equal(notification.status, 200);
+    assert.equal(notification.headers.get('cache-control'), 'no-store');
+    assert.deepEqual((await notification.json()).data, { received: true });
+  }
+  const paid = await call(`/invoices/${invoice.id}`, 200, { token: customer });
+  assert.equal(paid.status, 'PAID');
+  assert.equal(
+    (await call(`/payments/${checkout.id}`, 200, { token: admin })).status,
+    'SUCCEEDED',
+  );
+  assert.equal(
+    (await call(`/work-orders/${work.id}`, 200, { token: technician })).invoice
+      .status,
+    'PAID',
+  );
+  await call(sessionPath, 409, {
+    method: 'POST',
+    token: customer,
+    body: paymentBody,
+    headers: { 'Idempotency-Key': randomUUID() },
+  });
+  assert.equal(
+    await prisma.paymentReceipt.count({ where: { paymentId: attempt.id } }),
+    1,
+  );
+  assert.equal(
+    await prisma.auditLog.count({
+      where: { entityId: invoice.id, action: 'INVOICE_PAID' },
+    }),
+    1,
+  );
   console.log(
-    'Compiled HTTP workflow passed: safe bootstrap, authentication, request lifecycle, scheduling, scoped work, atomic cancellation, completion and frozen invoices',
+    'Compiled HTTP workflow passed: safe bootstrap, authentication, request lifecycle, scheduling, scoped work, atomic cancellation, completion, invoices and verified idempotent payment settlement (test transport)',
   );
 } finally {
   await prisma
@@ -339,6 +472,30 @@ try {
         select: { id: true },
       });
       const ids = users.map((user) => user.id);
+      const paymentIds = (
+        await tx.payment.findMany({
+          where: { userId: { in: ids } },
+          select: { id: true },
+        })
+      ).map((row) => row.id);
+      const invoiceIds = (
+        await tx.invoice.findMany({
+          where: { customerId: { in: ids } },
+          select: { id: true },
+        })
+      ).map((row) => row.id);
+      await tx.auditLog.deleteMany({
+        where: {
+          OR: [
+            { entityType: 'PAYMENT', entityId: { in: paymentIds } },
+            { entityType: 'INVOICE', entityId: { in: invoiceIds } },
+          ],
+        },
+      });
+      await tx.paymentReceipt.deleteMany({
+        where: { paymentId: { in: paymentIds } },
+      });
+      await tx.payment.deleteMany({ where: { id: { in: paymentIds } } });
       await tx.invoice.deleteMany({ where: { customerId: { in: ids } } });
       await tx.workOrder.deleteMany({
         where: { request: { customerId: { in: ids } } },

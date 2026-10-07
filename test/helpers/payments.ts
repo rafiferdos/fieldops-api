@@ -103,13 +103,14 @@ export function providerEvidence(
   terminal = 'PENDING',
 ) {
   ctx.json.mockImplementation(async (url, form) => {
-    if (form)
+    if (form) {
+      const sessionKey = `session-${randomBytes(8).toString('hex')}`;
       return {
         status: 'SUCCESS',
-        sessionkey: `session-${randomBytes(8).toString('hex')}`,
-        GatewayPageURL:
-          'https://sandbox.sslcommerz.com/gwprocess/v4/gw.php?SESSIONKEY=fixture-session',
+        sessionkey: sessionKey,
+        GatewayPageURL: `https://sandbox.sslcommerz.com/pay?s=${sessionKey}`,
       };
+    }
     const validationId = url.searchParams.get('val_id');
     if (validationId)
       return (

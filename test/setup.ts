@@ -39,3 +39,12 @@ if (testRedisUrl) {
   }
 }
 process.env.REDIS_URL = testRedisUrl ?? '';
+
+// Tests never inherit real merchant credentials; payment fixtures replace only the HTTP transport.
+for (const key of [
+  'SSLCOMMERZ_MODE',
+  'SSLCOMMERZ_STORE_ID',
+  'SSLCOMMERZ_STORE_PASSWORD',
+  'PUBLIC_API_URL',
+])
+  process.env[key] = '';
