@@ -34,6 +34,11 @@ enum RequestStatus {
   CANCELLED
 }
 
+enum InvoiceStatus {
+  UNPAID
+  PAID
+}
+
 enum WorkOrderStatus {
   ASSIGNED
   EN_ROUTE
@@ -111,9 +116,26 @@ model WorkOrder {
   updatedAt        DateTime        @updatedAt @db.Timestamptz(3)
   request          ServiceRequest  @relation(fields: [requestId], references: [id], onDelete: Restrict)
   technician       User            @relation(fields: [technicianId], references: [id], onDelete: Restrict)
+  invoice          Invoice?
 
   @@index([technicianId, status, scheduledStart, id])
   @@index([status, scheduledStart, id])
+}
+
+model Invoice {
+  id          String        @id @default(uuid()) @db.Uuid
+  workOrderId String        @unique @db.Uuid
+  customerId  String        @db.Uuid
+  amountMinor Int
+  currency    Currency      @default(BDT)
+  status      InvoiceStatus @default(UNPAID)
+  issuedAt    DateTime      @default(now()) @db.Timestamptz(3)
+  paidAt      DateTime?     @db.Timestamptz(3)
+  workOrder   WorkOrder     @relation(fields: [workOrderId], references: [id], onDelete: Restrict)
+  customer    User          @relation(fields: [customerId], references: [id], onDelete: Restrict)
+
+  @@index([customerId, issuedAt, id])
+  @@index([status, issuedAt, id])
 }
 
 // Durable cache generation; incremented in every catalog write transaction.
@@ -139,6 +161,7 @@ model User {
   requests         ServiceRequest[]
   technicianSkills TechnicianSkill[]
   workOrders       WorkOrder[]
+  invoices         Invoice[]
 
   @@index([role, status])
 }
