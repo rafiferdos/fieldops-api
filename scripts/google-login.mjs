@@ -37,7 +37,7 @@ const html = `<!doctype html>
 </head>
 <body>
   <h1>FieldOps Google login test</h1>
-  <p>Sign in করে credential copy করুন। Apidog-এর google_credential Local Value-তে বসান।</p>
+  <p>Sign in and copy the credential into the google_credential Local Value in Apidog.</p>
   <div id="google-button"></div>
   <label for="credential">Google ID token</label>
   <textarea id="credential" readonly spellcheck="false"></textarea>
@@ -46,7 +46,7 @@ const html = `<!doctype html>
     window.addEventListener('load', () => {
       const status = document.getElementById('status');
       if (!window.google?.accounts?.id) {
-        status.textContent = 'Google button load হয়নি। Internet connection ও browser settings যাচাই করুন।';
+        status.textContent = 'The Google button could not load. Check your connection and browser settings.';
         return;
       }
       google.accounts.id.initialize({
@@ -56,13 +56,13 @@ const html = `<!doctype html>
           output.value = credential;
           output.focus();
           output.select();
-          status.textContent = 'Credential ready—copy করে Apidog-এ test করুন।';
+          status.textContent = 'Credential ready. Copy it into Apidog to test.';
         },
         ux_mode: 'popup',
         auto_select: false,
       });
       google.accounts.id.renderButton(document.getElementById('google-button'), { theme: 'outline', size: 'large' });
-      status.textContent = 'Sign in with Google চাপুন।';
+      status.textContent = 'Select Sign in with Google.';
     });
   </script>
 </body>

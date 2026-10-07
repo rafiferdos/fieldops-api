@@ -8,7 +8,7 @@ Read https://github.com/Apollo-Level2-Web-Dev/B7A6 and its four Markdown files w
 
 ## Working agreement
 
-Use Bengali as the primary language for user-facing notes and explanations, while retaining English technical terms, headings, endpoints, identifiers, and code. Keep explanations concise. When recommending résumé additions, explicitly distinguish existing listed skills from technologies/engineering capabilities not mentioned in the résumé; absence from the résumé does not mean the user lacks the skill. Prioritize Redis, automated testing, payment reliability and concurrency now; background jobs later.
+Use Bengali only for conversation with the user, retaining English technical terms. All project artifacts, README documentation, comments, identifiers and repository instructions must be written in proper English. Keep explanations concise. When recommending résumé additions, explicitly distinguish existing listed skills from technologies/engineering capabilities not mentioned in the résumé; absence from the résumé does not mean the user lacks the skill. Prioritize Redis, automated testing, payment reliability and concurrency now; background jobs later.
 
 The user writes the core application. Unless subsequently asked to implement it, provide focused explanations, near-code domain hints, and exact common utility code. The current artifacts are plans, not a completed application.
 
