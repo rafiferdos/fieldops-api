@@ -114,6 +114,7 @@ export async function closeRequestContext(context: RequestContext | undefined) {
         where: { payment: { userId: { in: ids } } },
       });
       await tx.payment.deleteMany({ where: { userId: { in: ids } } });
+      await tx.feedback.deleteMany({ where: { customerId: { in: ids } } });
       await tx.auditLog.deleteMany({
         where: {
           entityType: 'INVOICE',
