@@ -1,3 +1,4 @@
+import { completeStorageSettlement } from './helpers/settlement-storage.js';
 import { randomBytes, randomUUID } from 'node:crypto';
 import request from 'supertest';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
@@ -87,21 +88,79 @@ describe('Payment storage invariants', () => {
         },
       }),
     ).rejects.toThrow();
-    await ctx.prisma.payment.update({
-      where: { id: row.id },
-      data: {
-        status: 'SUCCEEDED',
-        verifiedAt: new Date(),
-        settledAt: new Date(),
-        providerTranId: randomUUID(),
-      },
-    });
+    await ctx.prisma.$transaction((tx) =>
+      completeStorageSettlement(tx, row, new Date()),
+    );
     await expect(
       ctx.prisma.payment.update({
         where: { id: row.id },
         data: { status: 'FAILED' },
       }),
     ).rejects.toThrow();
+  });
+  it('rejects payment/invoice settlement without a matching receipt graph', async () => {
+    const row = await ctx.prisma.payment.create({ data: data() });
+    const now = new Date();
+    await expect(
+      ctx.prisma.invoice.update({
+        where: { id: invoiceId },
+        data: { status: 'PAID', paidAt: now },
+      }),
+    ).rejects.toThrow();
+    await expect(
+      ctx.prisma.payment.update({
+        where: { id: row.id },
+        data: {
+          status: 'SUCCEEDED',
+          providerTranId: randomUUID(),
+          verifiedAt: now,
+          settledAt: now,
+        },
+      }),
+    ).rejects.toThrow();
+    await expect(
+      ctx.prisma.paymentReceipt.create({
+        data: {
+          paymentId: row.id,
+          providerTranId: randomUUID(),
+          validationId: randomUUID(),
+          amountMinor: row.amountMinor,
+          originalAmountMinor: row.amountMinor,
+          currency: 'BDT',
+          originalCurrency: 'BDT',
+          risky: false,
+          disposition: 'SETTLED',
+        },
+      }),
+    ).rejects.toThrow();
+    expect(
+      (await ctx.prisma.invoice.findUniqueOrThrow({ where: { id: invoiceId } }))
+        .status,
+    ).toBe('UNPAID');
+    expect(
+      await ctx.prisma.paymentReceipt.count({ where: { paymentId: row.id } }),
+    ).toBe(0);
+  });
+  it('preserves settled receipt facts and refuses standalone evidence deletion', async () => {
+    const row = await ctx.prisma.payment.create({ data: data() });
+    await ctx.prisma.$transaction((tx) =>
+      completeStorageSettlement(tx, row, new Date()),
+    );
+    const receipt = await ctx.prisma.paymentReceipt.findFirstOrThrow({
+      where: { paymentId: row.id },
+    });
+    await expect(
+      ctx.prisma.paymentReceipt.update({
+        where: { id: receipt.id },
+        data: { amountMinor: 1 },
+      }),
+    ).rejects.toThrow();
+    await expect(
+      ctx.prisma.paymentReceipt.delete({ where: { id: receipt.id } }),
+    ).rejects.toThrow();
+    expect(
+      await ctx.prisma.paymentReceipt.findUnique({ where: { id: receipt.id } }),
+    ).not.toBeNull();
   });
   it('requires verified terminal failure before a new attempt', async () => {
     const row = await ctx.prisma.payment.create({ data: data() });

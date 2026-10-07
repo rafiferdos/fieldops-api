@@ -1,3 +1,4 @@
+import { settleStorageFixture } from './helpers/settlement-storage.js';
 import request from 'supertest';
 import {
   closeRequestContext,
@@ -78,12 +79,9 @@ describe('Linked safe invoice views (e2e)', () => {
       })
       .expect(200);
     const id = result.body.data.invoice.id;
-    // Storage fixture simulates a future verified settlement; no public payment writer exists yet.
+    // Test-only complete financial graph; provider verification is exercised in payment tests.
     const paidAt = new Date();
-    await ctx.prisma.invoice.update({
-      where: { id },
-      data: { status: 'PAID', paidAt },
-    });
+    await settleStorageFixture(ctx, id, paidAt);
     for (const path of [
       `/api/v1/work-orders/${order.id}`,
       `/api/v1/invoices/${id}`,

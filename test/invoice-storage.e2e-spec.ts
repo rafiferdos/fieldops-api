@@ -1,3 +1,4 @@
+import { settleStorageFixture } from './helpers/settlement-storage.js';
 import { randomUUID } from 'node:crypto';
 import {
   closeRequestContext,
@@ -203,10 +204,7 @@ describe('Immutable invoice storage (e2e)', () => {
       }),
     ).rejects.toThrow();
     const paidAt = new Date();
-    await ctx.prisma.invoice.update({
-      where: { id: invoice.id },
-      data: { status: 'PAID', paidAt },
-    });
+    await settleStorageFixture(ctx, invoice.id, paidAt);
     await expect(
       ctx.prisma.invoice.update({
         where: { id: invoice.id },
