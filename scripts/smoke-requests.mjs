@@ -509,8 +509,43 @@ try {
     await prisma.feedback.count({ where: { workOrderId: work.id } }),
     1,
   );
+  const managed = (
+    await call(`/admin/users?q=${encodeURIComponent(emails[1])}`, 200, {
+      token: admin,
+    })
+  ).items[0];
+  assert.equal(managed.email, emails[1]);
+  assert.equal(Object.hasOwn(managed, 'passwordHash'), false);
+  await call('/admin/users', 403, { token: customer });
+  const overview = await call('/admin/overview', 200, { token: admin });
+  assert.equal(overview.invoices.verifiedRevenueMinor, '150000');
+  assert.equal(overview.invoices.paidCount, 1);
+  const managedPath = `/admin/users/${managed.id}`;
+  await call(managedPath, 200, {
+    method: 'PATCH',
+    token: admin,
+    body: { status: 'SUSPENDED' },
+  });
+  await call('/users/me', 401, { token: other });
+  await call(managedPath, 200, {
+    method: 'PATCH',
+    token: admin,
+    body: { status: 'ACTIVE' },
+  });
+  await call('/users/me', 401, { token: other });
+  await call('/users/me', 200, { token: await login(emails[1]) });
+  const audit = await call(
+    `/admin/audit-logs?entityId=${managed.id}&action=USER_ACCESS_UPDATED`,
+    200,
+    { token: admin },
+  );
+  assert.equal(audit.pagination.total, 2);
+  assert.deepEqual(
+    Object.keys(audit.items[0].metadata).sort(),
+    ['previousRole', 'role', 'previousStatus', 'status'].sort(),
+  );
   console.log(
-    'Compiled HTTP workflow passed: safe bootstrap, authentication, request lifecycle, scheduling, scoped work, atomic cancellation, completion, invoices, verified idempotent payment settlement (test transport) and audited customer feedback',
+    'Compiled HTTP workflow passed: safe bootstrap, authentication, request lifecycle, scheduling, scoped work, atomic cancellation, completion, invoices, verified idempotent payment settlement (test transport), audited customer feedback and administration/access revocation',
   );
 } finally {
   await prisma
