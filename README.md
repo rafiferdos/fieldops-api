@@ -2,6 +2,20 @@
 
 Field Service Management backend for Programming Hero Assignment 6. Authentication, sessions, profiles, an audited catalog, service requests, technician scheduling, work progress, atomic completion, immutable invoices, verified SSLCommerz payments and customer feedback are implemented. Assignment 7 is a separate frontend stage.
 
+Live API: **https://fieldops-api-xu3s.onrender.com/api/v1**. Readiness: [`GET /health/ready`](https://fieldops-api-xu3s.onrender.com/api/v1/health/ready).
+
+## Hosted environment
+
+The demonstration API runs on Render Free in Singapore, using a dedicated Neon PostgreSQL database in the same region. Node 24 is selected through `.nvmrc`. Render uses `npm ci --include=dev && npm run build` to build and `npm run db:deploy && npm run start:prod` to start. Its health check is `/api/v1/health/ready`; Render supplies `PORT`.
+
+Keep `DATABASE_URL`, `JWT_ACCESS_SECRET`, `GOOGLE_CLIENT_ID` and the four payment settings in Render environment variables. The database connection uses certificate verification (`sslmode=verify-full`); committed migrations include the required PostgreSQL extension and constraints. Bootstrap dedicated evaluation accounts explicitly; deployment does not reset passwords or reseed every restart. Local deployment/test credentials remain in ignored `.env.*` files and Apidog **Local Value** fields.
+
+`PUBLIC_API_URL=https://fieldops-api-xu3s.onrender.com` and the merchant IPN listener is `https://fieldops-api-xu3s.onrender.com/api/v1/payments/sslcommerz/ipn`. Payments use **SSLCommerz sandbox**, not live funds. Hosted Redis is not configured; public catalog reads use the tested PostgreSQL fallback. `FRONTEND_ORIGIN` currently allows the localhost Google test helper; configure the actual Assignment 7 origin when its deployment is known.
+
+For Apidog Web, select **Testing Env**, set `base_url` to the live API above and use **Cloud Proxy**. Localhost requires the browser extension/agent and cannot be reached through Cloud Proxy. After sign-in, replace the role-specific access token; tokens expire after 15 minutes. Copy current IDs and versions from actual responses. Do not publish populated environments or authentication responses.
+
+Render Free can sleep after 15 idle minutes and take about a minute to wake. Allow for cold starts when testing; do not submit another payment attempt with a new idempotency key merely because a request is slow. The service uses one instance with process-local rate limiting; proxy trust and distributed throttling require review before scaling. [Render Free limits](https://render.com/docs/free), [Nest proxy guidance](https://docs.nestjs.com/security/rate-limiting).
+
 ## Stack
 
 Node.js 24, NestJS with the Express adapter, strict TypeScript / ESM, PostgreSQL 18, Prisma 7, Redis 8 / node-redis, Zod, Helmet and Throttler. Tests use Vitest and Supertest; linting uses oxlint; formatting uses Prettier.
