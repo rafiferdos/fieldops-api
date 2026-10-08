@@ -4,6 +4,14 @@ Field Service Management backend for Programming Hero Assignment 6. Authenticati
 
 Live API: **https://fieldops-api-xu3s.onrender.com/api/v1**. Readiness: [`GET /health/ready`](https://fieldops-api-xu3s.onrender.com/api/v1/health/ready).
 
+## Evaluation handoff
+
+- Backend repository: https://github.com/rafiferdos/fieldops-api
+- Complete API collection: [download/import the Postman collection](https://raw.githubusercontent.com/rafiferdos/fieldops-api/main/docs/fieldops.postman_collection.json).
+- Actual responses and prepared fixtures: [sample collection](docs/fieldops-live-samples.postman_collection.json), [usage guide](docs/live-fixtures.md), and [executed verification record](docs/manual-verification.md).
+- Dedicated demo ADMIN login was verified against the live API. Provide its credentials privately with the submission; never add them to this repository.
+- The real 5–10 minute walkthrough video and assignment-portal submission remain student delivery steps. SSLCommerz sandbox is a real provider integration; sandbox grading acceptance still needs confirmation from the course.
+
 ## Hosted environment
 
 The demonstration API runs on Render Free in Singapore, using a dedicated Neon PostgreSQL database in the same region. Node 24 is selected through `.nvmrc`. Render uses `npm ci --include=dev && npm run build` to build and `npm run db:deploy && npm run start:prod` to start. Its health check is `/api/v1/health/ready`; Render supplies `PORT`.
@@ -104,7 +112,7 @@ Import [the Postman v2.1 collection](docs/fieldops.postman_collection.json) thro
 
 Set the imported variables in your local environment: `base_url`, account credentials, role-specific Bearer tokens and IDs extracted from actual responses. Keep secrets in **Local Value**. Set actual future scheduling dates and replace request/work-order versions after each mutation. Review Apidog's variable mapping after import.
 
-Run requests manually in workflow order: authentication → catalog → request/review → skills/assignment → progress/completion → verified gateway payment → feedback. Cancellation, deletion and logout are separate scenarios; do not run the entire collection as one sequence. The canonical collection contains illustrative responses. The separate [live sample collection](docs/fieldops-live-samples.postman_collection.json) contains 72 sanitized actual responses and 17 prepared requests; use the **FieldOps — Actual scenarios** module and [fixture guide](docs/live-fixtures.md) to inspect and repeat selected checks. Never publish populated environments or authentication responses. [Executed manual checks and verification limits](docs/manual-verification.md) include real Google sign-in and SSLCommerz sandbox settlement.
+Run requests manually in workflow order: authentication → catalog → request/review → skills/assignment → progress/completion → verified gateway payment → feedback. Cancellation, deletion and logout are separate scenarios; do not run the entire collection as one sequence. The canonical collection contains illustrative responses. The separate [live sample collection](docs/fieldops-live-samples.postman_collection.json) contains 92 sanitized actual responses and 17 prepared requests; use the **FieldOps — Actual scenarios** module and [fixture guide](docs/live-fixtures.md) to inspect and repeat selected checks. Never publish populated environments or authentication responses. [Executed manual checks and verification limits](docs/manual-verification.md) include real Google sign-in and SSLCommerz sandbox settlement.
 
 After changing an API or the collection, run `npm run build` and `npm run docs:check`. The offline checker compares coverage, authorization and success statuses with compiled Nest route metadata and checks request inputs through the actual validation pipes. It does not call the database/gateway or establish response correctness; integration tests and manual checks cover runtime behavior.
 
@@ -433,7 +441,7 @@ npm run docs:check
 npm run test:compiled
 ```
 
-E2E requires a separate `TEST_DATABASE_URL` whose database name ends in `_test`. Setup creates it if needed (CREATEDB permission required), applies committed migrations and never resets existing data. Fixtures clean up their own records; tests do not use the main database. Real Redis tests require `TEST_REDIS_URL` with index >0; without it they skip, while DB fallback tests run. No Redis flush commands. Integration file workers are bounded to four; explicit concurrency races remain parallel. Unit tests need no DB/Redis. Build regenerates Prisma Client; production entry is `dist/main.js` (`npm run start:prod`).
+E2E requires a separate `TEST_DATABASE_URL` whose database name ends in `_test`. Setup creates it if needed (CREATEDB permission required), applies committed migrations and never resets existing data. Fixtures clean up their own records; tests do not use the main database. Real Redis tests require `TEST_REDIS_URL` with index >0; without it they skip, while DB fallback tests run. No Redis flush commands. Integration fixture files run with one worker to isolate global administration totals and last-admin invariants; explicit concurrency races remain parallel. Unit tests need no DB/Redis. Build regenerates Prisma Client; production entry is `dist/main.js` (`npm run start:prod`).
 
 [Backend CI](.github/workflows/ci.yml) runs on main pushes, pull requests and manual dispatch: locked install, generate/schema/type/lint, unit tests, fresh PostgreSQL migrations, real Redis integration, build, API documentation contracts and compiled native HTTP flow. Temporary services and a generated signing key need no production secrets. Official actions are pinned by immutable SHA; permissions are read-only. Remote CI must be verified after pushing; local success does not prove a hosted run.
 

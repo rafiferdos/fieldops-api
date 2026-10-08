@@ -27,7 +27,7 @@ Verified on October 7–8, 2026, using Chrome Apidog Web, Testing Env and Cloud 
 | Provider callbacks | Real sandbox IPN settled the invoice. Repeated IPN/success and late fail/cancel callbacks returned `200`; the payment remained SUCCEEDED. Unknown transaction `404`; malformed transaction input `400`. |
 | Feedback | Customer feedback for the completed, paid work returned `201`; duplicate review returned `409`. |
 | Administration reads | Hosted user list, compact audit search and overview each returned `200` through Apidog. An otherwise valid `from` without `to` returned `400`; default overview was restored and returned `200`. |
-| Administration access | The dedicated disposable CUSTOMER was suspended with `200`. Reactivation and the remaining hosted session-revocation checks are pending explicit approval for this account-status test. Local revocation/race checks passed. |
+| Administration access | After explicit approval, direct live API checks restored the disposable CUSTOMER to ACTIVE (`200`), verified fresh login/profile (`200`), and confirmed an identical update preserves the session. Suspension returned `200`, rejected old access and password login (`401`), and reactivation returned `200` without reviving old access/refresh (`401`). Fresh login/profile succeeded (`200`); the account was left ACTIVE. Customer overview access returned `403`; invalid status `400`. |
 
 The sandbox payment was BDT 1,500.00, using the provider's test card flow. A read-only hosted database check found exactly one SETTLED receipt for that payment. No real funds were transferred. The browser return page was blocked by a browser extension (`ERR_BLOCKED_BY_CLIENT`); server IPN delivery and settlement succeeded independently. Browser protections were not disabled.
 
@@ -56,8 +56,8 @@ Node 24.21.0; a separate guarded PostgreSQL test database and Redis test databas
 
 ## Remaining delivery checks
 
-- Finish the dedicated access-test account's reactivation and hosted revocation checks after approval. The other administration routes are deployed and manually checked; hosted CI passed.
-- Actual scenarios were imported into a separate Apidog module. The backup contains 72 captured actual responses and 17 prepared requests. PENDING v2, ASSIGNED v2, IN_PROGRESS v3 and an UNPAID invoice were re-read successfully through Apidog. The saved PAID invoice response was reviewed in documentation Preview. See [the fixture guide](live-fixtures.md); historical examples do not reset state.
+- All four administration routes are deployed and checked. The final 20 account lifecycle/readiness checks used direct HTTP against the live API, reducing browser use; their captures are labeled accordingly. The dedicated account is ACTIVE. [Final documentation CI](https://github.com/rafiferdos/fieldops-api/actions/runs/37733402331) also passed.
+- Actual scenarios were imported into a separate Apidog module. The backup contains 92 captured actual responses and 17 prepared requests. PENDING v2, ASSIGNED v2, IN_PROGRESS v3 and an UNPAID invoice were re-read successfully through Apidog. The saved PAID invoice response was reviewed in documentation Preview. See [the fixture guide](live-fixtures.md); historical examples do not reset state.
 - Supply the dedicated demo administrator credentials privately with the submission and record the required real 5–10 minute walkthrough.
 - Confirm sandbox payment acceptance with the course if needed; a successful sandbox integration does not establish grading policy.
 

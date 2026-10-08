@@ -2,7 +2,7 @@
 
 Captured on October 8, 2026 against `https://fieldops-api-xu3s.onrender.com/api/v1`.
 
-Use the **FieldOps — Actual scenarios** module in Apidog, **Testing Env**, and **Cloud Proxy**. The [sample collection](fieldops-live-samples.postman_collection.json) is a secret-free backup: 72 captured actual responses and 17 prepared requests. Apidog groups matching methods/paths into endpoints with multiple debug cases; endpoint counts therefore differ from scenario counts. Canonical route documentation remains in the Default module and [canonical collection](fieldops.postman_collection.json).
+Use the **FieldOps — Actual scenarios** module in Apidog, **Testing Env**, and **Cloud Proxy**. The [sample collection](fieldops-live-samples.postman_collection.json) is a secret-free backup: 92 captured actual responses and 17 prepared requests. Apidog groups matching methods/paths into endpoints with multiple debug cases; endpoint counts therefore differ from scenario counts. Canonical route documentation remains in the Default module and [canonical collection](fieldops.postman_collection.json).
 
 ## Start testing
 

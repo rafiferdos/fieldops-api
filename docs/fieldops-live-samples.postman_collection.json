@@ -1,6 +1,6 @@
 {
   "info": {
-    "name": "FieldOps \u2014 Actual tested scenarios",
+    "name": "FieldOps — Actual tested scenarios",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
     "description": "Actual responses from dedicated FieldOps sandbox fixtures, captured through direct live API requests on October 8, 2026. Original full workflow was also tested manually in Apidog. These examples are historical snapshots; mutations require the current resource state/version. Never run the entire collection automatically. Authentication secrets are redacted; store real values only in Local Values. This folder complements the canonical API documentation. Administration responses were captured manually in Apidog after deployment of de6d649. Apidog may group requests sharing a method/path into one endpoint with multiple cases; the JSON retains each scenario."
   },
@@ -21,7 +21,7 @@
       "key": "customer_password",
       "value": "",
       "type": "string",
-      "description": "Blank template. Set only as a local environment secret; registration requires 15\u2013128 characters."
+      "description": "Blank template. Set only as a local environment secret; registration requires 15–128 characters."
     },
     {
       "key": "admin_email",
@@ -261,6 +261,18 @@
       "value": "f1da09a2-29cf-4dd0-83bc-2b83bba9ffed",
       "type": "string",
       "description": "Prepared fixture or local test credential; set only in Local Values. See live fixture guide."
+    },
+    {
+      "key": "managed_access_token",
+      "value": "",
+      "type": "string",
+      "description": "Local-only dedicated account test token; never publish populated values."
+    },
+    {
+      "key": "managed_revoked_refresh_token",
+      "value": "",
+      "type": "string",
+      "description": "Local-only dedicated account test token; never publish populated values."
     }
   ],
   "item": [
@@ -268,7 +280,7 @@
       "name": "12 Actual tested scenarios",
       "item": [
         {
-          "name": "200 \u2014 Liveness",
+          "name": "200 — Liveness",
           "request": {
             "method": "GET",
             "header": [
@@ -293,7 +305,7 @@
           },
           "response": [
             {
-              "name": "Actual 200 \u2014 2026-10-08",
+              "name": "Actual 200 — 2026-10-08",
               "originalRequest": {
                 "method": "GET",
                 "header": [
@@ -329,7 +341,7 @@
           ]
         },
         {
-          "name": "200 \u2014 Database readiness",
+          "name": "200 — Database readiness",
           "request": {
             "method": "GET",
             "header": [
@@ -355,7 +367,7 @@
           },
           "response": [
             {
-              "name": "Actual 200 \u2014 2026-10-08",
+              "name": "Actual 200 — 2026-10-08",
               "originalRequest": {
                 "method": "GET",
                 "header": [
@@ -392,7 +404,7 @@
           ]
         },
         {
-          "name": "200 \u2014 Login customer",
+          "name": "200 — Login customer",
           "request": {
             "method": "POST",
             "header": [
@@ -431,7 +443,7 @@
           },
           "response": [
             {
-              "name": "Actual 200 \u2014 2026-10-08",
+              "name": "Actual 200 — 2026-10-08",
               "originalRequest": {
                 "method": "POST",
                 "header": [
@@ -481,7 +493,7 @@
           ]
         },
         {
-          "name": "200 \u2014 Login admin",
+          "name": "200 — Login admin",
           "request": {
             "method": "POST",
             "header": [
@@ -520,7 +532,7 @@
           },
           "response": [
             {
-              "name": "Actual 200 \u2014 2026-10-08",
+              "name": "Actual 200 — 2026-10-08",
               "originalRequest": {
                 "method": "POST",
                 "header": [
@@ -570,7 +582,7 @@
           ]
         },
         {
-          "name": "200 \u2014 Login technician",
+          "name": "200 — Login technician",
           "request": {
             "method": "POST",
             "header": [
@@ -609,7 +621,7 @@
           },
           "response": [
             {
-              "name": "Actual 200 \u2014 2026-10-08",
+              "name": "Actual 200 — 2026-10-08",
               "originalRequest": {
                 "method": "POST",
                 "header": [
@@ -659,7 +671,7 @@
           ]
         },
         {
-          "name": "200 \u2014 Rotate customer refresh token",
+          "name": "200 — Rotate customer refresh token",
           "request": {
             "method": "POST",
             "header": [
@@ -698,7 +710,7 @@
           },
           "response": [
             {
-              "name": "Actual 200 \u2014 2026-10-08",
+              "name": "Actual 200 — 2026-10-08",
               "originalRequest": {
                 "method": "POST",
                 "header": [
@@ -748,7 +760,7 @@
           ]
         },
         {
-          "name": "200 \u2014 Read own profile",
+          "name": "200 — Read own profile",
           "request": {
             "method": "GET",
             "header": [
@@ -781,7 +793,7 @@
           },
           "response": [
             {
-              "name": "Actual 200 \u2014 2026-10-08",
+              "name": "Actual 200 — 2026-10-08",
               "originalRequest": {
                 "method": "GET",
                 "header": [
@@ -825,7 +837,7 @@
           ]
         },
         {
-          "name": "200 \u2014 Update own profile",
+          "name": "200 — Update own profile",
           "request": {
             "method": "PATCH",
             "header": [
@@ -871,7 +883,7 @@
           },
           "response": [
             {
-              "name": "Actual 200 \u2014 2026-10-08",
+              "name": "Actual 200 — 2026-10-08",
               "originalRequest": {
                 "method": "PATCH",
                 "header": [
@@ -928,7 +940,7 @@
           ]
         },
         {
-          "name": "401 \u2014 Missing authentication",
+          "name": "401 — Missing authentication",
           "request": {
             "method": "GET",
             "header": [
@@ -954,7 +966,7 @@
           },
           "response": [
             {
-              "name": "Actual 401 \u2014 2026-10-08",
+              "name": "Actual 401 — 2026-10-08",
               "originalRequest": {
                 "method": "GET",
                 "header": [
@@ -991,7 +1003,7 @@
           ]
         },
         {
-          "name": "401 \u2014 Invalid Google credential",
+          "name": "401 — Invalid Google credential",
           "request": {
             "method": "POST",
             "header": [
@@ -1030,7 +1042,7 @@
           },
           "response": [
             {
-              "name": "Actual 401 \u2014 2026-10-08",
+              "name": "Actual 401 — 2026-10-08",
               "originalRequest": {
                 "method": "POST",
                 "header": [
@@ -1080,7 +1092,7 @@
           ]
         },
         {
-          "name": "200 \u2014 Search active services",
+          "name": "200 — Search active services",
           "request": {
             "method": "GET",
             "header": [
@@ -1119,7 +1131,7 @@
           },
           "response": [
             {
-              "name": "Actual 200 \u2014 2026-10-08",
+              "name": "Actual 200 — 2026-10-08",
               "originalRequest": {
                 "method": "GET",
                 "header": [
@@ -1169,7 +1181,7 @@
           ]
         },
         {
-          "name": "200 \u2014 Read active service",
+          "name": "200 — Read active service",
           "request": {
             "method": "GET",
             "header": [
@@ -1195,7 +1207,7 @@
           },
           "response": [
             {
-              "name": "Actual 200 \u2014 2026-10-08",
+              "name": "Actual 200 — 2026-10-08",
               "originalRequest": {
                 "method": "GET",
                 "header": [
@@ -1232,7 +1244,7 @@
           ]
         },
         {
-          "name": "403 \u2014 Customer cannot create services",
+          "name": "403 — Customer cannot create services",
           "request": {
             "method": "POST",
             "header": [
@@ -1277,7 +1289,7 @@
           },
           "response": [
             {
-              "name": "Actual 403 \u2014 2026-10-08",
+              "name": "Actual 403 — 2026-10-08",
               "originalRequest": {
                 "method": "POST",
                 "header": [
@@ -1333,7 +1345,7 @@
           ]
         },
         {
-          "name": "400 \u2014 Reject malformed service",
+          "name": "400 — Reject malformed service",
           "request": {
             "method": "POST",
             "header": [
@@ -1378,7 +1390,7 @@
           },
           "response": [
             {
-              "name": "Actual 400 \u2014 2026-10-08",
+              "name": "Actual 400 — 2026-10-08",
               "originalRequest": {
                 "method": "POST",
                 "header": [
@@ -1434,7 +1446,7 @@
           ]
         },
         {
-          "name": "201 \u2014 Create disposable catalog service",
+          "name": "201 — Create disposable catalog service",
           "request": {
             "method": "POST",
             "header": [
@@ -1469,7 +1481,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Manual sample \u2014 fan inspection fb202a1b\",\n  \"description\": \"Dedicated disposable manual-test catalog entry.\",\n  \"basePriceMinor\": 80000\n}",
+              "raw": "{\n  \"name\": \"Manual sample — fan inspection fb202a1b\",\n  \"description\": \"Dedicated disposable manual-test catalog entry.\",\n  \"basePriceMinor\": 80000\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1479,7 +1491,7 @@
           },
           "response": [
             {
-              "name": "Actual 201 \u2014 2026-10-08",
+              "name": "Actual 201 — 2026-10-08",
               "originalRequest": {
                 "method": "POST",
                 "header": [
@@ -1514,7 +1526,7 @@
                 },
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"name\": \"Manual sample \u2014 fan inspection fb202a1b\",\n  \"description\": \"Dedicated disposable manual-test catalog entry.\",\n  \"basePriceMinor\": 80000\n}",
+                  "raw": "{\n  \"name\": \"Manual sample — fan inspection fb202a1b\",\n  \"description\": \"Dedicated disposable manual-test catalog entry.\",\n  \"basePriceMinor\": 80000\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -1530,12 +1542,12 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"success\": true,\n  \"message\": \"Service created successfully\",\n  \"data\": {\n    \"id\": \"2a8d2fde-5ca2-4718-a21a-42cf1f097038\",\n    \"name\": \"Manual sample \u2014 fan inspection fb202a1b\",\n    \"description\": \"Dedicated disposable manual-test catalog entry.\",\n    \"basePriceMinor\": 80000,\n    \"currency\": \"BDT\",\n    \"createdAt\": \"2026-10-08T05:20:44.484Z\",\n    \"updatedAt\": \"2026-10-08T05:20:44.484Z\"\n  }\n}"
+              "body": "{\n  \"success\": true,\n  \"message\": \"Service created successfully\",\n  \"data\": {\n    \"id\": \"2a8d2fde-5ca2-4718-a21a-42cf1f097038\",\n    \"name\": \"Manual sample — fan inspection fb202a1b\",\n    \"description\": \"Dedicated disposable manual-test catalog entry.\",\n    \"basePriceMinor\": 80000,\n    \"currency\": \"BDT\",\n    \"createdAt\": \"2026-10-08T05:20:44.484Z\",\n    \"updatedAt\": \"2026-10-08T05:20:44.484Z\"\n  }\n}"
             }
           ]
         },
         {
-          "name": "200 \u2014 Update disposable catalog service",
+          "name": "200 — Update disposable catalog service",
           "request": {
             "method": "PATCH",
             "header": [
@@ -1581,7 +1593,7 @@
           },
           "response": [
             {
-              "name": "Actual 200 \u2014 2026-10-08",
+              "name": "Actual 200 — 2026-10-08",
               "originalRequest": {
                 "method": "PATCH",
                 "header": [
@@ -1633,12 +1645,12 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"success\": true,\n  \"message\": \"Service updated successfully\",\n  \"data\": {\n    \"id\": \"2a8d2fde-5ca2-4718-a21a-42cf1f097038\",\n    \"name\": \"Manual sample \u2014 fan inspection fb202a1b\",\n    \"description\": \"Dedicated disposable manual-test catalog entry.\",\n    \"basePriceMinor\": 85000,\n    \"currency\": \"BDT\",\n    \"createdAt\": \"2026-10-08T05:20:44.484Z\",\n    \"updatedAt\": \"2026-10-08T05:20:44.590Z\"\n  }\n}"
+              "body": "{\n  \"success\": true,\n  \"message\": \"Service updated successfully\",\n  \"data\": {\n    \"id\": \"2a8d2fde-5ca2-4718-a21a-42cf1f097038\",\n    \"name\": \"Manual sample — fan inspection fb202a1b\",\n    \"description\": \"Dedicated disposable manual-test catalog entry.\",\n    \"basePriceMinor\": 85000,\n    \"currency\": \"BDT\",\n    \"createdAt\": \"2026-10-08T05:20:44.484Z\",\n    \"updatedAt\": \"2026-10-08T05:20:44.590Z\"\n  }\n}"
             }
           ]
         },
         {
-          "name": "200 \u2014 Soft-delete disposable service",
+          "name": "200 — Soft-delete disposable service",
           "request": {
             "method": "DELETE",
             "header": [
@@ -1671,7 +1683,7 @@
           },
           "response": [
             {
-              "name": "Actual 200 \u2014 2026-10-08",
+              "name": "Actual 200 — 2026-10-08",
               "originalRequest": {
                 "method": "DELETE",
                 "header": [
@@ -1715,7 +1727,7 @@
           ]
         },
         {
-          "name": "404 \u2014 Deleted service is unavailable",
+          "name": "404 — Deleted service is unavailable",
           "request": {
             "method": "GET",
             "header": [
@@ -1741,7 +1753,7 @@
           },
           "response": [
             {
-              "name": "Actual 404 \u2014 2026-10-08",
+              "name": "Actual 404 — 2026-10-08",
               "originalRequest": {
                 "method": "GET",
                 "header": [
@@ -1778,7 +1790,7 @@
           ]
         },
         {
-          "name": "201 \u2014 Editable PENDING request",
+          "name": "201 — Editable PENDING request",
           "request": {
             "method": "POST",
             "header": [
@@ -1823,7 +1835,7 @@
           },
           "response": [
             {
-              "name": "Actual 201 \u2014 2026-10-08",
+              "name": "Actual 201 — 2026-10-08",
               "originalRequest": {
                 "method": "POST",
                 "header": [
@@ -1879,7 +1891,7 @@
           ]
         },
         {
-          "name": "200 \u2014 Edit PENDING request",
+          "name": "200 — Edit PENDING request",
           "request": {
             "method": "PATCH",
             "header": [
@@ -1925,7 +1937,7 @@
           },
           "response": [
             {
-              "name": "Actual 200 \u2014 2026-10-08",
+              "name": "Actual 200 — 2026-10-08",
               "originalRequest": {
                 "method": "PATCH",
                 "header": [
@@ -1982,7 +1994,7 @@
           ]
         },
         {
-          "name": "409 \u2014 Reject stale request version",
+          "name": "409 — Reject stale request version",
           "request": {
             "method": "PATCH",
             "header": [
@@ -2028,7 +2040,7 @@
           },
           "response": [
             {
-              "name": "Actual 409 \u2014 2026-10-08",
+              "name": "Actual 409 — 2026-10-08",
               "originalRequest": {
                 "method": "PATCH",
                 "header": [
@@ -2085,7 +2097,7 @@
           ]
         },
         {
-          "name": "200 \u2014 Read PENDING fixture",
+          "name": "200 — Read PENDING fixture",
           "request": {
             "method": "GET",
             "header": [
@@ -2118,7 +2130,7 @@
           },
           "response": [
             {
-              "name": "Actual 200 \u2014 2026-10-08",
+              "name": "Actual 200 — 2026-10-08",
               "originalRequest": {
                 "method": "GET",
                 "header": [
@@ -2162,7 +2174,7 @@
           ]
         },
         {
-          "name": "200 \u2014 List scoped requests",
+          "name": "200 — List scoped requests",
           "request": {
             "method": "GET",
             "header": [
@@ -2204,7 +2216,7 @@
           },
           "response": [
             {
-              "name": "Actual 200 \u2014 2026-10-08",
+              "name": "Actual 200 — 2026-10-08",
               "originalRequest": {
                 "method": "GET",
                 "header": [
@@ -2257,7 +2269,7 @@
           ]
         },
         {
-          "name": "201 \u2014 Assignment-ready APPROVED request",
+          "name": "201 — Assignment-ready APPROVED request",
           "request": {
             "method": "POST",
             "header": [
@@ -2302,7 +2314,7 @@
           },
           "response": [
             {
-              "name": "Actual 201 \u2014 2026-10-08",
+              "name": "Actual 201 — 2026-10-08",
               "originalRequest": {
                 "method": "POST",
                 "header": [
@@ -2358,7 +2370,7 @@
           ]
         },
         {
-          "name": "200 \u2014 Approve assignment-ready fixture",
+          "name": "200 — Approve assignment-ready fixture",
           "request": {
             "method": "PATCH",
             "header": [
@@ -2405,7 +2417,7 @@
           },
           "response": [
             {
-              "name": "Actual 200 \u2014 2026-10-08",
+              "name": "Actual 200 — 2026-10-08",
               "originalRequest": {
                 "method": "PATCH",
                 "header": [
@@ -2463,7 +2475,7 @@
           ]
         },
         {
-          "name": "201 \u2014 Review rejection scenario",
+          "name": "201 — Review rejection scenario",
           "request": {
             "method": "POST",
             "header": [
@@ -2508,7 +2520,7 @@
           },
           "response": [
             {
-              "name": "Actual 201 \u2014 2026-10-08",
+              "name": "Actual 201 — 2026-10-08",
               "originalRequest": {
                 "method": "POST",
                 "header": [
@@ -2564,7 +2576,7 @@
           ]
         },
         {
-          "name": "200 \u2014 Reject pending request",
+          "name": "200 — Reject pending request",
           "request": {
             "method": "PATCH",
             "header": [
@@ -2611,7 +2623,7 @@
           },
           "response": [
             {
-              "name": "Actual 200 \u2014 2026-10-08",
+              "name": "Actual 200 — 2026-10-08",
               "originalRequest": {
                 "method": "PATCH",
                 "header": [
@@ -2669,7 +2681,7 @@
           ]
         },
         {
-          "name": "201 \u2014 Customer cancellation scenario",
+          "name": "201 — Customer cancellation scenario",
           "request": {
             "method": "POST",
             "header": [
@@ -2714,7 +2726,7 @@
           },
           "response": [
             {
-              "name": "Actual 201 \u2014 2026-10-08",
+              "name": "Actual 201 — 2026-10-08",
               "originalRequest": {
                 "method": "POST",
                 "header": [
@@ -2770,7 +2782,7 @@
           ]
         },
         {
-          "name": "200 \u2014 Cancel unstarted request",
+          "name": "200 — Cancel unstarted request",
           "request": {
             "method": "POST",
             "header": [
@@ -2817,7 +2829,7 @@
           },
           "response": [
             {
-              "name": "Actual 200 \u2014 2026-10-08",
+              "name": "Actual 200 — 2026-10-08",
               "originalRequest": {
                 "method": "POST",
                 "header": [
@@ -2875,7 +2887,7 @@
           ]
         },
         {
-          "name": "200 \u2014 Replace technician skills",
+          "name": "200 — Replace technician skills",
           "request": {
             "method": "PUT",
             "header": [
@@ -2922,7 +2934,7 @@
           },
           "response": [
             {
-              "name": "Actual 200 \u2014 2026-10-08",
+              "name": "Actual 200 — 2026-10-08",
               "originalRequest": {
                 "method": "PUT",
                 "header": [
@@ -2980,7 +2992,7 @@
           ]
         },
         {
-          "name": "200 \u2014 Find available technicians",
+          "name": "200 — Find available technicians",
           "request": {
             "method": "GET",
             "header": [
@@ -3026,7 +3038,7 @@
           },
           "response": [
             {
-              "name": "Actual 200 \u2014 2026-10-08",
+              "name": "Actual 200 — 2026-10-08",
               "originalRequest": {
                 "method": "GET",
                 "header": [
@@ -3083,7 +3095,7 @@
           ]
         },
         {
-          "name": "201 \u2014 Progress-ready ASSIGNED fixture",
+          "name": "201 — Progress-ready ASSIGNED fixture",
           "request": {
             "method": "POST",
             "header": [
@@ -3128,7 +3140,7 @@
           },
           "response": [
             {
-              "name": "Actual 201 \u2014 2026-10-08",
+              "name": "Actual 201 — 2026-10-08",
               "originalRequest": {
                 "method": "POST",
                 "header": [
@@ -3184,7 +3196,7 @@
           ]
         },
         {
-          "name": "200 \u2014 Approve progress fixture",
+          "name": "200 — Approve progress fixture",
           "request": {
             "method": "PATCH",
             "header": [
@@ -3231,7 +3243,7 @@
           },
           "response": [
             {
-              "name": "Actual 200 \u2014 2026-10-08",
+              "name": "Actual 200 — 2026-10-08",
               "originalRequest": {
                 "method": "PATCH",
                 "header": [
@@ -3289,7 +3301,7 @@
           ]
         },
         {
-          "name": "201 \u2014 Assign approved request",
+          "name": "201 — Assign approved request",
           "request": {
             "method": "POST",
             "header": [
@@ -3336,7 +3348,7 @@
           },
           "response": [
             {
-              "name": "Actual 201 \u2014 2026-10-08",
+              "name": "Actual 201 — 2026-10-08",
               "originalRequest": {
                 "method": "POST",
                 "header": [
@@ -3394,7 +3406,7 @@
           ]
         },
         {
-          "name": "200 \u2014 Reschedule unstarted work",
+          "name": "200 — Reschedule unstarted work",
           "request": {
             "method": "PATCH",
             "header": [
@@ -3441,7 +3453,7 @@
           },
           "response": [
             {
-              "name": "Actual 200 \u2014 2026-10-08",
+              "name": "Actual 200 — 2026-10-08",
               "originalRequest": {
                 "method": "PATCH",
                 "header": [
@@ -3499,7 +3511,7 @@
           ]
         },
         {
-          "name": "201 \u2014 Completion-ready IN_PROGRESS fixture",
+          "name": "201 — Completion-ready IN_PROGRESS fixture",
           "request": {
             "method": "POST",
             "header": [
@@ -3544,7 +3556,7 @@
           },
           "response": [
             {
-              "name": "Actual 201 \u2014 2026-10-08",
+              "name": "Actual 201 — 2026-10-08",
               "originalRequest": {
                 "method": "POST",
                 "header": [
@@ -3600,7 +3612,7 @@
           ]
         },
         {
-          "name": "200 \u2014 Approve completion fixture",
+          "name": "200 — Approve completion fixture",
           "request": {
             "method": "PATCH",
             "header": [
@@ -3647,7 +3659,7 @@
           },
           "response": [
             {
-              "name": "Actual 200 \u2014 2026-10-08",
+              "name": "Actual 200 — 2026-10-08",
               "originalRequest": {
                 "method": "PATCH",
                 "header": [
@@ -3705,7 +3717,7 @@
           ]
         },
         {
-          "name": "201 \u2014 Assign completion fixture",
+          "name": "201 — Assign completion fixture",
           "request": {
             "method": "POST",
             "header": [
@@ -3752,7 +3764,7 @@
           },
           "response": [
             {
-              "name": "Actual 201 \u2014 2026-10-08",
+              "name": "Actual 201 — 2026-10-08",
               "originalRequest": {
                 "method": "POST",
                 "header": [
@@ -3810,7 +3822,7 @@
           ]
         },
         {
-          "name": "200 \u2014 Advance EN_ROUTE",
+          "name": "200 — Advance EN_ROUTE",
           "request": {
             "method": "PATCH",
             "header": [
@@ -3857,7 +3869,7 @@
           },
           "response": [
             {
-              "name": "Actual 200 \u2014 2026-10-08",
+              "name": "Actual 200 — 2026-10-08",
               "originalRequest": {
                 "method": "PATCH",
                 "header": [
@@ -3915,7 +3927,7 @@
           ]
         },
         {
-          "name": "200 \u2014 Advance IN_PROGRESS",
+          "name": "200 — Advance IN_PROGRESS",
           "request": {
             "method": "PATCH",
             "header": [
@@ -3962,7 +3974,7 @@
           },
           "response": [
             {
-              "name": "Actual 200 \u2014 2026-10-08",
+              "name": "Actual 200 — 2026-10-08",
               "originalRequest": {
                 "method": "PATCH",
                 "header": [
@@ -4020,7 +4032,7 @@
           ]
         },
         {
-          "name": "201 \u2014 Completed UNPAID invoice fixture",
+          "name": "201 — Completed UNPAID invoice fixture",
           "request": {
             "method": "POST",
             "header": [
@@ -4065,7 +4077,7 @@
           },
           "response": [
             {
-              "name": "Actual 201 \u2014 2026-10-08",
+              "name": "Actual 201 — 2026-10-08",
               "originalRequest": {
                 "method": "POST",
                 "header": [
@@ -4121,7 +4133,7 @@
           ]
         },
         {
-          "name": "200 \u2014 Approve invoice fixture",
+          "name": "200 — Approve invoice fixture",
           "request": {
             "method": "PATCH",
             "header": [
@@ -4168,7 +4180,7 @@
           },
           "response": [
             {
-              "name": "Actual 200 \u2014 2026-10-08",
+              "name": "Actual 200 — 2026-10-08",
               "originalRequest": {
                 "method": "PATCH",
                 "header": [
@@ -4226,7 +4238,7 @@
           ]
         },
         {
-          "name": "201 \u2014 Assign invoice fixture",
+          "name": "201 — Assign invoice fixture",
           "request": {
             "method": "POST",
             "header": [
@@ -4273,7 +4285,7 @@
           },
           "response": [
             {
-              "name": "Actual 201 \u2014 2026-10-08",
+              "name": "Actual 201 — 2026-10-08",
               "originalRequest": {
                 "method": "POST",
                 "header": [
@@ -4331,7 +4343,7 @@
           ]
         },
         {
-          "name": "200 \u2014 Advance EN_ROUTE",
+          "name": "200 — Advance EN_ROUTE",
           "request": {
             "method": "PATCH",
             "header": [
@@ -4378,7 +4390,7 @@
           },
           "response": [
             {
-              "name": "Actual 200 \u2014 2026-10-08",
+              "name": "Actual 200 — 2026-10-08",
               "originalRequest": {
                 "method": "PATCH",
                 "header": [
@@ -4436,7 +4448,7 @@
           ]
         },
         {
-          "name": "200 \u2014 Advance IN_PROGRESS",
+          "name": "200 — Advance IN_PROGRESS",
           "request": {
             "method": "PATCH",
             "header": [
@@ -4483,7 +4495,7 @@
           },
           "response": [
             {
-              "name": "Actual 200 \u2014 2026-10-08",
+              "name": "Actual 200 — 2026-10-08",
               "originalRequest": {
                 "method": "PATCH",
                 "header": [
@@ -4541,7 +4553,7 @@
           ]
         },
         {
-          "name": "200 \u2014 Complete work and issue immutable invoice",
+          "name": "200 — Complete work and issue immutable invoice",
           "request": {
             "method": "POST",
             "header": [
@@ -4588,7 +4600,7 @@
           },
           "response": [
             {
-              "name": "Actual 200 \u2014 2026-10-08",
+              "name": "Actual 200 — 2026-10-08",
               "originalRequest": {
                 "method": "POST",
                 "header": [
@@ -4646,7 +4658,7 @@
           ]
         },
         {
-          "name": "200 \u2014 Replay identical completion",
+          "name": "200 — Replay identical completion",
           "request": {
             "method": "POST",
             "header": [
@@ -4693,7 +4705,7 @@
           },
           "response": [
             {
-              "name": "Actual 200 \u2014 2026-10-08",
+              "name": "Actual 200 — 2026-10-08",
               "originalRequest": {
                 "method": "POST",
                 "header": [
@@ -4751,7 +4763,7 @@
           ]
         },
         {
-          "name": "409 \u2014 Reject changed completion report",
+          "name": "409 — Reject changed completion report",
           "request": {
             "method": "POST",
             "header": [
@@ -4798,7 +4810,7 @@
           },
           "response": [
             {
-              "name": "Actual 409 \u2014 2026-10-08",
+              "name": "Actual 409 — 2026-10-08",
               "originalRequest": {
                 "method": "POST",
                 "header": [
@@ -4856,7 +4868,7 @@
           ]
         },
         {
-          "name": "200 \u2014 Read completed work and timeline",
+          "name": "200 — Read completed work and timeline",
           "request": {
             "method": "GET",
             "header": [
@@ -4889,7 +4901,7 @@
           },
           "response": [
             {
-              "name": "Actual 200 \u2014 2026-10-08",
+              "name": "Actual 200 — 2026-10-08",
               "originalRequest": {
                 "method": "GET",
                 "header": [
@@ -4933,7 +4945,7 @@
           ]
         },
         {
-          "name": "200 \u2014 List scoped work orders",
+          "name": "200 — List scoped work orders",
           "request": {
             "method": "GET",
             "header": [
@@ -4975,7 +4987,7 @@
           },
           "response": [
             {
-              "name": "Actual 200 \u2014 2026-10-08",
+              "name": "Actual 200 — 2026-10-08",
               "originalRequest": {
                 "method": "GET",
                 "header": [
@@ -5028,7 +5040,7 @@
           ]
         },
         {
-          "name": "200 \u2014 Read UNPAID invoice",
+          "name": "200 — Read UNPAID invoice",
           "request": {
             "method": "GET",
             "header": [
@@ -5061,7 +5073,7 @@
           },
           "response": [
             {
-              "name": "Actual 200 \u2014 2026-10-08",
+              "name": "Actual 200 — 2026-10-08",
               "originalRequest": {
                 "method": "GET",
                 "header": [
@@ -5105,7 +5117,7 @@
           ]
         },
         {
-          "name": "200 \u2014 Read PAID invoice",
+          "name": "200 — Read PAID invoice",
           "request": {
             "method": "GET",
             "header": [
@@ -5138,7 +5150,7 @@
           },
           "response": [
             {
-              "name": "Actual 200 \u2014 2026-10-08",
+              "name": "Actual 200 — 2026-10-08",
               "originalRequest": {
                 "method": "GET",
                 "header": [
@@ -5182,7 +5194,7 @@
           ]
         },
         {
-          "name": "403 \u2014 Technician cannot read invoices",
+          "name": "403 — Technician cannot read invoices",
           "request": {
             "method": "GET",
             "header": [
@@ -5215,7 +5227,7 @@
           },
           "response": [
             {
-              "name": "Actual 403 \u2014 2026-10-08",
+              "name": "Actual 403 — 2026-10-08",
               "originalRequest": {
                 "method": "GET",
                 "header": [
@@ -5259,7 +5271,7 @@
           ]
         },
         {
-          "name": "200 \u2014 Read SUCCEEDED payment",
+          "name": "200 — Read SUCCEEDED payment",
           "request": {
             "method": "GET",
             "header": [
@@ -5292,7 +5304,7 @@
           },
           "response": [
             {
-              "name": "Actual 200 \u2014 2026-10-08",
+              "name": "Actual 200 — 2026-10-08",
               "originalRequest": {
                 "method": "GET",
                 "header": [
@@ -5336,7 +5348,7 @@
           ]
         },
         {
-          "name": "200 \u2014 Recover settled checkout with original key",
+          "name": "200 — Recover settled checkout with original key",
           "request": {
             "method": "POST",
             "header": [
@@ -5387,7 +5399,7 @@
           },
           "response": [
             {
-              "name": "Actual 200 \u2014 2026-10-08",
+              "name": "Actual 200 — 2026-10-08",
               "originalRequest": {
                 "method": "POST",
                 "header": [
@@ -5449,7 +5461,7 @@
           ]
         },
         {
-          "name": "409 \u2014 Reject changed billing with original key",
+          "name": "409 — Reject changed billing with original key",
           "request": {
             "method": "POST",
             "header": [
@@ -5500,7 +5512,7 @@
           },
           "response": [
             {
-              "name": "Actual 409 \u2014 2026-10-08",
+              "name": "Actual 409 — 2026-10-08",
               "originalRequest": {
                 "method": "POST",
                 "header": [
@@ -5562,7 +5574,7 @@
           ]
         },
         {
-          "name": "409 \u2014 Reject duplicate paid-work feedback",
+          "name": "409 — Reject duplicate paid-work feedback",
           "request": {
             "method": "POST",
             "header": [
@@ -5609,7 +5621,7 @@
           },
           "response": [
             {
-              "name": "Actual 409 \u2014 2026-10-08",
+              "name": "Actual 409 — 2026-10-08",
               "originalRequest": {
                 "method": "POST",
                 "header": [
@@ -5667,7 +5679,7 @@
           ]
         },
         {
-          "name": "409 \u2014 Reject feedback before payment",
+          "name": "409 — Reject feedback before payment",
           "request": {
             "method": "POST",
             "header": [
@@ -5714,7 +5726,7 @@
           },
           "response": [
             {
-              "name": "Actual 409 \u2014 2026-10-08",
+              "name": "Actual 409 — 2026-10-08",
               "originalRequest": {
                 "method": "POST",
                 "header": [
@@ -5772,7 +5784,7 @@
           ]
         },
         {
-          "name": "201 \u2014 Register separate account for access testing",
+          "name": "201 — Register separate account for access testing",
           "request": {
             "method": "POST",
             "header": [
@@ -5811,7 +5823,7 @@
           },
           "response": [
             {
-              "name": "Actual 201 \u2014 2026-10-08",
+              "name": "Actual 201 — 2026-10-08",
               "originalRequest": {
                 "method": "POST",
                 "header": [
@@ -5861,7 +5873,7 @@
           ]
         },
         {
-          "name": "200 \u2014 Logout a separate customer session",
+          "name": "200 — Logout a separate customer session",
           "request": {
             "method": "POST",
             "header": [
@@ -5894,7 +5906,7 @@
           },
           "response": [
             {
-              "name": "Actual 200 \u2014 2026-10-08",
+              "name": "Actual 200 — 2026-10-08",
               "originalRequest": {
                 "method": "POST",
                 "header": [
@@ -5938,7 +5950,7 @@
           ]
         },
         {
-          "name": "401 \u2014 Reject revoked session",
+          "name": "401 — Reject revoked session",
           "request": {
             "method": "GET",
             "header": [
@@ -5971,7 +5983,7 @@
           },
           "response": [
             {
-              "name": "Actual 401 \u2014 2026-10-08",
+              "name": "Actual 401 — 2026-10-08",
               "originalRequest": {
                 "method": "GET",
                 "header": [
@@ -6015,7 +6027,7 @@
           ]
         },
         {
-          "name": "200 \u2014 Read paid work with feedback",
+          "name": "200 — Read paid work with feedback",
           "request": {
             "method": "GET",
             "header": [
@@ -6048,7 +6060,7 @@
           },
           "response": [
             {
-              "name": "Actual 200 \u2014 2026-10-08",
+              "name": "Actual 200 — 2026-10-08",
               "originalRequest": {
                 "method": "GET",
                 "header": [
@@ -6092,7 +6104,7 @@
           ]
         },
         {
-          "name": "200 \u2014 Verified ipn callback replay",
+          "name": "200 — Verified ipn callback replay",
           "request": {
             "method": "POST",
             "header": [
@@ -6134,7 +6146,7 @@
           },
           "response": [
             {
-              "name": "Actual 200 \u2014 2026-10-08",
+              "name": "Actual 200 — 2026-10-08",
               "originalRequest": {
                 "method": "POST",
                 "header": [
@@ -6187,7 +6199,7 @@
           ]
         },
         {
-          "name": "200 \u2014 Verified success callback replay",
+          "name": "200 — Verified success callback replay",
           "request": {
             "method": "POST",
             "header": [
@@ -6229,7 +6241,7 @@
           },
           "response": [
             {
-              "name": "Actual 200 \u2014 2026-10-08",
+              "name": "Actual 200 — 2026-10-08",
               "originalRequest": {
                 "method": "POST",
                 "header": [
@@ -6282,7 +6294,7 @@
           ]
         },
         {
-          "name": "200 \u2014 Verified fail callback replay",
+          "name": "200 — Verified fail callback replay",
           "request": {
             "method": "POST",
             "header": [
@@ -6319,7 +6331,7 @@
           },
           "response": [
             {
-              "name": "Actual 200 \u2014 2026-10-08",
+              "name": "Actual 200 — 2026-10-08",
               "originalRequest": {
                 "method": "POST",
                 "header": [
@@ -6367,7 +6379,7 @@
           ]
         },
         {
-          "name": "200 \u2014 Verified cancel callback replay",
+          "name": "200 — Verified cancel callback replay",
           "request": {
             "method": "POST",
             "header": [
@@ -6404,7 +6416,7 @@
           },
           "response": [
             {
-              "name": "Actual 200 \u2014 2026-10-08",
+              "name": "Actual 200 — 2026-10-08",
               "originalRequest": {
                 "method": "POST",
                 "header": [
@@ -6452,7 +6464,7 @@
           ]
         },
         {
-          "name": "200 \u2014 Payment remains SUCCEEDED after late callbacks",
+          "name": "200 — Payment remains SUCCEEDED after late callbacks",
           "request": {
             "method": "GET",
             "header": [
@@ -6485,7 +6497,7 @@
           },
           "response": [
             {
-              "name": "Actual 200 \u2014 2026-10-08",
+              "name": "Actual 200 — 2026-10-08",
               "originalRequest": {
                 "method": "GET",
                 "header": [
@@ -6529,7 +6541,7 @@
           ]
         },
         {
-          "name": "200 \u2014 Verified Google login (identity redacted)",
+          "name": "200 — Verified Google login (identity redacted)",
           "request": {
             "method": "POST",
             "auth": {
@@ -6568,7 +6580,7 @@
           },
           "response": [
             {
-              "name": "Actual Apidog 200 \u2014 identity redacted",
+              "name": "Actual Apidog 200 — identity redacted",
               "originalRequest": {
                 "method": "POST",
                 "auth": {
@@ -6618,7 +6630,7 @@
           ]
         },
         {
-          "name": "200 \u2014 ADMIN overview hosted",
+          "name": "200 — ADMIN overview hosted",
           "request": {
             "method": "GET",
             "header": [
@@ -6651,7 +6663,7 @@
           },
           "response": [
             {
-              "name": "Actual Apidog 200 \u2014 2026-10-08",
+              "name": "Actual Apidog 200 — 2026-10-08",
               "originalRequest": {
                 "method": "GET",
                 "header": [
@@ -6695,7 +6707,7 @@
           ]
         },
         {
-          "name": "200 \u2014 ADMIN audit search hosted",
+          "name": "200 — ADMIN audit search hosted",
           "request": {
             "method": "GET",
             "header": [
@@ -6734,7 +6746,7 @@
           },
           "response": [
             {
-              "name": "Actual Apidog 200 \u2014 2026-10-08",
+              "name": "Actual Apidog 200 — 2026-10-08",
               "originalRequest": {
                 "method": "GET",
                 "header": [
@@ -6784,7 +6796,7 @@
           ]
         },
         {
-          "name": "200 \u2014 ADMIN user search hosted",
+          "name": "200 — ADMIN user search hosted",
           "request": {
             "method": "GET",
             "header": [
@@ -6818,7 +6830,7 @@
           },
           "response": [
             {
-              "name": "Actual Apidog 200 \u2014 2026-10-08",
+              "name": "Actual Apidog 200 — 2026-10-08",
               "originalRequest": {
                 "method": "GET",
                 "header": [
@@ -6863,7 +6875,7 @@
           ]
         },
         {
-          "name": "400 \u2014 ADMIN incomplete reporting window",
+          "name": "400 — ADMIN incomplete reporting window",
           "request": {
             "method": "GET",
             "header": [
@@ -6902,7 +6914,7 @@
           },
           "response": [
             {
-              "name": "Actual Apidog 400 \u2014 2026-10-08",
+              "name": "Actual Apidog 400 — 2026-10-08",
               "originalRequest": {
                 "method": "GET",
                 "header": [
@@ -6948,6 +6960,1768 @@
                 }
               ],
               "body": "{\n  \"success\": false,\n  \"message\": \"Request validation failed\",\n  \"errors\": [\n    \"input: Provide both from and to, with an increasing range of at most 366 days\"\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "200 — Renew dedicated ADMIN login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "Actual direct live API verification on 2026-10-08T11:46:31.393Z. Dedicated disposable account only. Historical response; inspect current state before repeating changes. Restored to ACTIVE after the verification. Tokens and passwords are redacted.",
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{admin_email}}\",\n  \"password\": \"{{admin_password}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Actual live 200 — 2026-10-08",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "auth": {
+                  "type": "noauth"
+                },
+                "description": "Actual direct live API verification on 2026-10-08T11:46:31.393Z. Dedicated disposable account only. Historical response; inspect current state before repeating changes. Restored to ACTIVE after the verification. Tokens and passwords are redacted.",
+                "url": {
+                  "raw": "{{base_url}}/auth/login",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "login"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"{{admin_email}}\",\n  \"password\": \"{{admin_password}}\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Signed in successfully\",\n  \"data\": {\n    \"user\": {\n      \"id\": \"0bc469ef-6fcc-45d9-b6b2-1135f1018d52\",\n      \"name\": \"FieldOps Demo Admin\",\n      \"email\": \"fieldops-admin-20261007@example.com\",\n      \"role\": \"ADMIN\",\n      \"createdAt\": \"2026-10-07T18:46:31.132Z\"\n    },\n    \"accessToken\": \"[redacted]\",\n    \"refreshToken\": \"[redacted]\",\n    \"tokenType\": \"[redacted]\",\n    \"expiresIn\": 900,\n    \"refreshExpiresAt\": \"2026-10-15T11:46:31.148Z\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "200 — Locate disposable access-test user",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "type": "string",
+                  "value": "{{admin_access_token}}"
+                }
+              ]
+            },
+            "description": "Actual direct live API verification on 2026-10-08T11:46:31.689Z. Dedicated disposable account only. Historical response; inspect current state before repeating changes. Restored to ACTIVE after the verification. Tokens and passwords are redacted.",
+            "url": {
+              "raw": "{{base_url}}/admin/users?q=fieldops-managed-433efd83%40example.com",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "users"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "fieldops-managed-433efd83@example.com"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Actual live 200 — 2026-10-08",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "type": "string",
+                      "value": "{{admin_access_token}}"
+                    }
+                  ]
+                },
+                "description": "Actual direct live API verification on 2026-10-08T11:46:31.689Z. Dedicated disposable account only. Historical response; inspect current state before repeating changes. Restored to ACTIVE after the verification. Tokens and passwords are redacted.",
+                "url": {
+                  "raw": "{{base_url}}/admin/users?q=fieldops-managed-433efd83%40example.com",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "admin",
+                    "users"
+                  ],
+                  "query": [
+                    {
+                      "key": "q",
+                      "value": "fieldops-managed-433efd83@example.com"
+                    }
+                  ]
+                }
+              },
+              "status": "",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Users retrieved successfully\",\n  \"data\": {\n    \"items\": [\n      {\n        \"id\": \"2de62018-d7ab-4564-8150-736fbcfb3a91\",\n        \"name\": \"Dedicated Access Test\",\n        \"email\": \"fieldops-managed-433efd83@example.com\",\n        \"role\": \"CUSTOMER\",\n        \"status\": \"SUSPENDED\",\n        \"createdAt\": \"2026-10-08T05:20:51.017Z\",\n        \"updatedAt\": \"2026-10-08T05:31:40.685Z\"\n      }\n    ],\n    \"pagination\": {\n      \"page\": 1,\n      \"limit\": 20,\n      \"total\": 1,\n      \"totalPages\": 1\n    }\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "401 — Suspended account cannot log in",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "Actual direct live API verification on 2026-10-08T11:46:32.292Z. Dedicated disposable account only. Historical response; inspect current state before repeating changes. Restored to ACTIVE after the verification. Tokens and passwords are redacted.",
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{managed_user_email}}\",\n  \"password\": \"{{managed_user_password}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Actual live 401 — 2026-10-08",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "auth": {
+                  "type": "noauth"
+                },
+                "description": "Actual direct live API verification on 2026-10-08T11:46:32.292Z. Dedicated disposable account only. Historical response; inspect current state before repeating changes. Restored to ACTIVE after the verification. Tokens and passwords are redacted.",
+                "url": {
+                  "raw": "{{base_url}}/auth/login",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "login"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"{{managed_user_email}}\",\n  \"password\": \"{{managed_user_password}}\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Invalid email or password\",\n  \"errors\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "200 — Restore disposable account to ACTIVE",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "type": "string",
+                  "value": "{{admin_access_token}}"
+                }
+              ]
+            },
+            "description": "Actual direct live API verification on 2026-10-08T11:46:32.533Z. Dedicated disposable account only. Historical response; inspect current state before repeating changes. Restored to ACTIVE after the verification. Tokens and passwords are redacted.",
+            "url": {
+              "raw": "{{base_url}}/admin/users/2de62018-d7ab-4564-8150-736fbcfb3a91",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "users",
+                "2de62018-d7ab-4564-8150-736fbcfb3a91"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"ACTIVE\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Actual live 200 — 2026-10-08",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "type": "string",
+                      "value": "{{admin_access_token}}"
+                    }
+                  ]
+                },
+                "description": "Actual direct live API verification on 2026-10-08T11:46:32.533Z. Dedicated disposable account only. Historical response; inspect current state before repeating changes. Restored to ACTIVE after the verification. Tokens and passwords are redacted.",
+                "url": {
+                  "raw": "{{base_url}}/admin/users/2de62018-d7ab-4564-8150-736fbcfb3a91",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "admin",
+                    "users",
+                    "2de62018-d7ab-4564-8150-736fbcfb3a91"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"status\": \"ACTIVE\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"User access updated successfully\",\n  \"data\": {\n    \"id\": \"2de62018-d7ab-4564-8150-736fbcfb3a91\",\n    \"name\": \"Dedicated Access Test\",\n    \"email\": \"fieldops-managed-433efd83@example.com\",\n    \"role\": \"CUSTOMER\",\n    \"status\": \"ACTIVE\",\n    \"createdAt\": \"2026-10-08T05:20:51.017Z\",\n    \"updatedAt\": \"2026-10-08T11:46:32.463Z\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "200 — Login after account restoration",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "Actual direct live API verification on 2026-10-08T11:46:32.907Z. Dedicated disposable account only. Historical response; inspect current state before repeating changes. Restored to ACTIVE after the verification. Tokens and passwords are redacted.",
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{managed_user_email}}\",\n  \"password\": \"{{managed_user_password}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Actual live 200 — 2026-10-08",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "auth": {
+                  "type": "noauth"
+                },
+                "description": "Actual direct live API verification on 2026-10-08T11:46:32.907Z. Dedicated disposable account only. Historical response; inspect current state before repeating changes. Restored to ACTIVE after the verification. Tokens and passwords are redacted.",
+                "url": {
+                  "raw": "{{base_url}}/auth/login",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "login"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"{{managed_user_email}}\",\n  \"password\": \"{{managed_user_password}}\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Signed in successfully\",\n  \"data\": {\n    \"user\": {\n      \"id\": \"2de62018-d7ab-4564-8150-736fbcfb3a91\",\n      \"name\": \"Dedicated Access Test\",\n      \"email\": \"fieldops-managed-433efd83@example.com\",\n      \"role\": \"CUSTOMER\",\n      \"createdAt\": \"2026-10-08T05:20:51.017Z\"\n    },\n    \"accessToken\": \"[redacted]\",\n    \"refreshToken\": \"[redacted]\",\n    \"tokenType\": \"[redacted]\",\n    \"expiresIn\": 900,\n    \"refreshExpiresAt\": \"2026-10-15T11:46:32.853Z\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "200 — Restored account profile",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "type": "string",
+                  "value": "{{managed_access_token}}"
+                }
+              ]
+            },
+            "description": "Actual direct live API verification on 2026-10-08T11:46:33.028Z. Dedicated disposable account only. Historical response; inspect current state before repeating changes. Restored to ACTIVE after the verification. Tokens and passwords are redacted.",
+            "url": {
+              "raw": "{{base_url}}/users/me",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "users",
+                "me"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Actual live 200 — 2026-10-08",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "type": "string",
+                      "value": "{{managed_access_token}}"
+                    }
+                  ]
+                },
+                "description": "Actual direct live API verification on 2026-10-08T11:46:33.028Z. Dedicated disposable account only. Historical response; inspect current state before repeating changes. Restored to ACTIVE after the verification. Tokens and passwords are redacted.",
+                "url": {
+                  "raw": "{{base_url}}/users/me",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "users",
+                    "me"
+                  ]
+                }
+              },
+              "status": "",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Profile fetched successfully\",\n  \"data\": {\n    \"id\": \"2de62018-d7ab-4564-8150-736fbcfb3a91\",\n    \"name\": \"Dedicated Access Test\",\n    \"email\": \"fieldops-managed-433efd83@example.com\",\n    \"role\": \"CUSTOMER\",\n    \"createdAt\": \"2026-10-08T05:20:51.017Z\",\n    \"phone\": null\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "200 — Identical access update is a no-op",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "type": "string",
+                  "value": "{{admin_access_token}}"
+                }
+              ]
+            },
+            "description": "Actual direct live API verification on 2026-10-08T11:46:33.140Z. Dedicated disposable account only. Historical response; inspect current state before repeating changes. Restored to ACTIVE after the verification. Tokens and passwords are redacted.",
+            "url": {
+              "raw": "{{base_url}}/admin/users/2de62018-d7ab-4564-8150-736fbcfb3a91",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "users",
+                "2de62018-d7ab-4564-8150-736fbcfb3a91"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"ACTIVE\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Actual live 200 — 2026-10-08",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "type": "string",
+                      "value": "{{admin_access_token}}"
+                    }
+                  ]
+                },
+                "description": "Actual direct live API verification on 2026-10-08T11:46:33.140Z. Dedicated disposable account only. Historical response; inspect current state before repeating changes. Restored to ACTIVE after the verification. Tokens and passwords are redacted.",
+                "url": {
+                  "raw": "{{base_url}}/admin/users/2de62018-d7ab-4564-8150-736fbcfb3a91",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "admin",
+                    "users",
+                    "2de62018-d7ab-4564-8150-736fbcfb3a91"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"status\": \"ACTIVE\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"User access updated successfully\",\n  \"data\": {\n    \"id\": \"2de62018-d7ab-4564-8150-736fbcfb3a91\",\n    \"name\": \"Dedicated Access Test\",\n    \"email\": \"fieldops-managed-433efd83@example.com\",\n    \"role\": \"CUSTOMER\",\n    \"status\": \"ACTIVE\",\n    \"createdAt\": \"2026-10-08T05:20:51.017Z\",\n    \"updatedAt\": \"2026-10-08T11:46:32.463Z\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "200 — No-op preserves existing session",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "type": "string",
+                  "value": "{{managed_access_token}}"
+                }
+              ]
+            },
+            "description": "Actual direct live API verification on 2026-10-08T11:46:33.218Z. Dedicated disposable account only. Historical response; inspect current state before repeating changes. Restored to ACTIVE after the verification. Tokens and passwords are redacted.",
+            "url": {
+              "raw": "{{base_url}}/users/me",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "users",
+                "me"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Actual live 200 — 2026-10-08",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "type": "string",
+                      "value": "{{managed_access_token}}"
+                    }
+                  ]
+                },
+                "description": "Actual direct live API verification on 2026-10-08T11:46:33.218Z. Dedicated disposable account only. Historical response; inspect current state before repeating changes. Restored to ACTIVE after the verification. Tokens and passwords are redacted.",
+                "url": {
+                  "raw": "{{base_url}}/users/me",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "users",
+                    "me"
+                  ]
+                }
+              },
+              "status": "",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Profile fetched successfully\",\n  \"data\": {\n    \"id\": \"2de62018-d7ab-4564-8150-736fbcfb3a91\",\n    \"name\": \"Dedicated Access Test\",\n    \"email\": \"fieldops-managed-433efd83@example.com\",\n    \"role\": \"CUSTOMER\",\n    \"createdAt\": \"2026-10-08T05:20:51.017Z\",\n    \"phone\": null\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "200 — Suspend only disposable access-test account",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "type": "string",
+                  "value": "{{admin_access_token}}"
+                }
+              ]
+            },
+            "description": "Actual direct live API verification on 2026-10-08T11:46:33.321Z. Dedicated disposable account only. Historical response; inspect current state before repeating changes. Restored to ACTIVE after the verification. Tokens and passwords are redacted.",
+            "url": {
+              "raw": "{{base_url}}/admin/users/2de62018-d7ab-4564-8150-736fbcfb3a91",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "users",
+                "2de62018-d7ab-4564-8150-736fbcfb3a91"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"SUSPENDED\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Actual live 200 — 2026-10-08",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "type": "string",
+                      "value": "{{admin_access_token}}"
+                    }
+                  ]
+                },
+                "description": "Actual direct live API verification on 2026-10-08T11:46:33.321Z. Dedicated disposable account only. Historical response; inspect current state before repeating changes. Restored to ACTIVE after the verification. Tokens and passwords are redacted.",
+                "url": {
+                  "raw": "{{base_url}}/admin/users/2de62018-d7ab-4564-8150-736fbcfb3a91",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "admin",
+                    "users",
+                    "2de62018-d7ab-4564-8150-736fbcfb3a91"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"status\": \"SUSPENDED\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"User access updated successfully\",\n  \"data\": {\n    \"id\": \"2de62018-d7ab-4564-8150-736fbcfb3a91\",\n    \"name\": \"Dedicated Access Test\",\n    \"email\": \"fieldops-managed-433efd83@example.com\",\n    \"role\": \"CUSTOMER\",\n    \"status\": \"SUSPENDED\",\n    \"createdAt\": \"2026-10-08T05:20:51.017Z\",\n    \"updatedAt\": \"2026-10-08T11:46:33.268Z\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "401 — Suspension revokes existing access session",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "type": "string",
+                  "value": "{{managed_access_token}}"
+                }
+              ]
+            },
+            "description": "Actual direct live API verification on 2026-10-08T11:46:33.397Z. Dedicated disposable account only. Historical response; inspect current state before repeating changes. Restored to ACTIVE after the verification. Tokens and passwords are redacted.",
+            "url": {
+              "raw": "{{base_url}}/users/me",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "users",
+                "me"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Actual live 401 — 2026-10-08",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "type": "string",
+                      "value": "{{managed_access_token}}"
+                    }
+                  ]
+                },
+                "description": "Actual direct live API verification on 2026-10-08T11:46:33.397Z. Dedicated disposable account only. Historical response; inspect current state before repeating changes. Restored to ACTIVE after the verification. Tokens and passwords are redacted.",
+                "url": {
+                  "raw": "{{base_url}}/users/me",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "users",
+                    "me"
+                  ]
+                }
+              },
+              "status": "",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Session is unavailable\",\n  \"errors\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "401 — Suspension rejects password login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "Actual direct live API verification on 2026-10-08T11:46:33.599Z. Dedicated disposable account only. Historical response; inspect current state before repeating changes. Restored to ACTIVE after the verification. Tokens and passwords are redacted.",
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{managed_user_email}}\",\n  \"password\": \"{{managed_user_password}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Actual live 401 — 2026-10-08",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "auth": {
+                  "type": "noauth"
+                },
+                "description": "Actual direct live API verification on 2026-10-08T11:46:33.599Z. Dedicated disposable account only. Historical response; inspect current state before repeating changes. Restored to ACTIVE after the verification. Tokens and passwords are redacted.",
+                "url": {
+                  "raw": "{{base_url}}/auth/login",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "login"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"{{managed_user_email}}\",\n  \"password\": \"{{managed_user_password}}\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Invalid email or password\",\n  \"errors\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "200 — Reactivate disposable account after verification",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "type": "string",
+                  "value": "{{admin_access_token}}"
+                }
+              ]
+            },
+            "description": "Actual direct live API verification on 2026-10-08T11:46:33.723Z. Dedicated disposable account only. Historical response; inspect current state before repeating changes. Restored to ACTIVE after the verification. Tokens and passwords are redacted.",
+            "url": {
+              "raw": "{{base_url}}/admin/users/2de62018-d7ab-4564-8150-736fbcfb3a91",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "users",
+                "2de62018-d7ab-4564-8150-736fbcfb3a91"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"ACTIVE\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Actual live 200 — 2026-10-08",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "type": "string",
+                      "value": "{{admin_access_token}}"
+                    }
+                  ]
+                },
+                "description": "Actual direct live API verification on 2026-10-08T11:46:33.723Z. Dedicated disposable account only. Historical response; inspect current state before repeating changes. Restored to ACTIVE after the verification. Tokens and passwords are redacted.",
+                "url": {
+                  "raw": "{{base_url}}/admin/users/2de62018-d7ab-4564-8150-736fbcfb3a91",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "admin",
+                    "users",
+                    "2de62018-d7ab-4564-8150-736fbcfb3a91"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"status\": \"ACTIVE\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"User access updated successfully\",\n  \"data\": {\n    \"id\": \"2de62018-d7ab-4564-8150-736fbcfb3a91\",\n    \"name\": \"Dedicated Access Test\",\n    \"email\": \"fieldops-managed-433efd83@example.com\",\n    \"role\": \"CUSTOMER\",\n    \"status\": \"ACTIVE\",\n    \"createdAt\": \"2026-10-08T05:20:51.017Z\",\n    \"updatedAt\": \"2026-10-08T11:46:33.665Z\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "401 — Reactivation does not revive revoked access",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "type": "string",
+                  "value": "{{managed_access_token}}"
+                }
+              ]
+            },
+            "description": "Actual direct live API verification on 2026-10-08T11:46:33.804Z. Dedicated disposable account only. Historical response; inspect current state before repeating changes. Restored to ACTIVE after the verification. Tokens and passwords are redacted.",
+            "url": {
+              "raw": "{{base_url}}/users/me",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "users",
+                "me"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Actual live 401 — 2026-10-08",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "type": "string",
+                      "value": "{{managed_access_token}}"
+                    }
+                  ]
+                },
+                "description": "Actual direct live API verification on 2026-10-08T11:46:33.804Z. Dedicated disposable account only. Historical response; inspect current state before repeating changes. Restored to ACTIVE after the verification. Tokens and passwords are redacted.",
+                "url": {
+                  "raw": "{{base_url}}/users/me",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "users",
+                    "me"
+                  ]
+                }
+              },
+              "status": "",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Session is unavailable\",\n  \"errors\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "401 — Reactivation does not revive revoked refresh",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "Actual direct live API verification on 2026-10-08T11:46:33.905Z. Dedicated disposable account only. Historical response; inspect current state before repeating changes. Restored to ACTIVE after the verification. Tokens and passwords are redacted.",
+            "url": {
+              "raw": "{{base_url}}/auth/refresh",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "refresh"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{managed_revoked_refresh_token}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Actual live 401 — 2026-10-08",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "auth": {
+                  "type": "noauth"
+                },
+                "description": "Actual direct live API verification on 2026-10-08T11:46:33.905Z. Dedicated disposable account only. Historical response; inspect current state before repeating changes. Restored to ACTIVE after the verification. Tokens and passwords are redacted.",
+                "url": {
+                  "raw": "{{base_url}}/auth/refresh",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "refresh"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"refreshToken\": \"{{managed_revoked_refresh_token}}\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Invalid or expired refresh token\",\n  \"errors\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "200 — Fresh login after reactivation",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "Actual direct live API verification on 2026-10-08T11:46:34.209Z. Dedicated disposable account only. Historical response; inspect current state before repeating changes. Restored to ACTIVE after the verification. Tokens and passwords are redacted.",
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{managed_user_email}}\",\n  \"password\": \"{{managed_user_password}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Actual live 200 — 2026-10-08",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "auth": {
+                  "type": "noauth"
+                },
+                "description": "Actual direct live API verification on 2026-10-08T11:46:34.209Z. Dedicated disposable account only. Historical response; inspect current state before repeating changes. Restored to ACTIVE after the verification. Tokens and passwords are redacted.",
+                "url": {
+                  "raw": "{{base_url}}/auth/login",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "login"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"{{managed_user_email}}\",\n  \"password\": \"{{managed_user_password}}\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Signed in successfully\",\n  \"data\": {\n    \"user\": {\n      \"id\": \"2de62018-d7ab-4564-8150-736fbcfb3a91\",\n      \"name\": \"Dedicated Access Test\",\n      \"email\": \"fieldops-managed-433efd83@example.com\",\n      \"role\": \"CUSTOMER\",\n      \"createdAt\": \"2026-10-08T05:20:51.017Z\"\n    },\n    \"accessToken\": \"[redacted]\",\n    \"refreshToken\": \"[redacted]\",\n    \"tokenType\": \"[redacted]\",\n    \"expiresIn\": 900,\n    \"refreshExpiresAt\": \"2026-10-15T11:46:34.156Z\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "200 — Fresh session profile succeeds",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "type": "string",
+                  "value": "{{managed_access_token}}"
+                }
+              ]
+            },
+            "description": "Actual direct live API verification on 2026-10-08T11:46:34.283Z. Dedicated disposable account only. Historical response; inspect current state before repeating changes. Restored to ACTIVE after the verification. Tokens and passwords are redacted.",
+            "url": {
+              "raw": "{{base_url}}/users/me",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "users",
+                "me"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Actual live 200 — 2026-10-08",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "type": "string",
+                      "value": "{{managed_access_token}}"
+                    }
+                  ]
+                },
+                "description": "Actual direct live API verification on 2026-10-08T11:46:34.283Z. Dedicated disposable account only. Historical response; inspect current state before repeating changes. Restored to ACTIVE after the verification. Tokens and passwords are redacted.",
+                "url": {
+                  "raw": "{{base_url}}/users/me",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "users",
+                    "me"
+                  ]
+                }
+              },
+              "status": "",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Profile fetched successfully\",\n  \"data\": {\n    \"id\": \"2de62018-d7ab-4564-8150-736fbcfb3a91\",\n    \"name\": \"Dedicated Access Test\",\n    \"email\": \"fieldops-managed-433efd83@example.com\",\n    \"role\": \"CUSTOMER\",\n    \"createdAt\": \"2026-10-08T05:20:51.017Z\",\n    \"phone\": null\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "403 — Customer cannot read administration overview",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "type": "string",
+                  "value": "{{managed_access_token}}"
+                }
+              ]
+            },
+            "description": "Actual direct live API verification on 2026-10-08T11:46:34.365Z. Dedicated disposable account only. Historical response; inspect current state before repeating changes. Restored to ACTIVE after the verification. Tokens and passwords are redacted.",
+            "url": {
+              "raw": "{{base_url}}/admin/overview",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "overview"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Actual live 403 — 2026-10-08",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "type": "string",
+                      "value": "{{managed_access_token}}"
+                    }
+                  ]
+                },
+                "description": "Actual direct live API verification on 2026-10-08T11:46:34.365Z. Dedicated disposable account only. Historical response; inspect current state before repeating changes. Restored to ACTIVE after the verification. Tokens and passwords are redacted.",
+                "url": {
+                  "raw": "{{base_url}}/admin/overview",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "admin",
+                    "overview"
+                  ]
+                }
+              },
+              "status": "",
+              "code": 403,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"message\": \"You do not have permission to access this resource\",\n  \"errors\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "400 — Reject invalid account status",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "type": "string",
+                  "value": "{{admin_access_token}}"
+                }
+              ]
+            },
+            "description": "Actual direct live API verification on 2026-10-08T11:46:34.443Z. Dedicated disposable account only. Historical response; inspect current state before repeating changes. Restored to ACTIVE after the verification. Tokens and passwords are redacted.",
+            "url": {
+              "raw": "{{base_url}}/admin/users/2de62018-d7ab-4564-8150-736fbcfb3a91",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "users",
+                "2de62018-d7ab-4564-8150-736fbcfb3a91"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"INVALID\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "Actual live 400 — 2026-10-08",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "type": "string",
+                      "value": "{{admin_access_token}}"
+                    }
+                  ]
+                },
+                "description": "Actual direct live API verification on 2026-10-08T11:46:34.443Z. Dedicated disposable account only. Historical response; inspect current state before repeating changes. Restored to ACTIVE after the verification. Tokens and passwords are redacted.",
+                "url": {
+                  "raw": "{{base_url}}/admin/users/2de62018-d7ab-4564-8150-736fbcfb3a91",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "admin",
+                    "users",
+                    "2de62018-d7ab-4564-8150-736fbcfb3a91"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"status\": \"INVALID\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Request validation failed\",\n  \"errors\": [\n    \"status: Invalid option: expected one of \\\"ACTIVE\\\"|\\\"SUSPENDED\\\"\"\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "200 — Final disposable account is ACTIVE",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "type": "string",
+                  "value": "{{admin_access_token}}"
+                }
+              ]
+            },
+            "description": "Actual direct live API verification on 2026-10-08T11:46:34.534Z. Dedicated disposable account only. Historical response; inspect current state before repeating changes. Restored to ACTIVE after the verification. Tokens and passwords are redacted.",
+            "url": {
+              "raw": "{{base_url}}/admin/users?q=fieldops-managed-433efd83%40example.com",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "users"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "fieldops-managed-433efd83@example.com"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Actual live 200 — 2026-10-08",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "type": "string",
+                      "value": "{{admin_access_token}}"
+                    }
+                  ]
+                },
+                "description": "Actual direct live API verification on 2026-10-08T11:46:34.534Z. Dedicated disposable account only. Historical response; inspect current state before repeating changes. Restored to ACTIVE after the verification. Tokens and passwords are redacted.",
+                "url": {
+                  "raw": "{{base_url}}/admin/users?q=fieldops-managed-433efd83%40example.com",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "admin",
+                    "users"
+                  ],
+                  "query": [
+                    {
+                      "key": "q",
+                      "value": "fieldops-managed-433efd83@example.com"
+                    }
+                  ]
+                }
+              },
+              "status": "",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Users retrieved successfully\",\n  \"data\": {\n    \"items\": [\n      {\n        \"id\": \"2de62018-d7ab-4564-8150-736fbcfb3a91\",\n        \"name\": \"Dedicated Access Test\",\n        \"email\": \"fieldops-managed-433efd83@example.com\",\n        \"role\": \"CUSTOMER\",\n        \"status\": \"ACTIVE\",\n        \"createdAt\": \"2026-10-08T05:20:51.017Z\",\n        \"updatedAt\": \"2026-10-08T11:46:33.665Z\"\n      }\n    ],\n    \"pagination\": {\n      \"page\": 1,\n      \"limit\": 20,\n      \"total\": 1,\n      \"totalPages\": 1\n    }\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "200 — Final live readiness",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "Actual direct live API verification on 2026-10-08T11:46:34.609Z. Dedicated disposable account only. Historical response; inspect current state before repeating changes. Restored to ACTIVE after the verification. Tokens and passwords are redacted.",
+            "url": {
+              "raw": "{{base_url}}/health/ready",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "health",
+                "ready"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Actual live 200 — 2026-10-08",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "auth": {
+                  "type": "noauth"
+                },
+                "description": "Actual direct live API verification on 2026-10-08T11:46:34.609Z. Dedicated disposable account only. Historical response; inspect current state before repeating changes. Restored to ACTIVE after the verification. Tokens and passwords are redacted.",
+                "url": {
+                  "raw": "{{base_url}}/health/ready",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "health",
+                    "ready"
+                  ]
+                }
+              },
+              "status": "",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"API is ready\",\n  \"data\": {\n    \"database\": \"up\"\n  }\n}"
             }
           ]
         }
@@ -7038,7 +8812,7 @@
           "response": []
         },
         {
-          "name": "03 Approve PENDING request \u2014 read current version first",
+          "name": "03 Approve PENDING request — read current version first",
           "request": {
             "method": "PATCH",
             "header": [
@@ -7216,7 +8990,7 @@
           "response": []
         },
         {
-          "name": "07 Advance ASSIGNED to EN_ROUTE \u2014 read current version first",
+          "name": "07 Advance ASSIGNED to EN_ROUTE — read current version first",
           "request": {
             "method": "PATCH",
             "header": [
@@ -7606,7 +9380,7 @@
           "response": []
         },
         {
-          "name": "16 Suspend disposable user \u2014 disposable fixture only",
+          "name": "16 Suspend disposable user — disposable fixture only",
           "request": {
             "method": "PATCH",
             "header": [
@@ -7654,7 +9428,7 @@
           "response": []
         },
         {
-          "name": "17 Reactivate disposable user \u2014 fresh login afterward",
+          "name": "17 Reactivate disposable user — fresh login afterward",
           "request": {
             "method": "PATCH",
             "header": [
