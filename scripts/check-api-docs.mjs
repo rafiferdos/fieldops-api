@@ -38,9 +38,11 @@ for (const [key, value] of variables)
 const examples = {
   ...Object.fromEntries(variables),
   customer_email: 'customer@example.com',
+  registration_email: 'registration@example.com',
   admin_email: 'admin@example.com',
   technician_email: 'technician@example.com',
   customer_password: 'Example local test passphrase',
+  registration_password: 'Example local test passphrase',
   admin_password: 'Example local test passphrase',
   technician_password: 'Example local test passphrase',
   refresh_token: 'a'.repeat(43),
@@ -48,6 +50,8 @@ const examples = {
   preferred_start: '2099-01-01T10:00:00+06:00',
   visit_start: '2099-01-01T10:00:00+06:00',
   visit_end: '2099-01-01T11:00:00+06:00',
+  reschedule_start: '2099-01-02T10:00:00+06:00',
+  reschedule_end: '2099-01-02T11:00:00+06:00',
   idempotency_key: '11111111-1111-4111-8111-111111111111',
   merchant_tran_id: 'a'.repeat(24),
   validation_id: 'example-provider-validation',
@@ -141,9 +145,20 @@ for (const item of requests(collection.item)) {
   );
   for (const response of item.response) {
     const body = JSON.parse(response.body);
-    assert.equal(body.success, true);
+    assert(
+      Number.isInteger(response.code) &&
+        response.code >= 200 &&
+        response.code <= 599,
+      `Invalid example HTTP status: ${item.name}/${response.name}`,
+    );
+    assert.equal(body.success, response.code < 400);
     assert(typeof body.message === 'string' && body.message.length > 0);
-    assert(Object.hasOwn(body, 'data'));
+    if (body.success) assert(Object.hasOwn(body, 'data'));
+    else {
+      assert(Array.isArray(body.errors));
+      assert(body.errors.every((error) => typeof error === 'string'));
+      assert(!Object.hasOwn(body, 'data'));
+    }
   }
   if (route.public)
     assert.equal(
