@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { UserStatus } from '../../generated/prisma/enums.js';
 import type { Prisma } from '../../generated/prisma/client.js';
 import {
@@ -44,6 +44,14 @@ export class SessionsService {
     tx: Prisma.TransactionClient,
     user: PublicUser,
   ): Promise<SessionCredentials> {
+    // Account changes take FOR UPDATE on this row. A login must either commit
+    // before revocation or see the new account state before creating a session.
+    await tx.$queryRaw`SELECT id FROM "User" WHERE id = ${user.id}::uuid FOR SHARE`;
+    const current = await tx.user.findFirst({
+      where: { id: user.id, status: UserStatus.ACTIVE, deletedAt: null },
+      select: publicUserSelect,
+    });
+    if (!current) throw new UnauthorizedException('Account is unavailable');
     const refreshToken = createRefreshToken();
     const tokenHash = hashRefreshToken(refreshToken);
     const expiresAt = new Date(Date.now() + SESSION_TTL_MS);
@@ -55,7 +63,7 @@ export class SessionsService {
       },
       select: { id: true, expiresAt: true },
     });
-    return { ...session, user, refreshToken };
+    return { ...session, user: current, refreshToken };
   }
 
   async rotate(rawToken: string): Promise<SessionCredentials | null> {

@@ -40,8 +40,10 @@ if (testRedisUrl) {
 }
 process.env.REDIS_URL = testRedisUrl ?? '';
 
-// Tests never inherit real merchant credentials; payment fixtures replace only the HTTP transport.
+// Tests never inherit live provider configuration. Google fixtures supply test
+// audiences/keys; payment fixtures replace only the gateway HTTP transport.
 for (const key of [
+  'GOOGLE_CLIENT_ID',
   'SSLCOMMERZ_MODE',
   'SSLCOMMERZ_STORE_ID',
   'SSLCOMMERZ_STORE_PASSWORD',

@@ -118,6 +118,57 @@ describe('Administrator account management (e2e)', () => {
     await profile((await newSession(ctx.owner.id)).accessToken).expect(200);
   });
 
+  it('rechecks stale login state before issuing a new session', async () => {
+    const user = await ctx.prisma.user.findUniqueOrThrow({
+      where: { id: ctx.owner.id },
+      select: publicUserSelect,
+    });
+    await patch(ctx.owner.id, { role: 'TECHNICIAN' }).expect(200);
+    const session = await ctx.prisma.$transaction((tx) =>
+      ctx.app.get(SessionsService).createInTransaction(tx, user),
+    );
+    expect(session.user.role).toBe('TECHNICIAN');
+    await patch(ctx.owner.id, { status: 'SUSPENDED' }).expect(200);
+    await expect(
+      ctx.prisma.$transaction((tx) =>
+        ctx.app.get(SessionsService).createInTransaction(tx, user),
+      ),
+    ).rejects.toThrow('Account is unavailable');
+    expect(
+      await ctx.prisma.session.count({
+        where: { userId: ctx.owner.id, revokedAt: null },
+      }),
+    ).toBe(0);
+  });
+
+  it('does not leave a usable session when login creation races suspension', async () => {
+    for (let i = 0; i < 5; i++) {
+      const user = await ctx.prisma.user.findUniqueOrThrow({
+        where: { id: ctx.owner.id },
+        select: publicUserSelect,
+      });
+      const [login, change] = await Promise.allSettled([
+        ctx.prisma.$transaction((tx) =>
+          ctx.app.get(SessionsService).createInTransaction(tx, user),
+        ),
+        patch(ctx.owner.id, { status: 'SUSPENDED' }).expect(200),
+      ]);
+      expect(change.status).toBe('fulfilled');
+      if (login.status === 'rejected')
+        expect(login.reason.message).toBe('Account is unavailable');
+      expect(
+        await ctx.prisma.session.count({
+          where: { userId: ctx.owner.id, revokedAt: null },
+        }),
+      ).toBe(0);
+      await patch(ctx.owner.id, { status: 'ACTIVE' }).expect(200);
+      if (login.status === 'fulfilled') {
+        const token = await ctx.app.get(TokensService).issue(login.value);
+        await profile(token.accessToken).expect(401);
+      }
+    }
+  });
+
   it('treats unchanged access as a no-op without audit or session revocation', async () => {
     await patch(ctx.owner.id, { role: 'CUSTOMER', status: 'ACTIVE' }).expect(
       200,
