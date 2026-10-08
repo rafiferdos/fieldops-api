@@ -1,6 +1,6 @@
 {
   "info": {
-    "name": "FieldOps API \u2014 Completed endpoints",
+    "name": "FieldOps API — Completed endpoints",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
     "description": "34 implemented domain APIs + 2 health routes, with extra login examples for the three roles. Import into Apidog Settings > Import Data > Postman. This is English documentation for manual testing, not an automatic collection runner. Run workflow requests deliberately: registration/login -> profile -> catalog -> request/review -> skill/availability/assignment -> progress/completion -> actual gateway checkout -> invoice/payment state -> feedback. Cancellation/deletion/logout are separate scenarios. Saved response examples are illustrative placeholders, not live results. No real credentials/tokens are included. Keep all secrets only in local environment values; do not publish populated environments. Backend README contains detailed domain rules and manual negative checks."
   },
@@ -21,7 +21,7 @@
       "key": "customer_password",
       "value": "",
       "type": "string",
-      "description": "Blank template. Set only as a local environment secret; registration requires 15\u2013128 characters."
+      "description": "Blank template. Set only as a local environment secret; registration requires 15–128 characters."
     },
     {
       "key": "admin_email",
@@ -198,8 +198,12 @@
             ],
             "url": {
               "raw": "{{base_url}}/health",
-              "host": ["{{base_url}}"],
-              "path": ["health"]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "health"
+              ]
             },
             "description": "Access: PUBLIC. Expected success: 200.\n\nLiveness does not query PostgreSQL.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request."
           },
@@ -219,8 +223,12 @@
                 ],
                 "url": {
                   "raw": "{{base_url}}/health",
-                  "host": ["{{base_url}}"],
-                  "path": ["health"]
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "health"
+                  ]
                 },
                 "description": "Access: PUBLIC. Expected success: 200.\n\nLiveness does not query PostgreSQL.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request."
               },
@@ -252,8 +260,13 @@
             ],
             "url": {
               "raw": "{{base_url}}/health/ready",
-              "host": ["{{base_url}}"],
-              "path": ["health", "ready"]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "health",
+                "ready"
+              ]
             },
             "description": "Access: PUBLIC. Expected success: 200.\n\nChecks PostgreSQL. Database outage returns 503.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request."
           },
@@ -273,8 +286,13 @@
                 ],
                 "url": {
                   "raw": "{{base_url}}/health/ready",
-                  "host": ["{{base_url}}"],
-                  "path": ["health", "ready"]
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "health",
+                    "ready"
+                  ]
                 },
                 "description": "Access: PUBLIC. Expected success: 200.\n\nChecks PostgreSQL. Database outage returns 503.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request."
               },
@@ -315,10 +333,15 @@
             ],
             "url": {
               "raw": "{{base_url}}/auth/register",
-              "host": ["{{base_url}}"],
-              "path": ["auth", "register"]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "register"
+              ]
             },
-            "description": "Access: PUBLIC. Expected success: 201.\n\nName 2\u2013100 trimmed characters; normalized email up to 254; password 15\u2013128 characters. Registration creates a CUSTOMER profile; log in separately for tokens. Client role/phone/extra fields are rejected. Existing reserved email returns 409.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
+            "description": "Access: PUBLIC. Expected success: 201.\n\nName 2–100 trimmed characters; normalized email up to 254; password 15–128 characters. Registration creates a CUSTOMER profile; log in separately for tokens. Client role/phone/extra fields are rejected. Existing reserved email returns 409.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"name\": \"Demo Customer\",\n  \"email\": \"{{customer_email}}\",\n  \"password\": \"{{customer_password}}\"\n}",
@@ -349,10 +372,15 @@
                 ],
                 "url": {
                   "raw": "{{base_url}}/auth/register",
-                  "host": ["{{base_url}}"],
-                  "path": ["auth", "register"]
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "register"
+                  ]
                 },
-                "description": "Access: PUBLIC. Expected success: 201.\n\nName 2\u2013100 trimmed characters; normalized email up to 254; password 15\u2013128 characters. Registration creates a CUSTOMER profile; log in separately for tokens. Client role/phone/extra fields are rejected. Existing reserved email returns 409.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
+                "description": "Access: PUBLIC. Expected success: 201.\n\nName 2–100 trimmed characters; normalized email up to 254; password 15–128 characters. Registration creates a CUSTOMER profile; log in separately for tokens. Client role/phone/extra fields are rejected. Existing reserved email returns 409.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"name\": \"Demo Customer\",\n  \"email\": \"{{customer_email}}\",\n  \"password\": \"{{customer_password}}\"\n}",
@@ -399,8 +427,13 @@
             ],
             "url": {
               "raw": "{{base_url}}/auth/login",
-              "host": ["{{base_url}}"],
-              "path": ["auth", "login"]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
             },
             "description": "Access: PUBLIC. Expected success: 200.\n\nLog in with an active CUSTOMER account. Prepare admin/technician via safe bootstrap scripts; public registration cannot choose roles. Extract accessToken/refreshToken into local environment values, never shared values. Generic credential/account failure returns 401.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
             "body": {
@@ -433,8 +466,13 @@
                 ],
                 "url": {
                   "raw": "{{base_url}}/auth/login",
-                  "host": ["{{base_url}}"],
-                  "path": ["auth", "login"]
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "login"
+                  ]
                 },
                 "description": "Access: PUBLIC. Expected success: 200.\n\nLog in with an active CUSTOMER account. Prepare admin/technician via safe bootstrap scripts; public registration cannot choose roles. Extract accessToken/refreshToken into local environment values, never shared values. Generic credential/account failure returns 401.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
                 "body": {
@@ -483,8 +521,13 @@
             ],
             "url": {
               "raw": "{{base_url}}/auth/login",
-              "host": ["{{base_url}}"],
-              "path": ["auth", "login"]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
             },
             "description": "Access: PUBLIC. Expected success: 200.\n\nLog in with an active ADMIN account. Prepare admin/technician via safe bootstrap scripts; public registration cannot choose roles. Extract accessToken/refreshToken into local environment values, never shared values. Generic credential/account failure returns 401.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
             "body": {
@@ -517,8 +560,13 @@
                 ],
                 "url": {
                   "raw": "{{base_url}}/auth/login",
-                  "host": ["{{base_url}}"],
-                  "path": ["auth", "login"]
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "login"
+                  ]
                 },
                 "description": "Access: PUBLIC. Expected success: 200.\n\nLog in with an active ADMIN account. Prepare admin/technician via safe bootstrap scripts; public registration cannot choose roles. Extract accessToken/refreshToken into local environment values, never shared values. Generic credential/account failure returns 401.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
                 "body": {
@@ -567,8 +615,13 @@
             ],
             "url": {
               "raw": "{{base_url}}/auth/login",
-              "host": ["{{base_url}}"],
-              "path": ["auth", "login"]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
             },
             "description": "Access: PUBLIC. Expected success: 200.\n\nLog in with an active TECHNICIAN account. Prepare admin/technician via safe bootstrap scripts; public registration cannot choose roles. Extract accessToken/refreshToken into local environment values, never shared values. Generic credential/account failure returns 401.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
             "body": {
@@ -601,8 +654,13 @@
                 ],
                 "url": {
                   "raw": "{{base_url}}/auth/login",
-                  "host": ["{{base_url}}"],
-                  "path": ["auth", "login"]
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "login"
+                  ]
                 },
                 "description": "Access: PUBLIC. Expected success: 200.\n\nLog in with an active TECHNICIAN account. Prepare admin/technician via safe bootstrap scripts; public registration cannot choose roles. Extract accessToken/refreshToken into local environment values, never shared values. Generic credential/account failure returns 401.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
                 "body": {
@@ -651,8 +709,13 @@
             ],
             "url": {
               "raw": "{{base_url}}/auth/google",
-              "host": ["{{base_url}}"],
-              "path": ["auth", "google"]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "google"
+              ]
             },
             "description": "Access: PUBLIC. Expected success: 200.\n\nUse a real Google ID token obtained through npm run google:test and the configured OAuth client. The server verifies signature/audience/issuer/expiry/email and binds provider subject. Disabled Google configuration 503; invalid credential 401; existing unlinked email 409; non-JSON/untrusted origin 415/403. This example does not fabricate a Google credential.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
             "body": {
@@ -685,8 +748,13 @@
                 ],
                 "url": {
                   "raw": "{{base_url}}/auth/google",
-                  "host": ["{{base_url}}"],
-                  "path": ["auth", "google"]
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "google"
+                  ]
                 },
                 "description": "Access: PUBLIC. Expected success: 200.\n\nUse a real Google ID token obtained through npm run google:test and the configured OAuth client. The server verifies signature/audience/issuer/expiry/email and binds provider subject. Disabled Google configuration 503; invalid credential 401; existing unlinked email 409; non-JSON/untrusted origin 415/403. This example does not fabricate a Google credential.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
                 "body": {
@@ -735,8 +803,13 @@
             ],
             "url": {
               "raw": "{{base_url}}/auth/refresh",
-              "host": ["{{base_url}}"],
-              "path": ["auth", "refresh"]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "refresh"
+              ]
             },
             "description": "Access: PUBLIC. Expected success: 200.\n\nRefresh token is a 43-character URL-safe opaque value. Use it once and replace the saved refresh token with the returned token. Replay revokes its session family and returns 401.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
             "body": {
@@ -769,8 +842,13 @@
                 ],
                 "url": {
                   "raw": "{{base_url}}/auth/refresh",
-                  "host": ["{{base_url}}"],
-                  "path": ["auth", "refresh"]
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "refresh"
+                  ]
                 },
                 "description": "Access: PUBLIC. Expected success: 200.\n\nRefresh token is a 43-character URL-safe opaque value. Use it once and replace the saved refresh token with the returned token. Replay revokes its session family and returns 401.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
                 "body": {
@@ -822,8 +900,13 @@
             ],
             "url": {
               "raw": "{{base_url}}/auth/logout",
-              "host": ["{{base_url}}"],
-              "path": ["auth", "logout"]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "logout"
+              ]
             },
             "description": "Access: CUSTOMER. Expected success: 200.\n\nAllowed for CUSTOMER/TECHNICIAN/ADMIN with the corresponding token. Revokes the current session; run after other requests for that session.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request."
           },
@@ -850,8 +933,13 @@
                 ],
                 "url": {
                   "raw": "{{base_url}}/auth/logout",
-                  "host": ["{{base_url}}"],
-                  "path": ["auth", "logout"]
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "logout"
+                  ]
                 },
                 "description": "Access: CUSTOMER. Expected success: 200.\n\nAllowed for CUSTOMER/TECHNICIAN/ADMIN with the corresponding token. Revokes the current session; run after other requests for that session.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request."
               },
@@ -899,8 +987,13 @@
             ],
             "url": {
               "raw": "{{base_url}}/users/me",
-              "host": ["{{base_url}}"],
-              "path": ["users", "me"]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "users",
+                "me"
+              ]
             },
             "description": "Access: CUSTOMER. Expected success: 200.\n\nAny authenticated primary role may read its own safe profile. Switch the Bearer variable for technician/admin.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request."
           },
@@ -927,8 +1020,13 @@
                 ],
                 "url": {
                   "raw": "{{base_url}}/users/me",
-                  "host": ["{{base_url}}"],
-                  "path": ["users", "me"]
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "users",
+                    "me"
+                  ]
                 },
                 "description": "Access: CUSTOMER. Expected success: 200.\n\nAny authenticated primary role may read its own safe profile. Switch the Bearer variable for technician/admin.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request."
               },
@@ -975,10 +1073,15 @@
             ],
             "url": {
               "raw": "{{base_url}}/users/me",
-              "host": ["{{base_url}}"],
-              "path": ["users", "me"]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "users",
+                "me"
+              ]
             },
-            "description": "Access: CUSTOMER. Expected success: 200.\n\nAllowlisted name/phone only; at least one field. Name 2\u2013100 characters. Phone uses international format; null clears it. Cannot update role/status/email/password. Payment checkout requires a valid phone and name/email at most 50 characters.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
+            "description": "Access: CUSTOMER. Expected success: 200.\n\nAllowlisted name/phone only; at least one field. Name 2–100 characters. Phone uses international format; null clears it. Cannot update role/status/email/password. Payment checkout requires a valid phone and name/email at most 50 characters.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"name\": \"Demo Customer\",\n  \"phone\": \"+8801712345678\"\n}",
@@ -1016,10 +1119,15 @@
                 ],
                 "url": {
                   "raw": "{{base_url}}/users/me",
-                  "host": ["{{base_url}}"],
-                  "path": ["users", "me"]
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "users",
+                    "me"
+                  ]
                 },
-                "description": "Access: CUSTOMER. Expected success: 200.\n\nAllowlisted name/phone only; at least one field. Name 2\u2013100 characters. Phone uses international format; null clears it. Cannot update role/status/email/password. Payment checkout requires a valid phone and name/email at most 50 characters.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
+                "description": "Access: CUSTOMER. Expected success: 200.\n\nAllowlisted name/phone only; at least one field. Name 2–100 characters. Phone uses international format; null clears it. Cannot update role/status/email/password. Payment checkout requires a valid phone and name/email at most 50 characters.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"name\": \"Demo Customer\",\n  \"phone\": \"+8801712345678\"\n}",
@@ -1067,19 +1175,23 @@
             ],
             "url": {
               "raw": "{{base_url}}/services?page=1&limit=20&sort=newest",
-              "host": ["{{base_url}}"],
-              "path": ["services"],
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "services"
+              ],
               "query": [
                 {
                   "key": "page",
                   "value": "1",
-                  "description": "Integer 1\u2013100000; default 1.",
+                  "description": "Integer 1–100000; default 1.",
                   "disabled": false
                 },
                 {
                   "key": "limit",
                   "value": "20",
-                  "description": "Integer 1\u2013100; default 20.",
+                  "description": "Integer 1–100; default 20.",
                   "disabled": false
                 },
                 {
@@ -1114,19 +1226,23 @@
                 ],
                 "url": {
                   "raw": "{{base_url}}/services?page=1&limit=20&sort=newest",
-                  "host": ["{{base_url}}"],
-                  "path": ["services"],
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "services"
+                  ],
                   "query": [
                     {
                       "key": "page",
                       "value": "1",
-                      "description": "Integer 1\u2013100000; default 1.",
+                      "description": "Integer 1–100000; default 1.",
                       "disabled": false
                     },
                     {
                       "key": "limit",
                       "value": "20",
-                      "description": "Integer 1\u2013100; default 20.",
+                      "description": "Integer 1–100; default 20.",
                       "disabled": false
                     },
                     {
@@ -1173,8 +1289,13 @@
             ],
             "url": {
               "raw": "{{base_url}}/services/{{service_id}}",
-              "host": ["{{base_url}}"],
-              "path": ["services", "{{service_id}}"]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "services",
+                "{{service_id}}"
+              ]
             },
             "description": "Access: PUBLIC. Expected success: 200.\n\nActive public service. Invalid UUID 400; missing/deleted service 404.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request."
           },
@@ -1194,8 +1315,13 @@
                 ],
                 "url": {
                   "raw": "{{base_url}}/services/{{service_id}}",
-                  "host": ["{{base_url}}"],
-                  "path": ["services", "{{service_id}}"]
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "services",
+                    "{{service_id}}"
+                  ]
                 },
                 "description": "Access: PUBLIC. Expected success: 200.\n\nActive public service. Invalid UUID 400; missing/deleted service 404.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request."
               },
@@ -1238,10 +1364,14 @@
             ],
             "url": {
               "raw": "{{base_url}}/services",
-              "host": ["{{base_url}}"],
-              "path": ["services"]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "services"
+              ]
             },
-            "description": "Access: ADMIN. Expected success: 201.\n\nName 2\u2013100, description 10\u20132000 trimmed characters; price integer 0\u20131000000000 paisa; BDT fixed by server. Extract data.id as service_id. Audit/cache revision update is atomic. SSLCommerz checkout supports only BDT 10\u2013500000; unsupported invoice amounts return 409.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
+            "description": "Access: ADMIN. Expected success: 201.\n\nName 2–100, description 10–2000 trimmed characters; price integer 0–1000000000 paisa; BDT fixed by server. Extract data.id as service_id. Audit/cache revision update is atomic. SSLCommerz checkout supports only BDT 10–500000; unsupported invoice amounts return 409.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"name\": \"Cooling unit inspection\",\n  \"description\": \"Inspect and repair the cooling unit.\",\n  \"basePriceMinor\": 150000\n}",
@@ -1279,10 +1409,14 @@
                 ],
                 "url": {
                   "raw": "{{base_url}}/services",
-                  "host": ["{{base_url}}"],
-                  "path": ["services"]
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "services"
+                  ]
                 },
-                "description": "Access: ADMIN. Expected success: 201.\n\nName 2\u2013100, description 10\u20132000 trimmed characters; price integer 0\u20131000000000 paisa; BDT fixed by server. Extract data.id as service_id. Audit/cache revision update is atomic. SSLCommerz checkout supports only BDT 10\u2013500000; unsupported invoice amounts return 409.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
+                "description": "Access: ADMIN. Expected success: 201.\n\nName 2–100, description 10–2000 trimmed characters; price integer 0–1000000000 paisa; BDT fixed by server. Extract data.id as service_id. Audit/cache revision update is atomic. SSLCommerz checkout supports only BDT 10–500000; unsupported invoice amounts return 409.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"name\": \"Cooling unit inspection\",\n  \"description\": \"Inspect and repair the cooling unit.\",\n  \"basePriceMinor\": 150000\n}",
@@ -1332,8 +1466,13 @@
             ],
             "url": {
               "raw": "{{base_url}}/services/{{service_id}}",
-              "host": ["{{base_url}}"],
-              "path": ["services", "{{service_id}}"]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "services",
+                "{{service_id}}"
+              ]
             },
             "description": "Access: ADMIN. Expected success: 200.\n\nAt least one name/description/basePriceMinor field; same bounds as creation. Historical agreed prices and invoices stay frozen.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
             "body": {
@@ -1373,8 +1512,13 @@
                 ],
                 "url": {
                   "raw": "{{base_url}}/services/{{service_id}}",
-                  "host": ["{{base_url}}"],
-                  "path": ["services", "{{service_id}}"]
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "services",
+                    "{{service_id}}"
+                  ]
                 },
                 "description": "Access: ADMIN. Expected success: 200.\n\nAt least one name/description/basePriceMinor field; same bounds as creation. Historical agreed prices and invoices stay frozen.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
                 "body": {
@@ -1422,8 +1566,13 @@
             ],
             "url": {
               "raw": "{{base_url}}/services/{{service_id}}",
-              "host": ["{{base_url}}"],
-              "path": ["services", "{{service_id}}"]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "services",
+                "{{service_id}}"
+              ]
             },
             "description": "Access: ADMIN. Expected success: 200.\n\nRun after creating the service/request/work fixtures. Soft deletion preserves historical work/invoices/feedback; public reads return 404.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request."
           },
@@ -1450,8 +1599,13 @@
                 ],
                 "url": {
                   "raw": "{{base_url}}/services/{{service_id}}",
-                  "host": ["{{base_url}}"],
-                  "path": ["services", "{{service_id}}"]
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "services",
+                    "{{service_id}}"
+                  ]
                 },
                 "description": "Access: ADMIN. Expected success: 200.\n\nRun after creating the service/request/work fixtures. Soft deletion preserves historical work/invoices/feedback; public reads return 404.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request."
               },
@@ -1499,10 +1653,14 @@
             ],
             "url": {
               "raw": "{{base_url}}/requests",
-              "host": ["{{base_url}}"],
-              "path": ["requests"]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "requests"
+              ]
             },
-            "description": "Access: CUSTOMER. Expected success: 201.\n\nActive service UUID, description 10\u20132000, address 10\u2013500 trimmed characters, future ISO time with timezone offset. Owner is taken from session. Extract data.id and data.version as request_id/request_version.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
+            "description": "Access: CUSTOMER. Expected success: 201.\n\nActive service UUID, description 10–2000, address 10–500 trimmed characters, future ISO time with timezone offset. Owner is taken from session. Extract data.id and data.version as request_id/request_version.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"serviceId\": \"{{service_id}}\",\n  \"description\": \"The cooling unit needs inspection.\",\n  \"address\": \"House 12, Road 3, Dhaka\",\n  \"preferredStart\": \"{{preferred_start}}\"\n}",
@@ -1540,10 +1698,14 @@
                 ],
                 "url": {
                   "raw": "{{base_url}}/requests",
-                  "host": ["{{base_url}}"],
-                  "path": ["requests"]
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "requests"
+                  ]
                 },
-                "description": "Access: CUSTOMER. Expected success: 201.\n\nActive service UUID, description 10\u20132000, address 10\u2013500 trimmed characters, future ISO time with timezone offset. Owner is taken from session. Extract data.id and data.version as request_id/request_version.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
+                "description": "Access: CUSTOMER. Expected success: 201.\n\nActive service UUID, description 10–2000, address 10–500 trimmed characters, future ISO time with timezone offset. Owner is taken from session. Extract data.id and data.version as request_id/request_version.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"serviceId\": \"{{service_id}}\",\n  \"description\": \"The cooling unit needs inspection.\",\n  \"address\": \"House 12, Road 3, Dhaka\",\n  \"preferredStart\": \"{{preferred_start}}\"\n}",
@@ -1593,19 +1755,23 @@
             ],
             "url": {
               "raw": "{{base_url}}/requests?page=1&limit=20&sort=newest",
-              "host": ["{{base_url}}"],
-              "path": ["requests"],
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "requests"
+              ],
               "query": [
                 {
                   "key": "page",
                   "value": "1",
-                  "description": "Integer 1\u2013100000; default 1.",
+                  "description": "Integer 1–100000; default 1.",
                   "disabled": false
                 },
                 {
                   "key": "limit",
                   "value": "20",
-                  "description": "Integer 1\u2013100; default 20.",
+                  "description": "Integer 1–100; default 20.",
                   "disabled": false
                 },
                 {
@@ -1659,19 +1825,23 @@
                 ],
                 "url": {
                   "raw": "{{base_url}}/requests?page=1&limit=20&sort=newest",
-                  "host": ["{{base_url}}"],
-                  "path": ["requests"],
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "requests"
+                  ],
                   "query": [
                     {
                       "key": "page",
                       "value": "1",
-                      "description": "Integer 1\u2013100000; default 1.",
+                      "description": "Integer 1–100000; default 1.",
                       "disabled": false
                     },
                     {
                       "key": "limit",
                       "value": "20",
-                      "description": "Integer 1\u2013100; default 20.",
+                      "description": "Integer 1–100; default 20.",
                       "disabled": false
                     },
                     {
@@ -1741,8 +1911,13 @@
             ],
             "url": {
               "raw": "{{base_url}}/requests/{{request_id}}",
-              "host": ["{{base_url}}"],
-              "path": ["requests", "{{request_id}}"]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "requests",
+                "{{request_id}}"
+              ]
             },
             "description": "Access: CUSTOMER. Expected success: 200.\n\nC own / A. Foreign/missing/soft-deleted request 404; T 403. Nullable work summary includes its current invoice/feedback.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request."
           },
@@ -1769,8 +1944,13 @@
                 ],
                 "url": {
                   "raw": "{{base_url}}/requests/{{request_id}}",
-                  "host": ["{{base_url}}"],
-                  "path": ["requests", "{{request_id}}"]
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "requests",
+                    "{{request_id}}"
+                  ]
                 },
                 "description": "Access: CUSTOMER. Expected success: 200.\n\nC own / A. Foreign/missing/soft-deleted request 404; T 403. Nullable work summary includes its current invoice/feedback.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request."
               },
@@ -1817,10 +1997,15 @@
             ],
             "url": {
               "raw": "{{base_url}}/requests/{{request_id}}",
-              "host": ["{{base_url}}"],
-              "path": ["requests", "{{request_id}}"]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "requests",
+                "{{request_id}}"
+              ]
             },
-            "description": "Access: CUSTOMER. Expected success: 200.\n\nOnly owner and PENDING state. Send latest integer version (1\u20132147483646) plus at least one description/address/preferredStart. Extract returned version; stale version or ineligible state 409.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
+            "description": "Access: CUSTOMER. Expected success: 200.\n\nOnly owner and PENDING state. Send latest integer version (1–2147483646) plus at least one description/address/preferredStart. Extract returned version; stale version or ineligible state 409.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"version\": {{request_version}},\n  \"address\": \"House 25, Road 4, Dhaka\"\n}",
@@ -1858,10 +2043,15 @@
                 ],
                 "url": {
                   "raw": "{{base_url}}/requests/{{request_id}}",
-                  "host": ["{{base_url}}"],
-                  "path": ["requests", "{{request_id}}"]
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "requests",
+                    "{{request_id}}"
+                  ]
                 },
-                "description": "Access: CUSTOMER. Expected success: 200.\n\nOnly owner and PENDING state. Send latest integer version (1\u20132147483646) plus at least one description/address/preferredStart. Extract returned version; stale version or ineligible state 409.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
+                "description": "Access: CUSTOMER. Expected success: 200.\n\nOnly owner and PENDING state. Send latest integer version (1–2147483646) plus at least one description/address/preferredStart. Extract returned version; stale version or ineligible state 409.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"version\": {{request_version}},\n  \"address\": \"House 25, Road 4, Dhaka\"\n}",
@@ -1915,10 +2105,16 @@
             ],
             "url": {
               "raw": "{{base_url}}/requests/{{request_id}}/review",
-              "host": ["{{base_url}}"],
-              "path": ["requests", "{{request_id}}", "review"]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "requests",
+                "{{request_id}}",
+                "review"
+              ]
             },
-            "description": "Access: ADMIN. Expected success: 200.\n\nDecision APPROVE/REJECT with latest version. REJECT requires a 3\u2013500-character reason. Only PENDING; stale version/state 409. Save latest version.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
+            "description": "Access: ADMIN. Expected success: 200.\n\nDecision APPROVE/REJECT with latest version. REJECT requires a 3–500-character reason. Only PENDING; stale version/state 409. Save latest version.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"version\": {{request_version}},\n  \"decision\": \"APPROVE\"\n}",
@@ -1956,10 +2152,16 @@
                 ],
                 "url": {
                   "raw": "{{base_url}}/requests/{{request_id}}/review",
-                  "host": ["{{base_url}}"],
-                  "path": ["requests", "{{request_id}}", "review"]
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "requests",
+                    "{{request_id}}",
+                    "review"
+                  ]
                 },
-                "description": "Access: ADMIN. Expected success: 200.\n\nDecision APPROVE/REJECT with latest version. REJECT requires a 3\u2013500-character reason. Only PENDING; stale version/state 409. Save latest version.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
+                "description": "Access: ADMIN. Expected success: 200.\n\nDecision APPROVE/REJECT with latest version. REJECT requires a 3–500-character reason. Only PENDING; stale version/state 409. Save latest version.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"version\": {{request_version}},\n  \"decision\": \"APPROVE\"\n}",
@@ -2013,8 +2215,14 @@
             ],
             "url": {
               "raw": "{{base_url}}/requests/{{request_id}}/cancel",
-              "host": ["{{base_url}}"],
-              "path": ["requests", "{{request_id}}", "cancel"]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "requests",
+                "{{request_id}}",
+                "cancel"
+              ]
             },
             "description": "Access: CUSTOMER. Expected success: 200.\n\nC own / A. PENDING/APPROVED only; an ASSIGNED order is cancelled atomically. EN_ROUTE/IN_PROGRESS/COMPLETED cannot be cancelled (409). Test on a separate request; this is an alternative to the paid-work workflow.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
             "body": {
@@ -2054,8 +2262,14 @@
                 ],
                 "url": {
                   "raw": "{{base_url}}/requests/{{request_id}}/cancel",
-                  "host": ["{{base_url}}"],
-                  "path": ["requests", "{{request_id}}", "cancel"]
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "requests",
+                    "{{request_id}}",
+                    "cancel"
+                  ]
                 },
                 "description": "Access: CUSTOMER. Expected success: 200.\n\nC own / A. PENDING/APPROVED only; an ASSIGNED order is cancelled atomically. EN_ROUTE/IN_PROGRESS/COMPLETED cannot be cancelled (409). Test on a separate request; this is an alternative to the paid-work workflow.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
                 "body": {
@@ -2116,8 +2330,14 @@
             ],
             "url": {
               "raw": "{{base_url}}/technicians/{{technician_id}}/skills",
-              "host": ["{{base_url}}"],
-              "path": ["technicians", "{{technician_id}}", "skills"]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "technicians",
+                "{{technician_id}}",
+                "skills"
+              ]
             },
             "description": "Access: ADMIN. Expected success: 200.\n\nTarget must be active TECHNICIAN. serviceIds contains at most 100 unique active service UUIDs; [] clears skills unless active work depends on one. Removing a required skill returns 409. Use the technician profile ID, not a customer ID.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
             "body": {
@@ -2157,8 +2377,14 @@
                 ],
                 "url": {
                   "raw": "{{base_url}}/technicians/{{technician_id}}/skills",
-                  "host": ["{{base_url}}"],
-                  "path": ["technicians", "{{technician_id}}", "skills"]
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "technicians",
+                    "{{technician_id}}",
+                    "skills"
+                  ]
                 },
                 "description": "Access: ADMIN. Expected success: 200.\n\nTarget must be active TECHNICIAN. serviceIds contains at most 100 unique active service UUIDs; [] clears skills unless active work depends on one. Removing a required skill returns 409. Use the technician profile ID, not a customer ID.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
                 "body": {
@@ -2210,8 +2436,12 @@
             ],
             "url": {
               "raw": "{{base_url}}/technicians?serviceId={{service_id}}&start={{visit_start}}&end={{visit_end}}&page=1&limit=20",
-              "host": ["{{base_url}}"],
-              "path": ["technicians"],
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "technicians"
+              ],
               "query": [
                 {
                   "key": "serviceId",
@@ -2234,13 +2464,13 @@
                 {
                   "key": "page",
                   "value": "1",
-                  "description": "Integer 1\u2013100000; default 1.",
+                  "description": "Integer 1–100000; default 1.",
                   "disabled": false
                 },
                 {
                   "key": "limit",
                   "value": "20",
-                  "description": "Integer 1\u2013100; default 20.",
+                  "description": "Integer 1–100; default 20.",
                   "disabled": false
                 }
               ]
@@ -2270,8 +2500,12 @@
                 ],
                 "url": {
                   "raw": "{{base_url}}/technicians?serviceId={{service_id}}&start={{visit_start}}&end={{visit_end}}&page=1&limit=20",
-                  "host": ["{{base_url}}"],
-                  "path": ["technicians"],
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "technicians"
+                  ],
                   "query": [
                     {
                       "key": "serviceId",
@@ -2294,13 +2528,13 @@
                     {
                       "key": "page",
                       "value": "1",
-                      "description": "Integer 1\u2013100000; default 1.",
+                      "description": "Integer 1–100000; default 1.",
                       "disabled": false
                     },
                     {
                       "key": "limit",
                       "value": "20",
-                      "description": "Integer 1\u2013100; default 20.",
+                      "description": "Integer 1–100; default 20.",
                       "disabled": false
                     }
                   ]
@@ -2350,8 +2584,14 @@
             ],
             "url": {
               "raw": "{{base_url}}/requests/{{request_id}}/assignment",
-              "host": ["{{base_url}}"],
-              "path": ["requests", "{{request_id}}", "assignment"]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "requests",
+                "{{request_id}}",
+                "assignment"
+              ]
             },
             "description": "Access: ADMIN. Expected success: 201.\n\nAPPROVED request, active skilled technician and valid future window. Overlap/duplicate assignment/ineligible state 409. Price is snapshotted. Extract work_order_id, work_order_version and request.version as request_version.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
             "body": {
@@ -2391,8 +2631,14 @@
                 ],
                 "url": {
                   "raw": "{{base_url}}/requests/{{request_id}}/assignment",
-                  "host": ["{{base_url}}"],
-                  "path": ["requests", "{{request_id}}", "assignment"]
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "requests",
+                    "{{request_id}}",
+                    "assignment"
+                  ]
                 },
                 "description": "Access: ADMIN. Expected success: 201.\n\nAPPROVED request, active skilled technician and valid future window. Overlap/duplicate assignment/ineligible state 409. Price is snapshotted. Extract work_order_id, work_order_version and request.version as request_version.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
                 "body": {
@@ -2449,19 +2695,23 @@
             ],
             "url": {
               "raw": "{{base_url}}/work-orders?page=1&limit=20&sort=newest",
-              "host": ["{{base_url}}"],
-              "path": ["work-orders"],
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "work-orders"
+              ],
               "query": [
                 {
                   "key": "page",
                   "value": "1",
-                  "description": "Integer 1\u2013100000; default 1.",
+                  "description": "Integer 1–100000; default 1.",
                   "disabled": false
                 },
                 {
                   "key": "limit",
                   "value": "20",
-                  "description": "Integer 1\u2013100; default 20.",
+                  "description": "Integer 1–100; default 20.",
                   "disabled": false
                 },
                 {
@@ -2515,19 +2765,23 @@
                 ],
                 "url": {
                   "raw": "{{base_url}}/work-orders?page=1&limit=20&sort=newest",
-                  "host": ["{{base_url}}"],
-                  "path": ["work-orders"],
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "work-orders"
+                  ],
                   "query": [
                     {
                       "key": "page",
                       "value": "1",
-                      "description": "Integer 1\u2013100000; default 1.",
+                      "description": "Integer 1–100000; default 1.",
                       "disabled": false
                     },
                     {
                       "key": "limit",
                       "value": "20",
-                      "description": "Integer 1\u2013100; default 20.",
+                      "description": "Integer 1–100; default 20.",
                       "disabled": false
                     },
                     {
@@ -2597,8 +2851,13 @@
             ],
             "url": {
               "raw": "{{base_url}}/work-orders/{{work_order_id}}",
-              "host": ["{{base_url}}"],
-              "path": ["work-orders", "{{work_order_id}}"]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "work-orders",
+                "{{work_order_id}}"
+              ]
             },
             "description": "Access: CUSTOMER. Expected success: 200.\n\nC own / currently assigned T / A. Other customer/unassigned technician/soft-deleted request 404. Safe timeline returns latest 100 work-order events, chronologically. Feedback null until submission. Save latest work version.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request."
           },
@@ -2625,8 +2884,13 @@
                 ],
                 "url": {
                   "raw": "{{base_url}}/work-orders/{{work_order_id}}",
-                  "host": ["{{base_url}}"],
-                  "path": ["work-orders", "{{work_order_id}}"]
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "work-orders",
+                    "{{work_order_id}}"
+                  ]
                 },
                 "description": "Access: CUSTOMER. Expected success: 200.\n\nC own / currently assigned T / A. Other customer/unassigned technician/soft-deleted request 404. Safe timeline returns latest 100 work-order events, chronologically. Feedback null until submission. Save latest work version.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request."
               },
@@ -2673,8 +2937,14 @@
             ],
             "url": {
               "raw": "{{base_url}}/work-orders/{{work_order_id}}/schedule",
-              "host": ["{{base_url}}"],
-              "path": ["work-orders", "{{work_order_id}}", "schedule"]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "work-orders",
+                "{{work_order_id}}",
+                "schedule"
+              ]
             },
             "description": "Access: ADMIN. Expected success: 200.\n\nOnly ASSIGNED with APPROVED request. Latest version and valid skilled active technician/window; overlap 409. Reassignment removes former technician access; agreed price stays frozen. Save returned version.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
             "body": {
@@ -2714,8 +2984,14 @@
                 ],
                 "url": {
                   "raw": "{{base_url}}/work-orders/{{work_order_id}}/schedule",
-                  "host": ["{{base_url}}"],
-                  "path": ["work-orders", "{{work_order_id}}", "schedule"]
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "work-orders",
+                    "{{work_order_id}}",
+                    "schedule"
+                  ]
                 },
                 "description": "Access: ADMIN. Expected success: 200.\n\nOnly ASSIGNED with APPROVED request. Latest version and valid skilled active technician/window; overlap 409. Reassignment removes former technician access; agreed price stays frozen. Save returned version.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
                 "body": {
@@ -2771,8 +3047,14 @@
             ],
             "url": {
               "raw": "{{base_url}}/work-orders/{{work_order_id}}/status",
-              "host": ["{{base_url}}"],
-              "path": ["work-orders", "{{work_order_id}}", "status"]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "work-orders",
+                "{{work_order_id}}",
+                "status"
+              ]
             },
             "description": "Access: TECHNICIAN. Expected success: 200.\n\nAssigned T only. Explicit sequence ASSIGNED -> EN_ROUTE -> IN_PROGRESS. Send status EN_ROUTE first, then change to IN_PROGRESS with the returned latest version. Invalid/skipped transition/stale version 409; C/A 403.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
             "body": {
@@ -2812,8 +3094,14 @@
                 ],
                 "url": {
                   "raw": "{{base_url}}/work-orders/{{work_order_id}}/status",
-                  "host": ["{{base_url}}"],
-                  "path": ["work-orders", "{{work_order_id}}", "status"]
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "work-orders",
+                    "{{work_order_id}}",
+                    "status"
+                  ]
                 },
                 "description": "Access: TECHNICIAN. Expected success: 200.\n\nAssigned T only. Explicit sequence ASSIGNED -> EN_ROUTE -> IN_PROGRESS. Send status EN_ROUTE first, then change to IN_PROGRESS with the returned latest version. Invalid/skipped transition/stale version 409; C/A 403.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
                 "body": {
@@ -2869,10 +3157,16 @@
             ],
             "url": {
               "raw": "{{base_url}}/work-orders/{{work_order_id}}/complete",
-              "host": ["{{base_url}}"],
-              "path": ["work-orders", "{{work_order_id}}", "complete"]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "work-orders",
+                "{{work_order_id}}",
+                "complete"
+              ]
             },
-            "description": "Access: TECHNICIAN. Expected success: 200.\n\nAssigned T only, IN_PROGRESS and APPROVED request. Report 10\u20132000 trimmed characters, latest version. Completion/report/unique invoice/audits commit together. Same report plus original or current completion version replays safely (200); changed report/stale version 409. Extract invoice_id.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
+            "description": "Access: TECHNICIAN. Expected success: 200.\n\nAssigned T only, IN_PROGRESS and APPROVED request. Report 10–2000 trimmed characters, latest version. Completion/report/unique invoice/audits commit together. Same report plus original or current completion version replays safely (200); changed report/stale version 409. Extract invoice_id.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"version\": {{work_order_version}},\n  \"report\": \"Inspected, cleaned and repaired the cooling unit.\"\n}",
@@ -2910,10 +3204,16 @@
                 ],
                 "url": {
                   "raw": "{{base_url}}/work-orders/{{work_order_id}}/complete",
-                  "host": ["{{base_url}}"],
-                  "path": ["work-orders", "{{work_order_id}}", "complete"]
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "work-orders",
+                    "{{work_order_id}}",
+                    "complete"
+                  ]
                 },
-                "description": "Access: TECHNICIAN. Expected success: 200.\n\nAssigned T only, IN_PROGRESS and APPROVED request. Report 10\u20132000 trimmed characters, latest version. Completion/report/unique invoice/audits commit together. Same report plus original or current completion version replays safely (200); changed report/stale version 409. Extract invoice_id.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
+                "description": "Access: TECHNICIAN. Expected success: 200.\n\nAssigned T only, IN_PROGRESS and APPROVED request. Report 10–2000 trimmed characters, latest version. Completion/report/unique invoice/audits commit together. Same report plus original or current completion version replays safely (200); changed report/stale version 409. Extract invoice_id.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"version\": {{work_order_version}},\n  \"report\": \"Inspected, cleaned and repaired the cooling unit.\"\n}",
@@ -2968,8 +3268,13 @@
             ],
             "url": {
               "raw": "{{base_url}}/invoices/{{invoice_id}}",
-              "host": ["{{base_url}}"],
-              "path": ["invoices", "{{invoice_id}}"]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "invoices",
+                "{{invoice_id}}"
+              ]
             },
             "description": "Access: CUSTOMER. Expected success: 200.\n\nC own / A, T 403. Frozen amount/currency/customer/work identity; financial history survives catalog/request soft deletion. PAID requires server-verified provider settlement; never set status manually.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request."
           },
@@ -2996,8 +3301,13 @@
                 ],
                 "url": {
                   "raw": "{{base_url}}/invoices/{{invoice_id}}",
-                  "host": ["{{base_url}}"],
-                  "path": ["invoices", "{{invoice_id}}"]
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "invoices",
+                    "{{invoice_id}}"
+                  ]
                 },
                 "description": "Access: CUSTOMER. Expected success: 200.\n\nC own / A, T 403. Frozen amount/currency/customer/work identity; financial history survives catalog/request soft deletion. PAID requires server-verified provider settlement; never set status manually.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request."
               },
@@ -3048,10 +3358,16 @@
             ],
             "url": {
               "raw": "{{base_url}}/invoices/{{invoice_id}}/payment-session",
-              "host": ["{{base_url}}"],
-              "path": ["invoices", "{{invoice_id}}", "payment-session"]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "invoices",
+                "{{invoice_id}}",
+                "payment-session"
+              ]
             },
-            "description": "Access: CUSTOMER. Expected success: 201.\n\nC own only. Idempotency-Key: 16\u2013100 safe ASCII letters/digits/._:-, first alphanumeric. Billing address 5\u201350, city 2\u201350, postcode 1\u201330; Bangladesh fixed. Requires E.164 phone and name/email <=50 characters; invoice BDT 10\u2013500000. Client amount/status/owner rejected. New attempt 201; same key/body replay 200. Do not change keys after timeout (502/UNKNOWN). After 15s, replay reconciles existing attempt without creating another charge. Key reuse with changed invoice/billing or another unresolved attempt/paid invoice returns 409. Extract payment_id/checkoutUrl and use the real gateway URL manually.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
+            "description": "Access: CUSTOMER. Expected success: 201.\n\nC own only. Idempotency-Key: 16–100 safe ASCII letters/digits/._:-, first alphanumeric. Billing address 5–50, city 2–50, postcode 1–30; Bangladesh fixed. Requires E.164 phone and name/email <=50 characters; invoice BDT 10–500000. Client amount/status/owner rejected. New attempt 201; same key/body replay 200. Do not change keys after timeout (502/UNKNOWN). After 15s, replay reconciles existing attempt without creating another charge. Key reuse with changed invoice/billing or another unresolved attempt/paid invoice returns 409. Extract payment_id/checkoutUrl and use the real gateway URL manually.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"billing\": {\n    \"address\": \"House 12, Road 3\",\n    \"city\": \"Dhaka\",\n    \"postcode\": \"1000\"\n  }\n}",
@@ -3093,10 +3409,16 @@
                 ],
                 "url": {
                   "raw": "{{base_url}}/invoices/{{invoice_id}}/payment-session",
-                  "host": ["{{base_url}}"],
-                  "path": ["invoices", "{{invoice_id}}", "payment-session"]
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "invoices",
+                    "{{invoice_id}}",
+                    "payment-session"
+                  ]
                 },
-                "description": "Access: CUSTOMER. Expected success: 201.\n\nC own only. Idempotency-Key: 16\u2013100 safe ASCII letters/digits/._:-, first alphanumeric. Billing address 5\u201350, city 2\u201350, postcode 1\u201330; Bangladesh fixed. Requires E.164 phone and name/email <=50 characters; invoice BDT 10\u2013500000. Client amount/status/owner rejected. New attempt 201; same key/body replay 200. Do not change keys after timeout (502/UNKNOWN). After 15s, replay reconciles existing attempt without creating another charge. Key reuse with changed invoice/billing or another unresolved attempt/paid invoice returns 409. Extract payment_id/checkoutUrl and use the real gateway URL manually.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
+                "description": "Access: CUSTOMER. Expected success: 201.\n\nC own only. Idempotency-Key: 16–100 safe ASCII letters/digits/._:-, first alphanumeric. Billing address 5–50, city 2–50, postcode 1–30; Bangladesh fixed. Requires E.164 phone and name/email <=50 characters; invoice BDT 10–500000. Client amount/status/owner rejected. New attempt 201; same key/body replay 200. Do not change keys after timeout (502/UNKNOWN). After 15s, replay reconciles existing attempt without creating another charge. Key reuse with changed invoice/billing or another unresolved attempt/paid invoice returns 409. Extract payment_id/checkoutUrl and use the real gateway URL manually.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"billing\": {\n    \"address\": \"House 12, Road 3\",\n    \"city\": \"Dhaka\",\n    \"postcode\": \"1000\"\n  }\n}",
@@ -3152,10 +3474,16 @@
                 ],
                 "url": {
                   "raw": "{{base_url}}/invoices/{{invoice_id}}/payment-session",
-                  "host": ["{{base_url}}"],
-                  "path": ["invoices", "{{invoice_id}}", "payment-session"]
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "invoices",
+                    "{{invoice_id}}",
+                    "payment-session"
+                  ]
                 },
-                "description": "Access: CUSTOMER. Expected success: 201.\n\nC own only. Idempotency-Key: 16\u2013100 safe ASCII letters/digits/._:-, first alphanumeric. Billing address 5\u201350, city 2\u201350, postcode 1\u201330; Bangladesh fixed. Requires E.164 phone and name/email <=50 characters; invoice BDT 10\u2013500000. Client amount/status/owner rejected. New attempt 201; same key/body replay 200. Do not change keys after timeout (502/UNKNOWN). After 15s, replay reconciles existing attempt without creating another charge. Key reuse with changed invoice/billing or another unresolved attempt/paid invoice returns 409. Extract payment_id/checkoutUrl and use the real gateway URL manually.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
+                "description": "Access: CUSTOMER. Expected success: 201.\n\nC own only. Idempotency-Key: 16–100 safe ASCII letters/digits/._:-, first alphanumeric. Billing address 5–50, city 2–50, postcode 1–30; Bangladesh fixed. Requires E.164 phone and name/email <=50 characters; invoice BDT 10–500000. Client amount/status/owner rejected. New attempt 201; same key/body replay 200. Do not change keys after timeout (502/UNKNOWN). After 15s, replay reconciles existing attempt without creating another charge. Key reuse with changed invoice/billing or another unresolved attempt/paid invoice returns 409. Extract payment_id/checkoutUrl and use the real gateway URL manually.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"billing\": {\n    \"address\": \"House 12, Road 3\",\n    \"city\": \"Dhaka\",\n    \"postcode\": \"1000\"\n  }\n}",
@@ -3205,8 +3533,13 @@
             ],
             "url": {
               "raw": "{{base_url}}/payments/{{payment_id}}",
-              "host": ["{{base_url}}"],
-              "path": ["payments", "{{payment_id}}"]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "payments",
+                "{{payment_id}}"
+              ]
             },
             "description": "Access: CUSTOMER. Expected success: 200.\n\nC own / A, T 403. PostgreSQL state only; no provider call. Only unpaid PENDING exposes checkoutUrl; other states hide it. No merchant IDs/session keys/provider references/credentials. Check requiresReview independently of SUCCEEDED: a later additional captured charge can need review without reversing the original paid invoice.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request."
           },
@@ -3233,8 +3566,13 @@
                 ],
                 "url": {
                   "raw": "{{base_url}}/payments/{{payment_id}}",
-                  "host": ["{{base_url}}"],
-                  "path": ["payments", "{{payment_id}}"]
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "payments",
+                    "{{payment_id}}"
+                  ]
                 },
                 "description": "Access: CUSTOMER. Expected success: 200.\n\nC own / A, T 403. PostgreSQL state only; no provider call. Only unpaid PENDING exposes checkoutUrl; other states hide it. No merchant IDs/session keys/provider references/credentials. Check requiresReview independently of SUCCEEDED: a later additional captured charge can need review without reversing the original paid invoice.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request."
               },
@@ -3279,10 +3617,16 @@
             ],
             "url": {
               "raw": "{{base_url}}/payments/sslcommerz/ipn",
-              "host": ["{{base_url}}"],
-              "path": ["payments", "sslcommerz", "ipn"]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "payments",
+                "sslcommerz",
+                "ipn"
+              ]
             },
-            "description": "Access: PUBLIC. Expected success: 200.\n\nNormally sent by SSLCommerz, not by the customer. This public example uses URL-encoded form; JSON also supported. Obtain real tran_id/val_id from the stored merchant attempt and a real provider test transaction; never fabricate successful evidence. tran_id is 24 lowercase hexadecimal characters; val_id optional 1\u201350 characters. Callback claims never mark an invoice paid: the server validates/looks up the provider. A 200 acknowledgement can remain pending/review; read invoice/payment afterward. Unknown merchant 404; unsupported encoding 415; invalid/unavailable verification 502. Duplicates are idempotent; late failure/cancel cannot reverse success. Gateway normally supplies additional form fields that are ignored.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
+            "description": "Access: PUBLIC. Expected success: 200.\n\nNormally sent by SSLCommerz, not by the customer. This public example uses URL-encoded form; JSON also supported. Obtain real tran_id/val_id from the stored merchant attempt and a real provider test transaction; never fabricate successful evidence. tran_id is 24 lowercase hexadecimal characters; val_id optional 1–50 characters. Callback claims never mark an invoice paid: the server validates/looks up the provider. A 200 acknowledgement can remain pending/review; read invoice/payment afterward. Unknown merchant 404; unsupported encoding 415; invalid/unavailable verification 502. Duplicates are idempotent; late failure/cancel cannot reverse success. Gateway normally supplies additional form fields that are ignored.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
             "body": {
               "mode": "urlencoded",
               "urlencoded": [
@@ -3319,10 +3663,16 @@
                 ],
                 "url": {
                   "raw": "{{base_url}}/payments/sslcommerz/ipn",
-                  "host": ["{{base_url}}"],
-                  "path": ["payments", "sslcommerz", "ipn"]
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "payments",
+                    "sslcommerz",
+                    "ipn"
+                  ]
                 },
-                "description": "Access: PUBLIC. Expected success: 200.\n\nNormally sent by SSLCommerz, not by the customer. This public example uses URL-encoded form; JSON also supported. Obtain real tran_id/val_id from the stored merchant attempt and a real provider test transaction; never fabricate successful evidence. tran_id is 24 lowercase hexadecimal characters; val_id optional 1\u201350 characters. Callback claims never mark an invoice paid: the server validates/looks up the provider. A 200 acknowledgement can remain pending/review; read invoice/payment afterward. Unknown merchant 404; unsupported encoding 415; invalid/unavailable verification 502. Duplicates are idempotent; late failure/cancel cannot reverse success. Gateway normally supplies additional form fields that are ignored.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
+                "description": "Access: PUBLIC. Expected success: 200.\n\nNormally sent by SSLCommerz, not by the customer. This public example uses URL-encoded form; JSON also supported. Obtain real tran_id/val_id from the stored merchant attempt and a real provider test transaction; never fabricate successful evidence. tran_id is 24 lowercase hexadecimal characters; val_id optional 1–50 characters. Callback claims never mark an invoice paid: the server validates/looks up the provider. A 200 acknowledgement can remain pending/review; read invoice/payment afterward. Unknown merchant 404; unsupported encoding 415; invalid/unavailable verification 502. Duplicates are idempotent; late failure/cancel cannot reverse success. Gateway normally supplies additional form fields that are ignored.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
                 "body": {
                   "mode": "urlencoded",
                   "urlencoded": [
@@ -3375,10 +3725,16 @@
             ],
             "url": {
               "raw": "{{base_url}}/payments/sslcommerz/success",
-              "host": ["{{base_url}}"],
-              "path": ["payments", "sslcommerz", "success"]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "payments",
+                "sslcommerz",
+                "success"
+              ]
             },
-            "description": "Access: PUBLIC. Expected success: 200.\n\nNormally sent by SSLCommerz, not by the customer. This public example uses URL-encoded form; JSON also supported. Obtain real tran_id/val_id from the stored merchant attempt and a real provider test transaction; never fabricate successful evidence. tran_id is 24 lowercase hexadecimal characters; val_id optional 1\u201350 characters. Callback claims never mark an invoice paid: the server validates/looks up the provider. A 200 acknowledgement can remain pending/review; read invoice/payment afterward. Unknown merchant 404; unsupported encoding 415; invalid/unavailable verification 502. Duplicates are idempotent; late failure/cancel cannot reverse success. Gateway normally supplies additional form fields that are ignored.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
+            "description": "Access: PUBLIC. Expected success: 200.\n\nNormally sent by SSLCommerz, not by the customer. This public example uses URL-encoded form; JSON also supported. Obtain real tran_id/val_id from the stored merchant attempt and a real provider test transaction; never fabricate successful evidence. tran_id is 24 lowercase hexadecimal characters; val_id optional 1–50 characters. Callback claims never mark an invoice paid: the server validates/looks up the provider. A 200 acknowledgement can remain pending/review; read invoice/payment afterward. Unknown merchant 404; unsupported encoding 415; invalid/unavailable verification 502. Duplicates are idempotent; late failure/cancel cannot reverse success. Gateway normally supplies additional form fields that are ignored.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
             "body": {
               "mode": "urlencoded",
               "urlencoded": [
@@ -3415,10 +3771,16 @@
                 ],
                 "url": {
                   "raw": "{{base_url}}/payments/sslcommerz/success",
-                  "host": ["{{base_url}}"],
-                  "path": ["payments", "sslcommerz", "success"]
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "payments",
+                    "sslcommerz",
+                    "success"
+                  ]
                 },
-                "description": "Access: PUBLIC. Expected success: 200.\n\nNormally sent by SSLCommerz, not by the customer. This public example uses URL-encoded form; JSON also supported. Obtain real tran_id/val_id from the stored merchant attempt and a real provider test transaction; never fabricate successful evidence. tran_id is 24 lowercase hexadecimal characters; val_id optional 1\u201350 characters. Callback claims never mark an invoice paid: the server validates/looks up the provider. A 200 acknowledgement can remain pending/review; read invoice/payment afterward. Unknown merchant 404; unsupported encoding 415; invalid/unavailable verification 502. Duplicates are idempotent; late failure/cancel cannot reverse success. Gateway normally supplies additional form fields that are ignored.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
+                "description": "Access: PUBLIC. Expected success: 200.\n\nNormally sent by SSLCommerz, not by the customer. This public example uses URL-encoded form; JSON also supported. Obtain real tran_id/val_id from the stored merchant attempt and a real provider test transaction; never fabricate successful evidence. tran_id is 24 lowercase hexadecimal characters; val_id optional 1–50 characters. Callback claims never mark an invoice paid: the server validates/looks up the provider. A 200 acknowledgement can remain pending/review; read invoice/payment afterward. Unknown merchant 404; unsupported encoding 415; invalid/unavailable verification 502. Duplicates are idempotent; late failure/cancel cannot reverse success. Gateway normally supplies additional form fields that are ignored.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
                 "body": {
                   "mode": "urlencoded",
                   "urlencoded": [
@@ -3471,10 +3833,16 @@
             ],
             "url": {
               "raw": "{{base_url}}/payments/sslcommerz/fail",
-              "host": ["{{base_url}}"],
-              "path": ["payments", "sslcommerz", "fail"]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "payments",
+                "sslcommerz",
+                "fail"
+              ]
             },
-            "description": "Access: PUBLIC. Expected success: 200.\n\nNormally sent by SSLCommerz, not by the customer. This public example uses URL-encoded form; JSON also supported. Obtain real tran_id/val_id from the stored merchant attempt and a real provider test transaction; never fabricate successful evidence. tran_id is 24 lowercase hexadecimal characters; val_id optional 1\u201350 characters. Callback claims never mark an invoice paid: the server validates/looks up the provider. A 200 acknowledgement can remain pending/review; read invoice/payment afterward. Unknown merchant 404; unsupported encoding 415; invalid/unavailable verification 502. Duplicates are idempotent; late failure/cancel cannot reverse success. Gateway normally supplies additional form fields that are ignored.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
+            "description": "Access: PUBLIC. Expected success: 200.\n\nNormally sent by SSLCommerz, not by the customer. This public example uses URL-encoded form; JSON also supported. Obtain real tran_id/val_id from the stored merchant attempt and a real provider test transaction; never fabricate successful evidence. tran_id is 24 lowercase hexadecimal characters; val_id optional 1–50 characters. Callback claims never mark an invoice paid: the server validates/looks up the provider. A 200 acknowledgement can remain pending/review; read invoice/payment afterward. Unknown merchant 404; unsupported encoding 415; invalid/unavailable verification 502. Duplicates are idempotent; late failure/cancel cannot reverse success. Gateway normally supplies additional form fields that are ignored.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
             "body": {
               "mode": "urlencoded",
               "urlencoded": [
@@ -3511,10 +3879,16 @@
                 ],
                 "url": {
                   "raw": "{{base_url}}/payments/sslcommerz/fail",
-                  "host": ["{{base_url}}"],
-                  "path": ["payments", "sslcommerz", "fail"]
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "payments",
+                    "sslcommerz",
+                    "fail"
+                  ]
                 },
-                "description": "Access: PUBLIC. Expected success: 200.\n\nNormally sent by SSLCommerz, not by the customer. This public example uses URL-encoded form; JSON also supported. Obtain real tran_id/val_id from the stored merchant attempt and a real provider test transaction; never fabricate successful evidence. tran_id is 24 lowercase hexadecimal characters; val_id optional 1\u201350 characters. Callback claims never mark an invoice paid: the server validates/looks up the provider. A 200 acknowledgement can remain pending/review; read invoice/payment afterward. Unknown merchant 404; unsupported encoding 415; invalid/unavailable verification 502. Duplicates are idempotent; late failure/cancel cannot reverse success. Gateway normally supplies additional form fields that are ignored.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
+                "description": "Access: PUBLIC. Expected success: 200.\n\nNormally sent by SSLCommerz, not by the customer. This public example uses URL-encoded form; JSON also supported. Obtain real tran_id/val_id from the stored merchant attempt and a real provider test transaction; never fabricate successful evidence. tran_id is 24 lowercase hexadecimal characters; val_id optional 1–50 characters. Callback claims never mark an invoice paid: the server validates/looks up the provider. A 200 acknowledgement can remain pending/review; read invoice/payment afterward. Unknown merchant 404; unsupported encoding 415; invalid/unavailable verification 502. Duplicates are idempotent; late failure/cancel cannot reverse success. Gateway normally supplies additional form fields that are ignored.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
                 "body": {
                   "mode": "urlencoded",
                   "urlencoded": [
@@ -3567,10 +3941,16 @@
             ],
             "url": {
               "raw": "{{base_url}}/payments/sslcommerz/cancel",
-              "host": ["{{base_url}}"],
-              "path": ["payments", "sslcommerz", "cancel"]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "payments",
+                "sslcommerz",
+                "cancel"
+              ]
             },
-            "description": "Access: PUBLIC. Expected success: 200.\n\nNormally sent by SSLCommerz, not by the customer. This public example uses URL-encoded form; JSON also supported. Obtain real tran_id/val_id from the stored merchant attempt and a real provider test transaction; never fabricate successful evidence. tran_id is 24 lowercase hexadecimal characters; val_id optional 1\u201350 characters. Callback claims never mark an invoice paid: the server validates/looks up the provider. A 200 acknowledgement can remain pending/review; read invoice/payment afterward. Unknown merchant 404; unsupported encoding 415; invalid/unavailable verification 502. Duplicates are idempotent; late failure/cancel cannot reverse success. Gateway normally supplies additional form fields that are ignored.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
+            "description": "Access: PUBLIC. Expected success: 200.\n\nNormally sent by SSLCommerz, not by the customer. This public example uses URL-encoded form; JSON also supported. Obtain real tran_id/val_id from the stored merchant attempt and a real provider test transaction; never fabricate successful evidence. tran_id is 24 lowercase hexadecimal characters; val_id optional 1–50 characters. Callback claims never mark an invoice paid: the server validates/looks up the provider. A 200 acknowledgement can remain pending/review; read invoice/payment afterward. Unknown merchant 404; unsupported encoding 415; invalid/unavailable verification 502. Duplicates are idempotent; late failure/cancel cannot reverse success. Gateway normally supplies additional form fields that are ignored.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
             "body": {
               "mode": "urlencoded",
               "urlencoded": [
@@ -3607,10 +3987,16 @@
                 ],
                 "url": {
                   "raw": "{{base_url}}/payments/sslcommerz/cancel",
-                  "host": ["{{base_url}}"],
-                  "path": ["payments", "sslcommerz", "cancel"]
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "payments",
+                    "sslcommerz",
+                    "cancel"
+                  ]
                 },
-                "description": "Access: PUBLIC. Expected success: 200.\n\nNormally sent by SSLCommerz, not by the customer. This public example uses URL-encoded form; JSON also supported. Obtain real tran_id/val_id from the stored merchant attempt and a real provider test transaction; never fabricate successful evidence. tran_id is 24 lowercase hexadecimal characters; val_id optional 1\u201350 characters. Callback claims never mark an invoice paid: the server validates/looks up the provider. A 200 acknowledgement can remain pending/review; read invoice/payment afterward. Unknown merchant 404; unsupported encoding 415; invalid/unavailable verification 502. Duplicates are idempotent; late failure/cancel cannot reverse success. Gateway normally supplies additional form fields that are ignored.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
+                "description": "Access: PUBLIC. Expected success: 200.\n\nNormally sent by SSLCommerz, not by the customer. This public example uses URL-encoded form; JSON also supported. Obtain real tran_id/val_id from the stored merchant attempt and a real provider test transaction; never fabricate successful evidence. tran_id is 24 lowercase hexadecimal characters; val_id optional 1–50 characters. Callback claims never mark an invoice paid: the server validates/looks up the provider. A 200 acknowledgement can remain pending/review; read invoice/payment afterward. Unknown merchant 404; unsupported encoding 415; invalid/unavailable verification 502. Duplicates are idempotent; late failure/cancel cannot reverse success. Gateway normally supplies additional form fields that are ignored.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
                 "body": {
                   "mode": "urlencoded",
                   "urlencoded": [
@@ -3675,10 +4061,16 @@
             ],
             "url": {
               "raw": "{{base_url}}/work-orders/{{work_order_id}}/feedback",
-              "host": ["{{base_url}}"],
-              "path": ["work-orders", "{{work_order_id}}", "feedback"]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "work-orders",
+                "{{work_order_id}}",
+                "feedback"
+              ]
             },
-            "description": "Access: CUSTOMER. Expected success: 201.\n\nC own COMPLETED + PAID work only. Rating integer 1\u20135; optional comment 1\u20131000 trimmed characters; no blank/null/unsafe control text. One immutable review per work order, with audit in same transaction. Duplicate/simultaneous repeat 409; unpaid/unfinished/cancelled/review-held payment 409; foreign/missing/soft-deleted request 404; T/A submission 403. Read feedback via scoped work-order detail/list or request work summary; public catalog excludes it.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
+            "description": "Access: CUSTOMER. Expected success: 201.\n\nC own COMPLETED + PAID work only. Rating integer 1–5; optional comment 1–1000 trimmed characters; no blank/null/unsafe control text. One immutable review per work order, with audit in same transaction. Duplicate/simultaneous repeat 409; unpaid/unfinished/cancelled/review-held payment 409; foreign/missing/soft-deleted request 404; T/A submission 403. Read feedback via scoped work-order detail/list or request work summary; public catalog excludes it.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"rating\": 5,\n  \"comment\": \"The technician explained the repair clearly.\"\n}",
@@ -3716,10 +4108,16 @@
                 ],
                 "url": {
                   "raw": "{{base_url}}/work-orders/{{work_order_id}}/feedback",
-                  "host": ["{{base_url}}"],
-                  "path": ["work-orders", "{{work_order_id}}", "feedback"]
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "work-orders",
+                    "{{work_order_id}}",
+                    "feedback"
+                  ]
                 },
-                "description": "Access: CUSTOMER. Expected success: 201.\n\nC own COMPLETED + PAID work only. Rating integer 1\u20135; optional comment 1\u20131000 trimmed characters; no blank/null/unsafe control text. One immutable review per work order, with audit in same transaction. Duplicate/simultaneous repeat 409; unpaid/unfinished/cancelled/review-held payment 409; foreign/missing/soft-deleted request 404; T/A submission 403. Read feedback via scoped work-order detail/list or request work summary; public catalog excludes it.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
+                "description": "Access: CUSTOMER. Expected success: 201.\n\nC own COMPLETED + PAID work only. Rating integer 1–5; optional comment 1–1000 trimmed characters; no blank/null/unsafe control text. One immutable review per work order, with audit in same transaction. Duplicate/simultaneous repeat 409; unpaid/unfinished/cancelled/review-held payment 409; foreign/missing/soft-deleted request 404; T/A submission 403. Read feedback via scoped work-order detail/list or request work summary; public catalog excludes it.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.",
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"rating\": 5,\n  \"comment\": \"The technician explained the repair clearly.\"\n}",
@@ -3744,6 +4142,213 @@
                 }
               ],
               "body": "{\n  \"success\": true,\n  \"message\": \"Feedback submitted successfully\",\n  \"data\": {\n    \"id\": \"{{feedback_id}}\",\n    \"workOrderId\": \"{{work_order_id}}\",\n    \"rating\": 5,\n    \"comment\": \"The technician explained the repair clearly.\",\n    \"createdAt\": \"2026-10-07T10:00:00.000Z\"\n  }\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "11 Administration",
+      "item": [
+        {
+          "name": "List managed users",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "ADMIN only. Search safe user profiles by q (name/email), role and status. Soft-deleted accounts are excluded. Results use stable pagination and contain no password hashes, identities, sessions or tokens. Unknown query fields and invalid pagination return 400; missing authentication returns 401 and other roles return 403.",
+            "url": {
+              "raw": "{{base_url}}/admin/users?page=1&limit=20&sort=newest",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "users"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                },
+                {
+                  "key": "sort",
+                  "value": "newest"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Success example (illustrative)",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{admin_access_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "description": "ADMIN only. Search safe user profiles by q (name/email), role and status. Soft-deleted accounts are excluded. Results use stable pagination and contain no password hashes, identities, sessions or tokens. Unknown query fields and invalid pagination return 400; missing authentication returns 401 and other roles return 403.",
+                "url": {
+                  "raw": "{{base_url}}/admin/users?page=1&limit=20&sort=newest",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "admin",
+                    "users"
+                  ],
+                  "query": [
+                    {
+                      "key": "page",
+                      "value": "1"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "20"
+                    },
+                    {
+                      "key": "sort",
+                      "value": "newest"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Users retrieved successfully\",\n  \"data\": {\n    \"items\": [],\n    \"pagination\": {\n      \"page\": 1,\n      \"limit\": 20,\n      \"total\": 0,\n      \"totalPages\": 0\n    }\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "List safe audit logs",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "ADMIN only. Read append-only audit history with entityType/entityId/actorId/action filters and stable newest-first pagination. Optional from/to must both be ISO timestamps, increasing and at most 366 days apart; from is inclusive and to exclusive. Metadata uses an explicit allowlist; unknown action metadata and nested payloads are omitted. Invalid filters return 400; unauthorized roles return 403.",
+            "url": {
+              "raw": "{{base_url}}/admin/audit-logs?page=1&limit=20",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "audit-logs"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Success example (illustrative)",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{admin_access_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "description": "ADMIN only. Read append-only audit history with entityType/entityId/actorId/action filters and stable newest-first pagination. Optional from/to must both be ISO timestamps, increasing and at most 366 days apart; from is inclusive and to exclusive. Metadata uses an explicit allowlist; unknown action metadata and nested payloads are omitted. Invalid filters return 400; unauthorized roles return 403.",
+                "url": {
+                  "raw": "{{base_url}}/admin/audit-logs?page=1&limit=20",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "admin",
+                    "audit-logs"
+                  ],
+                  "query": [
+                    {
+                      "key": "page",
+                      "value": "1"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "20"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Audit logs retrieved successfully\",\n  \"data\": {\n    \"items\": [],\n    \"pagination\": {\n      \"page\": 1,\n      \"limit\": 20,\n      \"total\": 0,\n      \"totalPages\": 0\n    }\n  }\n}"
             }
           ]
         }

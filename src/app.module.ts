@@ -14,6 +14,7 @@ import { RequestsModule } from './modules/requests/requests.module.js';
 import { PaymentsModule } from './modules/payments/payments.module.js';
 import { InvoicesModule } from './modules/invoices/invoices.module.js';
 import { FeedbackModule } from './modules/feedback/feedback.module.js';
+import { AdminModule } from './modules/admin/admin.module.js';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { FeedbackModule } from './modules/feedback/feedback.module.js';
     InvoicesModule,
     PaymentsModule,
     FeedbackModule,
+    AdminModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },
