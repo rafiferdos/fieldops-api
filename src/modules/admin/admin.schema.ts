@@ -50,3 +50,13 @@ export const overviewQuerySchema = z
   .strictObject(dateRangeShape)
   .refine(validDateRange, dateRangeMessage);
 export type OverviewQuery = z.output<typeof overviewQuerySchema>;
+export const updateAccessSchema = z
+  .strictObject({
+    role: z.enum(['CUSTOMER', 'TECHNICIAN', 'ADMIN']).optional(),
+    status: z.enum(['ACTIVE', 'SUSPENDED']).optional(),
+  })
+  .refine(
+    (value) => value.role !== undefined || value.status !== undefined,
+    'Provide role or status',
+  );
+export type UpdateAccessInput = z.output<typeof updateAccessSchema>;

@@ -5,6 +5,7 @@ const allowedFields = {
   ADMIN_BOOTSTRAPPED: [],
   TECHNICIAN_BOOTSTRAPPED: [],
   USER_PROFILE_UPDATED: ['updatedFields'],
+  USER_ACCESS_UPDATED: ['previousRole', 'role', 'previousStatus', 'status'],
   TECHNICIAN_SKILLS_UPDATED: ['serviceIds'],
   SERVICE_CREATED: ['basePriceMinor', 'currency'],
   SERVICE_UPDATED: [

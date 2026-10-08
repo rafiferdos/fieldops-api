@@ -83,17 +83,24 @@ All routes use `/api/v1`. C = CUSTOMER, T = TECHNICIAN, A = ADMIN. Dispatch and 
 | POST   | `/payments/sslcommerz/fail`     | Public gateway lookup; verified failure           |
 | POST   | `/payments/sslcommerz/cancel`   | Public gateway lookup; verified cancellation      |
 | POST   | `/work-orders/:id/feedback`     | C own completed, paid work; one immutable review  |
+| PATCH  | `/admin/users/:id`              | A audited role/status change and session revocation |
 | GET    | `/admin/users`                 | A safe user search, filters and pagination       |
 | GET    | `/admin/audit-logs`            | A filtered, safe append-only audit history       |
 | GET    | `/admin/overview`              | A bounded workload and verified revenue report  |
 
 Success: `{ success: true, message, data }`. Error: `{ success: false, message, errors: [] }`. Missing authentication is `401`, disallowed role `403`, private resources outside ownership scope `404`, invalid input `400`, state/version conflicts `409`, oversized bodies `413`, unsupported request formats/encodings `415`, rate limiting `429`, gateway/verification failure `502` and temporary unavailability `503`. Private responses and errors use `Cache-Control: no-store`.
 
+## Administration
+
+ADMIN user search supports `q`, `role`, `status`, `page`, `limit` and `sort`; deleted accounts are excluded and authentication fields are never returned. Audit history supports entity, actor, action and date filters with an explicit metadata allowlist. Reports default to the last 30 days; explicit `from`/`to` ranges must increase and span at most 366 days. Dates use `[from,to)`. Completion rate describes work created in the period; technician counts are current totals. Revenue counts paid invoices by `paidAt` once and returns `verifiedRevenueMinor` as an exact decimal string in BDT minor units.
+
+`PATCH /admin/users/:id` accepts only optional `role` and `status`, with at least one provided. Actual changes revoke all sessions and commit their audit atomically; identical access is a no-op. The last active ADMIN cannot be suspended/demoted. A technician with active work must be reassigned before changing role; leaving that role removes obsolete skills. Suspension retains assignments and prevents account use. Reactivation requires a fresh login. Use a separate disposable account for manual access-change tests.
+
 ## Apidog setup and authentication
 
 ### Import the completed API documentation
 
-Import [the Postman v2.1 collection](docs/fieldops.postman_collection.json) through **Settings → Import Data → Postman** in Apidog. It covers all 34 implemented domain APIs and two health routes, with 38 request examples including separate customer/admin/technician logins. Each request documents its input, authorization, lifecycle rules, expected success and relevant error scenarios. [Official import guide](https://docs.apidog.io/import-from-postman-635043m0)
+Import [the Postman v2.1 collection](docs/fieldops.postman_collection.json) through **Settings → Import Data → Postman** in Apidog. It covers all 38 implemented domain APIs and two health routes, with 42 request examples including separate customer/admin/technician logins. Each request documents its input, authorization, lifecycle rules, expected success and relevant error scenarios. [Official import guide](https://docs.apidog.io/import-from-postman-635043m0)
 
 Set the imported variables in your local environment: `base_url`, account credentials, role-specific Bearer tokens and IDs extracted from actual responses. Keep secrets in **Local Value**. Set actual future scheduling dates and replace request/work-order versions after each mutation. Review Apidog's variable mapping after import.
 
@@ -448,7 +455,7 @@ Preserve custom `btree_gist`, exclusion/check constraints, immutable snapshot/re
 - [Assignment source](https://github.com/Apollo-Level2-Web-Dev/B7A6)
 - [Reviewed plan](https://app.notion.com/p/3f14ab5df14481b9bdccd1349fd83a18)
 
-There are 37 domain APIs and two health routes. ADMIN user changes remain. Deployment is available; submission review remains. Assignment 7 requirements must be reviewed separately.
+There are 38 domain APIs and two health routes. All planned backend routes are implemented. The latest administration changes need deployment after pushing; submission review remains. Assignment 7 requirements must be reviewed separately.
 
 ## Known dependency advisories
 

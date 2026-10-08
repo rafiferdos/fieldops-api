@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import type { Prisma } from '../../generated/prisma/client.js';
+import type { Role, UserStatus } from '../../generated/prisma/enums.js';
 
 // Add explicit event variants as domains grow; arbitrary JSON is not accepted.
 type PaymentState =
@@ -18,6 +19,16 @@ type AuditTarget = {
 
 export type AuditEvent = AuditTarget &
   (
+    | {
+        action: 'USER_ACCESS_UPDATED';
+        entityType: 'USER';
+        metadata: {
+          previousRole: Role;
+          role: Role;
+          previousStatus: UserStatus;
+          status: UserStatus;
+        };
+      }
     | {
         action: 'FEEDBACK_SUBMITTED';
         entityType: 'WORK_ORDER';

@@ -1,4 +1,12 @@
-import { Controller, Get, Inject, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Inject,
+  Param,
+  Patch,
+  Query,
+} from '@nestjs/common';
 import { Role } from '../../generated/prisma/enums.js';
 import { success } from '../../common/http/success.js';
 import { ZodValidationPipe } from '../../common/pipes/zod-validation.pipe.js';
@@ -7,6 +15,9 @@ import { CurrentActor } from '../auth/decorators/current-actor.decorator.js';
 import type { AuthActor } from '../auth/auth.types.js';
 import { AdminService } from './admin.service.js';
 import { AdminReportingService } from './admin-reporting.service.js';
+import { AdminAccountsService } from './admin-accounts.service.js';
+import { uuidSchema } from '../../common/validation/uuid.schema.js';
+import { updateAccessSchema, type UpdateAccessInput } from './admin.schema.js';
 import { overviewQuerySchema, type OverviewQuery } from './admin.schema.js';
 import {
   adminUsersQuerySchema,
@@ -22,7 +33,20 @@ export class AdminController {
     @Inject(AdminService) private readonly admin: AdminService,
     @Inject(AdminReportingService)
     private readonly reporting: AdminReportingService,
+    @Inject(AdminAccountsService)
+    private readonly accounts: AdminAccountsService,
   ) {}
+  @Patch('users/:id')
+  async updateAccess(
+    @CurrentActor() actor: AuthActor,
+    @Param('id', new ZodValidationPipe(uuidSchema)) id: string,
+    @Body(new ZodValidationPipe(updateAccessSchema)) input: UpdateAccessInput,
+  ) {
+    return success(
+      await this.accounts.updateAccess(actor, id, input),
+      'User access updated successfully',
+    );
+  }
   @Get('overview')
   async overview(
     @CurrentActor() actor: AuthActor,
