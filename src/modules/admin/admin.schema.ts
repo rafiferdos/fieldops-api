@@ -46,3 +46,7 @@ export const auditQuerySchema = z
   .refine(validDateRange, dateRangeMessage);
 export type AdminUsersQuery = z.output<typeof adminUsersQuerySchema>;
 export type AuditQuery = z.output<typeof auditQuerySchema>;
+export const overviewQuerySchema = z
+  .strictObject(dateRangeShape)
+  .refine(validDateRange, dateRangeMessage);
+export type OverviewQuery = z.output<typeof overviewQuerySchema>;

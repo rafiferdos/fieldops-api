@@ -4351,6 +4351,83 @@
               "body": "{\n  \"success\": true,\n  \"message\": \"Audit logs retrieved successfully\",\n  \"data\": {\n    \"items\": [],\n    \"pagination\": {\n      \"page\": 1,\n      \"limit\": 20,\n      \"total\": 0,\n      \"totalPages\": 0\n    }\n  }\n}"
             }
           ]
+        },
+        {
+          "name": "Read administration overview",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "description": "ADMIN only. Optional from/to ISO timestamps form a half-open interval [from,to), at most 366 days; provide both or neither (default: last 30 days). Requests and work orders use their creation cohort; completionRate is a percentage of that cohort. Technician counts describe current non-deleted accounts. Revenue counts PAID invoices by paidAt exactly once, independent of duplicate payment attempts. verifiedRevenueMinor is an exact decimal string of BDT minor units. Invalid ranges return 400; other roles return 403.",
+            "url": {
+              "raw": "{{base_url}}/admin/overview",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "overview"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Success example (illustrative)",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{admin_access_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "description": "ADMIN only. Optional from/to ISO timestamps form a half-open interval [from,to), at most 366 days; provide both or neither (default: last 30 days). Requests and work orders use their creation cohort; completionRate is a percentage of that cohort. Technician counts describe current non-deleted accounts. Revenue counts PAID invoices by paidAt exactly once, independent of duplicate payment attempts. verifiedRevenueMinor is an exact decimal string of BDT minor units. Invalid ranges return 400; other roles return 403.",
+                "url": {
+                  "raw": "{{base_url}}/admin/overview",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "admin",
+                    "overview"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Overview retrieved successfully\",\n  \"data\": {\n    \"period\": {\n      \"from\": \"2026-10-01T00:00:00Z\",\n      \"to\": \"2026-10-02T00:00:00Z\"\n    },\n    \"requests\": {\n      \"total\": 0,\n      \"byStatus\": {}\n    },\n    \"workOrders\": {\n      \"total\": 0,\n      \"completed\": 0,\n      \"completionRate\": 0\n    },\n    \"invoices\": {\n      \"paidCount\": 0,\n      \"verifiedRevenueMinor\": \"0\",\n      \"currency\": \"BDT\"\n    },\n    \"technicians\": {\n      \"total\": 0,\n      \"active\": 0\n    }\n  }\n}"
+            }
+          ]
         }
       ]
     }

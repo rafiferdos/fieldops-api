@@ -19,4 +19,5 @@ model Invoice {
 
   @@index([customerId, issuedAt, id])
   @@index([status, issuedAt, id])
+  @@index([status, paidAt, id])
 }

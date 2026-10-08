@@ -28,4 +28,5 @@ model WorkOrder {
 
   @@index([technicianId, status, scheduledStart, id])
   @@index([status, scheduledStart, id])
+  @@index([createdAt, status])
 }

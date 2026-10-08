@@ -10,4 +10,5 @@ model AuditLog {
 
   @@index([entityType, entityId, createdAt])
   @@index([actorId, createdAt])
+  @@index([createdAt, id])
 }

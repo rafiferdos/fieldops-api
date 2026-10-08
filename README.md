@@ -85,6 +85,7 @@ All routes use `/api/v1`. C = CUSTOMER, T = TECHNICIAN, A = ADMIN. Dispatch and 
 | POST   | `/work-orders/:id/feedback`     | C own completed, paid work; one immutable review  |
 | GET    | `/admin/users`                 | A safe user search, filters and pagination       |
 | GET    | `/admin/audit-logs`            | A filtered, safe append-only audit history       |
+| GET    | `/admin/overview`              | A bounded workload and verified revenue report  |
 
 Success: `{ success: true, message, data }`. Error: `{ success: false, message, errors: [] }`. Missing authentication is `401`, disallowed role `403`, private resources outside ownership scope `404`, invalid input `400`, state/version conflicts `409`, oversized bodies `413`, unsupported request formats/encodings `415`, rate limiting `429`, gateway/verification failure `502` and temporary unavailability `503`. Private responses and errors use `Cache-Control: no-store`.
 
@@ -447,7 +448,7 @@ Preserve custom `btree_gist`, exclusion/check constraints, immutable snapshot/re
 - [Assignment source](https://github.com/Apollo-Level2-Web-Dev/B7A6)
 - [Reviewed plan](https://app.notion.com/p/3f14ab5df14481b9bdccd1349fd83a18)
 
-There are 36 domain APIs and two health routes. ADMIN user changes and overview reporting remain. Deployment is available; submission review remains. Assignment 7 requirements must be reviewed separately.
+There are 37 domain APIs and two health routes. ADMIN user changes remain. Deployment is available; submission review remains. Assignment 7 requirements must be reviewed separately.
 
 ## Known dependency advisories
 

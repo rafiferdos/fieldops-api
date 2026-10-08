@@ -6,6 +6,8 @@ import { Roles } from '../auth/decorators/roles.decorator.js';
 import { CurrentActor } from '../auth/decorators/current-actor.decorator.js';
 import type { AuthActor } from '../auth/auth.types.js';
 import { AdminService } from './admin.service.js';
+import { AdminReportingService } from './admin-reporting.service.js';
+import { overviewQuerySchema, type OverviewQuery } from './admin.schema.js';
 import {
   adminUsersQuerySchema,
   auditQuerySchema,
@@ -16,7 +18,21 @@ import {
 @Controller('admin')
 @Roles(Role.ADMIN)
 export class AdminController {
-  constructor(@Inject(AdminService) private readonly admin: AdminService) {}
+  constructor(
+    @Inject(AdminService) private readonly admin: AdminService,
+    @Inject(AdminReportingService)
+    private readonly reporting: AdminReportingService,
+  ) {}
+  @Get('overview')
+  async overview(
+    @CurrentActor() actor: AuthActor,
+    @Query(new ZodValidationPipe(overviewQuerySchema)) query: OverviewQuery,
+  ) {
+    return success(
+      await this.reporting.overview(actor, query),
+      'Overview retrieved successfully',
+    );
+  }
   @Get('users')
   async users(
     @CurrentActor() actor: AuthActor,

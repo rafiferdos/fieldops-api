@@ -31,4 +31,5 @@ model User {
   feedback         Feedback[]
 
   @@index([role, status])
+  @@index([deletedAt, createdAt, id])
 }

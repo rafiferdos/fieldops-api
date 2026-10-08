@@ -28,4 +28,5 @@ model ServiceRequest {
   @@index([customerId, deletedAt, status, createdAt, id])
   @@index([deletedAt, status, createdAt, id])
   @@index([serviceId, deletedAt, createdAt, id])
+  @@index([deletedAt, createdAt, id])
 }
