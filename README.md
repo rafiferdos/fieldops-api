@@ -104,7 +104,7 @@ Import [the Postman v2.1 collection](docs/fieldops.postman_collection.json) thro
 
 Set the imported variables in your local environment: `base_url`, account credentials, role-specific Bearer tokens and IDs extracted from actual responses. Keep secrets in **Local Value**. Set actual future scheduling dates and replace request/work-order versions after each mutation. Review Apidog's variable mapping after import.
 
-Run requests manually in workflow order: authentication → catalog → request/review → skills/assignment → progress/completion → verified gateway payment → feedback. Cancellation, deletion and logout are separate scenarios; do not run the entire collection as one sequence. Saved responses are illustrative examples, not test results. Save your actual responses after manual testing, then use Apidog's documentation sharing tools for submission. Real Google sign-in and SSLCommerz checkout require your own configured accounts.
+Run requests manually in workflow order: authentication → catalog → request/review → skills/assignment → progress/completion → verified gateway payment → feedback. Cancellation, deletion and logout are separate scenarios; do not run the entire collection as one sequence. Saved responses are illustrative examples, not test results. Save sanitized actual responses after manual testing, then use Apidog's documentation sharing tools for submission. Never publish populated environments or authentication responses. [Executed manual checks and verification limits](docs/manual-verification.md) include real Google sign-in and SSLCommerz sandbox settlement.
 
 After changing an API or the collection, run `npm run build` and `npm run docs:check`. The offline checker compares coverage, authorization and success statuses with compiled Nest route metadata and checks request inputs through the actual validation pipes. It does not call the database/gateway or establish response correctness; integration tests and manual checks cover runtime behavior.
 
@@ -152,7 +152,7 @@ Wrong passwords and unknown emails both return `401`, `Invalid email or password
 
 The official Google library verifies signature, audience, issuer and expiry; verified email is mandatory. Identity is bound by `(GOOGLE, sub)`, not email. A changed provider email does not rebind the existing account. First-login races serialize by subject; account, identity and session commit together. Existing email collisions require a future authenticated linking flow. [Google verification guide](https://developers.google.com/identity/gsi/web/guides/verify-google-id-token)
 
-Browser Origin must match `FRONTEND_ORIGIN`; Apidog/server requests may omit Origin. This JSON endpoint sets no cookies and accepts no Google direct form/redirect callback. Real sign-in needs manual verification with your own client/account; automated tests replace certificate download with test keys while exercising the real library and database transactions.
+Browser Origin must match `FRONTEND_ORIGIN`; Apidog/server requests may omit Origin. This JSON endpoint sets no cookies and accepts no Google direct form/redirect callback. Real sign-in was manually verified with the configured client/account; repeat that check when changing clients/origins. Automated tests replace certificate download with test keys while exercising the real library and database transactions.
 
 ### Refresh and logout
 
@@ -379,7 +379,7 @@ The command uses the same validation/settlement service, prints only payment ID/
 
 Reservation, state/audit writes and settlement use short database transactions with invoice → payment locks; provider calls stay outside transactions. Cross-invoice provider identities serialize separately. PostgreSQL protects snapshots, one live checkout, one settlement and unique checkout sessions. Deferred constraints reject a PAID invoice without a matching SUCCEEDED payment and settled safe receipt; payment/invoice/receipt/audits roll back together on failure. No direct PAID mutation API exists.
 
-Automated tests exercise the real Nest app, guards, JWTs, PostgreSQL and gateway adapter while replacing only gateway HTTP transport. Built HTTP tests cover checkout, replay, form callbacks and settlement. Tests never inherit actual merchant credentials. Real SSLCommerz sandbox checkout/IPN delivery still requires manual verification with your merchant configuration; sandbox grading acceptance remains unconfirmed.
+Automated tests exercise the real Nest app, guards, JWTs, PostgreSQL and gateway adapter while replacing only gateway HTTP transport. Built HTTP tests cover checkout, replay, form callbacks and settlement. Tests never inherit actual merchant credentials. Real SSLCommerz sandbox checkout, IPN settlement and settled replay were manually verified on the hosted service; repeat verification after changing merchant settings. Sandbox grading acceptance remains unconfirmed.
 
 ## Apidog: customer feedback
 
