@@ -1,6 +1,6 @@
 # Backend verification record
 
-Verified on October 7–8, 2026, using Chrome Apidog Web, Testing Env and Cloud Proxy. This records executed checks, not a claim that every possible edge case is covered. Saved collection responses remain illustrative.
+Verified on October 7–8, 2026, using Chrome Apidog Web, Testing Env and Cloud Proxy. This records executed checks, not a claim that every possible edge case is covered. The canonical collection has illustrative responses; the separate live sample collection contains sanitized actual captures with their provenance.
 
 ## Environment and scope
 
@@ -8,7 +8,7 @@ Verified on October 7–8, 2026, using Chrome Apidog Web, Testing Env and Cloud 
 - Hosted source during the original workflow: `c01891b`; Render Free and Neon PostgreSQL, SSLCommerz sandbox. Redis is not configured on the hosted service; public catalog reads fall back to PostgreSQL.
 - Dedicated customer, technician and administrator fixtures were used. Real Google sign-in was tested with explicit authorization; its application session was logged out and rejected afterward.
 - Credentials, provider validation IDs and tokens are confined to ignored local files and Apidog Local Values. They are deliberately absent from this report and the collection.
-- The four new administration endpoints were checked locally with real Nest guards, JWT sessions and PostgreSQL. Their hosted manual checks remain pending deployment of the new commits.
+- Administration build `de6d649` was subsequently deployed to Render. Its logs confirmed all 15 migrations applied and the service Live. [GitHub CI run 37732046335](https://github.com/rafiferdos/fieldops-api/actions/runs/37732046335) completed successfully.
 
 ## Live manual checks
 
@@ -26,6 +26,8 @@ Verified on October 7–8, 2026, using Chrome Apidog Web, Testing Env and Cloud 
 | Checkout idempotency | Reusing the original key after settlement returned `200` with the same SUCCEEDED payment ID and `150000` BDT minor units. Changing billing while retaining that key returned `409`. |
 | Provider callbacks | Real sandbox IPN settled the invoice. Repeated IPN/success and late fail/cancel callbacks returned `200`; the payment remained SUCCEEDED. Unknown transaction `404`; malformed transaction input `400`. |
 | Feedback | Customer feedback for the completed, paid work returned `201`; duplicate review returned `409`. |
+| Administration reads | Hosted user list, compact audit search and overview each returned `200` through Apidog. An otherwise valid `from` without `to` returned `400`; default overview was restored and returned `200`. |
+| Administration access | The dedicated disposable CUSTOMER was suspended with `200`. Reactivation and the remaining hosted session-revocation checks are pending explicit approval for this account-status test. Local revocation/race checks passed. |
 
 The sandbox payment was BDT 1,500.00, using the provider's test card flow. A read-only hosted database check found exactly one SETTLED receipt for that payment. No real funds were transferred. The browser return page was blocked by a browser extension (`ERR_BLOCKED_BY_CLIENT`); server IPN delivery and settlement succeeded independently. Browser protections were not disabled.
 
@@ -54,8 +56,8 @@ Node 24.21.0; a separate guarded PostgreSQL test database and Redis test databas
 
 ## Remaining delivery checks
 
-- Push the verified local commits, deploy them, and manually exercise the four ADMIN endpoints against the hosted build. Verify the corresponding hosted CI run.
-- The new ADMIN documentation was imported into the existing Apidog module and its overview description/response contract reviewed. Actual replayable scenario samples are being added separately from illustrative templates.
+- Finish the dedicated access-test account's reactivation and hosted revocation checks after approval. The other administration routes are deployed and manually checked; hosted CI passed.
+- Actual scenarios were imported into a separate Apidog module. The backup contains 72 captured actual responses and 17 prepared requests. PENDING v2, ASSIGNED v2, IN_PROGRESS v3 and an UNPAID invoice were re-read successfully through Apidog. The saved PAID invoice response was reviewed in documentation Preview. See [the fixture guide](live-fixtures.md); historical examples do not reset state.
 - Supply the dedicated demo administrator credentials privately with the submission and record the required real 5–10 minute walkthrough.
 - Confirm sandbox payment acceptance with the course if needed; a successful sandbox integration does not establish grading policy.
 
