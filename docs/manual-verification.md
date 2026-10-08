@@ -1,6 +1,6 @@
 # Backend verification record
 
-Verified on October 7–8, 2026, using Chrome Apidog Web, Testing Env and Cloud Proxy. This records executed checks, not a claim that every possible edge case is covered. The canonical collection has illustrative responses; the separate live sample collection contains sanitized actual captures with their provenance.
+Verified on October 7–8, 2026, using Chrome Apidog Web, Testing Env and Cloud Proxy. This records executed checks, not a claim that every possible edge case is covered. The canonical collection labels illustrative responses, documented MANUAL expectations and sanitized ACTUAL captures separately; the separate live sample backup preserves their provenance.
 
 ## Environment and scope
 
@@ -58,6 +58,7 @@ Node 24.21.0; a separate guarded PostgreSQL test database and Redis test databas
 
 - All four administration routes are deployed and checked. The final 20 account lifecycle/readiness checks used direct HTTP against the live API, reducing browser use; their captures are labeled accordingly. The dedicated account is ACTIVE. [Final documentation CI](https://github.com/rafiferdos/fieldops-api/actions/runs/37733402331) also passed.
 - Actual scenarios were imported into a separate Apidog module. The backup contains 92 captured actual responses and 17 prepared requests. PENDING v2, ASSIGNED v2, IN_PROGRESS v3 and an UNPAID invoice were re-read successfully through Apidog. The saved PAID invoice response was reviewed in documentation Preview. See [the fixture guide](live-fixtures.md); historical examples do not reset state.
+- The Default module's canonical 42 main requests were subsequently updated in place with editable bodies, 159 named manual branch cases and the same 92 sanitized actual captures. Import reported 0 created / 42 updated; this documentation operation did not execute new domain mutations. Use folders 01–11 and [the full walkthrough](backend-walkthrough.md). The earlier extra folders/module remain historical backups, not additional implemented APIs.
 - Supply the dedicated demo administrator credentials privately with the submission and record the required real 5–10 minute walkthrough.
 - Confirm sandbox payment acceptance with the course if needed; a successful sandbox integration does not establish grading policy.
 
