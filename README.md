@@ -104,7 +104,7 @@ Import [the Postman v2.1 collection](docs/fieldops.postman_collection.json) thro
 
 Set the imported variables in your local environment: `base_url`, account credentials, role-specific Bearer tokens and IDs extracted from actual responses. Keep secrets in **Local Value**. Set actual future scheduling dates and replace request/work-order versions after each mutation. Review Apidog's variable mapping after import.
 
-Run requests manually in workflow order: authentication → catalog → request/review → skills/assignment → progress/completion → verified gateway payment → feedback. Cancellation, deletion and logout are separate scenarios; do not run the entire collection as one sequence. Saved responses are illustrative examples, not test results. Save sanitized actual responses after manual testing, then use Apidog's documentation sharing tools for submission. Never publish populated environments or authentication responses. [Executed manual checks and verification limits](docs/manual-verification.md) include real Google sign-in and SSLCommerz sandbox settlement.
+Run requests manually in workflow order: authentication → catalog → request/review → skills/assignment → progress/completion → verified gateway payment → feedback. Cancellation, deletion and logout are separate scenarios; do not run the entire collection as one sequence. The canonical collection contains illustrative responses. The separate [live sample collection](docs/fieldops-live-samples.postman_collection.json) contains 72 sanitized actual responses and 17 prepared requests; use the **FieldOps — Actual scenarios** module and [fixture guide](docs/live-fixtures.md) to inspect and repeat selected checks. Never publish populated environments or authentication responses. [Executed manual checks and verification limits](docs/manual-verification.md) include real Google sign-in and SSLCommerz sandbox settlement.
 
 After changing an API or the collection, run `npm run build` and `npm run docs:check`. The offline checker compares coverage, authorization and success statuses with compiled Nest route metadata and checks request inputs through the actual validation pipes. It does not call the database/gateway or establish response correctness; integration tests and manual checks cover runtime behavior.
 
@@ -455,7 +455,7 @@ Preserve custom `btree_gist`, exclusion/check constraints, immutable snapshot/re
 - [Assignment source](https://github.com/Apollo-Level2-Web-Dev/B7A6)
 - [Reviewed plan](https://app.notion.com/p/3f14ab5df14481b9bdccd1349fd83a18)
 
-There are 38 domain APIs and two health routes. All planned backend routes are implemented. The latest administration changes need deployment after pushing; submission review remains. Assignment 7 requirements must be reviewed separately.
+There are 38 domain APIs and two health routes. All planned backend routes are implemented. The administration build `de6d649` is live on Render with all 15 migrations applied; its GitHub CI passed. See the verification record for executed hosted checks and remaining delivery work. Assignment 7 requirements must be reviewed separately.
 
 ## Known dependency advisories
 
