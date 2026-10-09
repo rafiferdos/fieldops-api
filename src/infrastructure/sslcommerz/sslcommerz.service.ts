@@ -260,15 +260,31 @@ export class SslCommerzService {
       return { charges: [charge], terminal: null };
     }
     if (
-      (session.status === 'FAILED' || session.status === 'CANCEL') &&
-      session.currency === 'BDT' &&
+      ['FAILED', 'CANCEL', 'CANCELLED'].includes(session.status) &&
+      (session.currency === undefined || session.currency === 'BDT') &&
       parseGatewayAmount(session.amount) === reference.amountMinor &&
       session.currency_type === 'BDT' &&
       parseGatewayAmount(session.currency_amount) === reference.amountMinor
     ) {
+      // Session queries omit settlement currency even in the official response example.
+      // BDT original currency and equal gross/original amounts still bind the closed session.
+      // The sandbox reports cancellation as session FAILED plus merchant CANCELLED;
+      // merchant evidence alone must never release a checkout that is still open.
+      const cancelled =
+        session.status === 'CANCEL' ||
+        session.status === 'CANCELLED' ||
+        (rows.length > 0 &&
+          rows.every(
+            (row) =>
+              ['CANCEL', 'CANCELLED'].includes(row.status) &&
+              row.currency === 'BDT' &&
+              row.currency_type === 'BDT' &&
+              parseGatewayAmount(row.amount) === reference.amountMinor &&
+              parseGatewayAmount(row.currency_amount) === reference.amountMinor,
+          ));
       return {
         charges: [],
-        terminal: session.status === 'FAILED' ? 'FAILED' : 'CANCELLED',
+        terminal: cancelled ? 'CANCELLED' : 'FAILED',
       };
     }
     return { charges: [], terminal: null };

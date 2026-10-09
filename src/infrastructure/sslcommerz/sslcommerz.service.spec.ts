@@ -205,6 +205,70 @@ describe('SSLCommerz adapter', () => {
     ).toHaveLength(2);
     expect(json).toHaveBeenCalledTimes(3);
   });
+  it('recognizes the observed sandbox cancellation only after verifying its closed session', async () => {
+    const { service, json } = fixture();
+    const cancelled = { ...charge, status: 'CANCELLED', val_id: '' };
+    json
+      .mockResolvedValueOnce({
+        APIConnect: 'DONE',
+        no_of_trans_found: 1,
+        element: [cancelled],
+      })
+      .mockResolvedValueOnce({
+        APIConnect: 'DONE',
+        status: 'FAILED',
+        tran_id: input.merchantTranId,
+        sessionkey: 's',
+        amount: '1500.00',
+        currency_amount: '1500.00',
+        currency_type: 'BDT',
+      });
+    expect(
+      await service.lookup({
+        ...identity,
+        merchantTranId: input.merchantTranId,
+        amountMinor: 150000,
+        sessionKey: 's',
+      }),
+    ).toEqual({ charges: [], terminal: 'CANCELLED' });
+  });
+  it.each([
+    { status: 'PENDING' },
+    { currency: 'USD' },
+    { currency_type: 'USD' },
+    { currency_type: undefined },
+    { amount: '1499.99' },
+    { currency_amount: '1499.99' },
+  ])(
+    'does not release a cancelled merchant attempt from incomplete/open/mismatched session evidence %j',
+    async (changes) => {
+      const { service, json } = fixture();
+      json
+        .mockResolvedValueOnce({
+          APIConnect: 'DONE',
+          no_of_trans_found: 1,
+          element: [{ ...charge, status: 'CANCELLED', val_id: '' }],
+        })
+        .mockResolvedValueOnce({
+          APIConnect: 'DONE',
+          status: 'FAILED',
+          tran_id: input.merchantTranId,
+          sessionkey: 's',
+          amount: '1500.00',
+          currency_amount: '1500.00',
+          currency_type: 'BDT',
+          ...changes,
+        });
+      expect(
+        await service.lookup({
+          ...identity,
+          merchantTranId: input.merchantTranId,
+          amountMinor: 150000,
+          sessionKey: 's',
+        }),
+      ).toEqual({ charges: [], terminal: null });
+    },
+  );
   it.each([
     { APIConnect: 'FAILED', no_of_trans_found: 0 },
     { APIConnect: 'DONE', no_of_trans_found: 1, element: [] },
