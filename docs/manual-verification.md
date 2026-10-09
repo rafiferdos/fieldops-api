@@ -2,6 +2,14 @@
 
 Verified on October 7–8, 2026, using Chrome Apidog Web, Testing Env and Cloud Proxy. This records executed checks, not a claim that every possible edge case is covered. The canonical collection labels illustrative responses, documented MANUAL expectations and sanitized ACTUAL captures separately; the separate live sample backup preserves their provenance.
 
+## October 9 delivery checkpoint
+
+Backend revision f6e9670 is pushed and passed [GitHub CI run 37898892822](https://github.com/rafiferdos/fieldops-api/actions/runs/37898892822). Strict checks, build, 129 unit tests, 472 database integration tests, offline docs coverage (46 request examples / 42 templates) and compiled native HTTP flow pass. The authorized extension adds current technician skills, atomic inspected-set replacement and provider browser return; it introduces no model/migration change.
+
+A separate local production frontend and isolated payment-test database verify actual disposable skills writes, stale-set rejection and recovery after one committed response is lost. Actual SSLCommerz sandbox cancellation, explicit replacement, server-verified settlement and eligible paid feedback also pass. Google Identity Services sign-in is verified through the real frontend using the existing public client ID.
+
+These results do not replace the historical hosted/IPN proof below. The updated backend Render rollout and new frontend HTTPS/IPN verification are still pending protected hosting configuration. Existing production records were not reset or reseeded.
+
 ## Environment and scope
 
 - Live base URL: `https://fieldops-api-xu3s.onrender.com/api/v1`.

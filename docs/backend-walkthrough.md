@@ -8,7 +8,7 @@ FieldOps helps a customer request a repair, lets an administrator dispatch a tec
 - Repository: https://github.com/rafiferdos/fieldops-api
 - API collection: https://raw.githubusercontent.com/rafiferdos/fieldops-api/main/docs/fieldops.postman_collection.json
 - Executed checks: https://github.com/rafiferdos/fieldops-api/blob/main/docs/manual-verification.md
-- Scope: 38 domain routes plus 2 health routes. Login has three role examples, so the canonical collection has 42 main requests.
+- Current scope: 39 domain routes, 2 health routes and 1 provider browser-return template. Role logins and return outcomes produce 46 main request examples. The historical fixture walkthrough below predates the authorized delivery extension.
 
 **Read this once:** examples are not a reset button. A successful write changes state and version. Use GET before a write. For a fresh end-to-end run, create a new request and replace IDs with the IDs returned by your own calls. The prepared IDs below are independent shortcuts, not one connected workflow.
 
@@ -3050,3 +3050,22 @@ The test database name must end in _test. Real Redis integration uses TEST_REDIS
 The existing report records 114 passing unit tests, 461 passing integration tests, compiled HTTP/docs checks, and real hosted Google sign-in and SSLCommerz sandbox settlement. The live sample backup contains 92 sanitized captures and 17 prepared requests. This guide adds 159 explicit manual branch cases across every implemented route; those additional examples are expectations, not new live execution claims.
 
 Render Free can cold-start. Hosted Redis is currently absent; catalog falls back to PostgreSQL. Production proxy/rate-limit review, dependency advisories, provider review/refund operations, and live payment credentials are documented limitations. A real 5–10 minute student walkthrough and portal submission remain delivery steps. Sandbox grading acceptance must come from the course.
+
+## Authorized frontend delivery extension
+
+The current collection adds ADMIN `GET /technicians/:id/skills`. Inspect the complete
+`serviceIds` and retained service identities before `PUT` replacement. Send
+`expectedServiceIds` from that read to reject a changed set atomically with 409.
+Unknown skills must not be silently presented as an empty set. Existing callers
+without the precondition remain compatible; active-work qualification rules remain.
+
+Provider browser return uses `POST /payments/sslcommerz/return/:kind` where kind is
+success, fail or cancel. It validates provider evidence through the existing payment
+service, then issues a no-store 303 to the configured frontend origin with the stored
+payment UUID. Existing JSON callback and server IPN routes remain supported. Never
+post a fabricated callback to demonstrate a successful payment.
+
+Revision f6e9670 passes current GitHub CI and the complete local database suite.
+The live deployment still serves the earlier administration revision until the
+authorized rollout. Create new checkout sessions after that rollout, because old
+provider sessions retain their original callback destinations.
