@@ -3065,7 +3065,9 @@ service, then issues a no-store 303 to the configured frontend origin with the s
 payment UUID. Existing JSON callback and server IPN routes remain supported. Never
 post a fabricated callback to demonstrate a successful payment.
 
-Revision f6e9670 passes current GitHub CI and the complete local database suite.
-The live deployment still serves the earlier administration revision until the
-authorized rollout. Create new checkout sessions after that rollout, because old
-provider sessions retain their original callback destinations.
+Revision `7bf1e41` is live and passes [its exact-source CI](https://github.com/rafiferdos/fieldops-api/actions/runs/37908940023), including 129 unit and 474 database integration checks.
+New hosted checkout sessions return to `https://fieldops-rafiferdos.vercel.app`;
+older provider sessions retain their original destinations. The actual hosted
+cancel/replacement/success flow passes, with provider IPN logged before browser
+success and one immutable settlement confirmed through a read-only database check.
+See [current verification](manual-verification.md) for provenance and limits.
