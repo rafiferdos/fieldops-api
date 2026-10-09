@@ -92,6 +92,10 @@ describe('SSLCommerz adapter', () => {
       'https://api.example.com/api/v1/payments/sslcommerz/ipn',
     );
     expect(form?.get('product_profile')).toBe('non-physical-goods');
+    for (const kind of ['success', 'fail', 'cancel'])
+      expect(form?.get(`${kind}_url`)).toBe(
+        `https://api.example.com/api/v1/payments/sslcommerz/return/${kind}`,
+      );
   });
   it.each([
     'https://attacker.example/pay',

@@ -101,7 +101,7 @@ describe('Payment startup configuration', () => {
     },
   );
   it.each([
-    'http://localhost:3000',
+    'http://api.example.com',
     'https://user:pass@api.example.com',
     'https://api.example.com/api/v1',
     'https://api.example.com/?query=1',
@@ -110,5 +110,38 @@ describe('Payment startup configuration', () => {
     expect(() =>
       validateEnv({ ...valid, ...payments, PUBLIC_API_URL: url }),
     ).toThrow();
+  });
+  it('allows loopback HTTP only for a non-production sandbox callback', () => {
+    const local = {
+      ...valid,
+      ...payments,
+      PUBLIC_API_URL: 'http://localhost:3000',
+    };
+    expect(validateEnv(local).PUBLIC_API_URL).toBe('http://localhost:3000');
+    expect(() => validateEnv({ ...local, SSLCOMMERZ_MODE: 'live' })).toThrow();
+    expect(() => validateEnv({ ...local, NODE_ENV: 'production' })).toThrow();
+    expect(() =>
+      validateEnv({
+        ...local,
+        PUBLIC_API_URL: 'http://localhost.evil.example',
+      }),
+    ).toThrow();
+  });
+  it.each([
+    'https://user:password@frontend.example.com',
+    'https://frontend.example.com/path',
+    'https://frontend.example.com/?returnTo=https://evil.example',
+    'https://frontend.example.com/#fragment',
+    'http://frontend.example.com',
+    'javascript:alert(1)',
+  ])('rejects unsafe frontend return origin %s', (FRONTEND_ORIGIN) => {
+    expect(() => validateEnv({ ...valid, FRONTEND_ORIGIN })).toThrow();
+  });
+  it('normalizes frontend origins and enforces HTTPS in production', () => {
+    expect(
+      validateEnv({ ...valid, FRONTEND_ORIGIN: 'https://app.example.com/' })
+        .FRONTEND_ORIGIN,
+    ).toBe('https://app.example.com');
+    expect(() => validateEnv({ ...valid, NODE_ENV: 'production' })).toThrow();
   });
 });

@@ -375,6 +375,27 @@ Duplicates and simultaneous IPN/success calls create one settlement, one settled
 
 Each verified captured bank transaction gets an immutable receipt. High risk, amount/currency mismatch, reused provider references and multiple captures require review. A later additional charge preserves the original settlement, records a REVIEW receipt and exposes `requiresReview: true`; revenue is counted once. Review cases need operator investigation and any applicable provider refund; automatic refund/review approval is outside this stage. Reconciliation never overrides a recorded review decision.
 
+### Browser return transport
+
+New checkout sessions use `POST /api/v1/payments/sslcommerz/return/success`,
+`/return/fail` and `/return/cancel` for browser navigation. The existing four JSON
+callbacks and server `/ipn` contract remain available. After resolving the stored
+merchant reference and running the same settlement service, the browser receives
+a no-store `303` to `FRONTEND_ORIGIN/payment/success?paymentId=<stored UUID>` or
+`/payment/cancel?paymentId=<stored UUID>`. Supplied destinations and payment IDs
+are ignored; no provider credentials or payload enter the redirect.
+
+A provider/transaction failure still returns a known attempt for inspection;
+it never marks an invoice paid. The frontend authenticates and reads actual payment
+and invoice state again. Malformed/unknown references retain `400`/`404`, unsupported
+formats retain `415`, and IPN retains JSON acknowledgements/errors. Already-created
+gateway sessions keep their original destinations. The hosted deployment must be
+updated separately before new hosted sessions use this transport.
+
+`FRONTEND_ORIGIN` must be a clean HTTPS origin in production. `PUBLIC_API_URL` must
+be publicly reachable HTTPS for live/production. Non-production sandbox browser
+tests alone may use loopback HTTP; provider server IPN cannot reach that origin.
+
 ### Recover uncertainty safely
 
 A timeout/invalid initiation response returns `502` and retains UNKNOWN. A crash or database failure after initiation can retain INITIATING. Retry the original key/JSON to retrieve its payment ID; **do not switch keys**. After 15 seconds, replaying an INITIATING/UNKNOWN/PENDING attempt queries the existing merchant reference and revalidates any captured transaction. It never initiates another checkout. Gateway failure during recovery returns `502` without releasing the attempt. No-record/pending results remain unresolved; time alone does not prove failure.

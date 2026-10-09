@@ -327,6 +327,11 @@
       "value": "",
       "type": "string",
       "description": "A new private password of 15–128 characters. Do not reuse a real account password."
+    },
+    {
+      "key": "frontend_origin",
+      "value": "http://localhost:3001",
+      "type": "string"
     }
   ],
   "item": [
@@ -15157,6 +15162,301 @@
                 }
               ],
               "body": "{\n  \"success\": true,\n  \"message\": \"Payment notification verified and processed\",\n  \"data\": {\n    \"received\": true\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Browser success return",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/payments/sslcommerz/return/success",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "payments",
+                "sslcommerz",
+                "return",
+                "success"
+              ]
+            },
+            "description": "Provider browser transport; disable automatic redirects in Apidog to inspect the 303 Location header. Use only actual merchant/validation references from your own sandbox attempt in Local Values. The server resolves its own payment UUID and verifies provider evidence, then returns to the configured frontend for authenticated payment/invoice inspection. Redirect does not imply settlement. A known attempt still returns for inspection on provider/transaction failure. Invalid/unknown merchant references: 400/404; unsupported payload format: 415. This illustrative example is not an executed payment. JSON/IPN callbacks remain separate.",
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "tran_id",
+                  "value": "{{merchant_tran_id}}",
+                  "type": "text"
+                },
+                {
+                  "key": "val_id",
+                  "value": "{{validation_id}}",
+                  "type": "text"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Browser redirect (illustrative, not payment proof)",
+              "originalRequest": {
+                "method": "POST",
+                "auth": {
+                  "type": "noauth"
+                },
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/x-www-form-urlencoded"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/payments/sslcommerz/return/success",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "payments",
+                    "sslcommerz",
+                    "return",
+                    "success"
+                  ]
+                },
+                "description": "Provider browser transport; disable automatic redirects in Apidog to inspect the 303 Location header. Use only actual merchant/validation references from your own sandbox attempt in Local Values. The server resolves its own payment UUID and verifies provider evidence, then returns to the configured frontend for authenticated payment/invoice inspection. Redirect does not imply settlement. A known attempt still returns for inspection on provider/transaction failure. Invalid/unknown merchant references: 400/404; unsupported payload format: 415. This illustrative example is not an executed payment. JSON/IPN callbacks remain separate.",
+                "body": {
+                  "mode": "urlencoded",
+                  "urlencoded": [
+                    {
+                      "key": "tran_id",
+                      "value": "{{merchant_tran_id}}",
+                      "type": "text"
+                    },
+                    {
+                      "key": "val_id",
+                      "value": "{{validation_id}}",
+                      "type": "text"
+                    }
+                  ]
+                }
+              },
+              "status": "See Other",
+              "code": 303,
+              "header": [
+                {
+                  "key": "Location",
+                  "value": "{{frontend_origin}}/payment/success?paymentId={{payment_id}}"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-store"
+                },
+                {
+                  "key": "Referrer-Policy",
+                  "value": "no-referrer"
+                }
+              ],
+              "body": ""
+            }
+          ]
+        },
+        {
+          "name": "Browser fail return",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/payments/sslcommerz/return/fail",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "payments",
+                "sslcommerz",
+                "return",
+                "fail"
+              ]
+            },
+            "description": "Provider browser transport; disable automatic redirects in Apidog to inspect the 303 Location header. Use only actual merchant/validation references from your own sandbox attempt in Local Values. The server resolves its own payment UUID and verifies provider evidence, then returns to the configured frontend for authenticated payment/invoice inspection. Redirect does not imply settlement. A known attempt still returns for inspection on provider/transaction failure. Invalid/unknown merchant references: 400/404; unsupported payload format: 415. This illustrative example is not an executed payment. JSON/IPN callbacks remain separate.",
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "tran_id",
+                  "value": "{{merchant_tran_id}}",
+                  "type": "text"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Browser redirect (illustrative, not payment proof)",
+              "originalRequest": {
+                "method": "POST",
+                "auth": {
+                  "type": "noauth"
+                },
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/x-www-form-urlencoded"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/payments/sslcommerz/return/fail",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "payments",
+                    "sslcommerz",
+                    "return",
+                    "fail"
+                  ]
+                },
+                "description": "Provider browser transport; disable automatic redirects in Apidog to inspect the 303 Location header. Use only actual merchant/validation references from your own sandbox attempt in Local Values. The server resolves its own payment UUID and verifies provider evidence, then returns to the configured frontend for authenticated payment/invoice inspection. Redirect does not imply settlement. A known attempt still returns for inspection on provider/transaction failure. Invalid/unknown merchant references: 400/404; unsupported payload format: 415. This illustrative example is not an executed payment. JSON/IPN callbacks remain separate.",
+                "body": {
+                  "mode": "urlencoded",
+                  "urlencoded": [
+                    {
+                      "key": "tran_id",
+                      "value": "{{merchant_tran_id}}",
+                      "type": "text"
+                    }
+                  ]
+                }
+              },
+              "status": "See Other",
+              "code": 303,
+              "header": [
+                {
+                  "key": "Location",
+                  "value": "{{frontend_origin}}/payment/cancel?paymentId={{payment_id}}"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-store"
+                },
+                {
+                  "key": "Referrer-Policy",
+                  "value": "no-referrer"
+                }
+              ],
+              "body": ""
+            }
+          ]
+        },
+        {
+          "name": "Browser cancel return",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/payments/sslcommerz/return/cancel",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "payments",
+                "sslcommerz",
+                "return",
+                "cancel"
+              ]
+            },
+            "description": "Provider browser transport; disable automatic redirects in Apidog to inspect the 303 Location header. Use only actual merchant/validation references from your own sandbox attempt in Local Values. The server resolves its own payment UUID and verifies provider evidence, then returns to the configured frontend for authenticated payment/invoice inspection. Redirect does not imply settlement. A known attempt still returns for inspection on provider/transaction failure. Invalid/unknown merchant references: 400/404; unsupported payload format: 415. This illustrative example is not an executed payment. JSON/IPN callbacks remain separate.",
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "tran_id",
+                  "value": "{{merchant_tran_id}}",
+                  "type": "text"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Browser redirect (illustrative, not payment proof)",
+              "originalRequest": {
+                "method": "POST",
+                "auth": {
+                  "type": "noauth"
+                },
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/x-www-form-urlencoded"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/payments/sslcommerz/return/cancel",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "payments",
+                    "sslcommerz",
+                    "return",
+                    "cancel"
+                  ]
+                },
+                "description": "Provider browser transport; disable automatic redirects in Apidog to inspect the 303 Location header. Use only actual merchant/validation references from your own sandbox attempt in Local Values. The server resolves its own payment UUID and verifies provider evidence, then returns to the configured frontend for authenticated payment/invoice inspection. Redirect does not imply settlement. A known attempt still returns for inspection on provider/transaction failure. Invalid/unknown merchant references: 400/404; unsupported payload format: 415. This illustrative example is not an executed payment. JSON/IPN callbacks remain separate.",
+                "body": {
+                  "mode": "urlencoded",
+                  "urlencoded": [
+                    {
+                      "key": "tran_id",
+                      "value": "{{merchant_tran_id}}",
+                      "type": "text"
+                    }
+                  ]
+                }
+              },
+              "status": "See Other",
+              "code": 303,
+              "header": [
+                {
+                  "key": "Location",
+                  "value": "{{frontend_origin}}/payment/cancel?paymentId={{payment_id}}"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-store"
+                },
+                {
+                  "key": "Referrer-Policy",
+                  "value": "no-referrer"
+                }
+              ],
+              "body": ""
             }
           ]
         }

@@ -8,6 +8,7 @@ import {
   HTTP_CODE_METADATA,
   METHOD_METADATA,
   PATH_METADATA,
+  REDIRECT_METADATA,
   ROUTE_ARGS_METADATA,
 } from '@nestjs/common/constants.js';
 import { RouteParamtypes } from '@nestjs/common/enums/route-paramtypes.enum.js';
@@ -98,6 +99,7 @@ for (const path of await controllerFiles(join(root, 'dist/modules'))) {
           .filter(Boolean)
           .join('/');
       const key = `${RequestMethod[method]} ${route}`;
+      const redirect = Reflect.getMetadata(REDIRECT_METADATA, handler);
       assert(!routes.has(key), `Duplicate implemented route: ${key}`);
       routes.set(key, {
         public:
@@ -111,9 +113,11 @@ for (const path of await controllerFiles(join(root, 'dist/modules'))) {
             'ADMIN',
           ],
         status:
+          redirect?.statusCode ??
           Reflect.getMetadata(HTTP_CODE_METADATA, handler) ??
           (method === RequestMethod.POST ? 201 : 200),
         args: Reflect.getMetadata(ROUTE_ARGS_METADATA, controller, name) ?? {},
+        redirect: !!redirect,
       });
     }
   }
@@ -130,7 +134,14 @@ for (const item of requests(collection.item)) {
     `Unexpected documentation URL: ${item.name}`,
   );
   const documentedPath = request.url.path.join('/');
-  const routePath = '/' + documentedPath.replace(/\{\{[a-z_]+_id\}\}/g, ':id');
+  const routePath =
+    '/' +
+    documentedPath
+      .replace(/\{\{[a-z_]+_id\}\}/g, ':id')
+      .replace(
+        /sslcommerz\/return\/(success|fail|cancel)$/,
+        'sslcommerz/return/:kind',
+      );
   const key = `${request.method} ${routePath}`;
   const route = routes.get(key);
   assert(route, `Documented route is not implemented: ${key}`);
@@ -144,6 +155,19 @@ for (const item of requests(collection.item)) {
     `Missing expected success status ${route.status}: ${key}`,
   );
   for (const response of item.response) {
+    // Browser returns carry a Location header, not a fabricated JSON success body.
+    if (route.redirect && response.code === route.status) {
+      assert.equal(response.body, '');
+      const location = response.header.find(
+        (header) => header.key.toLowerCase() === 'location',
+      )?.value;
+      assert(location, 'Missing browser return destination');
+      const url = new URL(resolve(location));
+      assert(['/payment/success', '/payment/cancel'].includes(url.pathname));
+      assert.equal(url.searchParams.get('paymentId'), examples.payment_id);
+      assert.equal(url.searchParams.size, 1);
+      continue;
+    }
     const body = JSON.parse(response.body);
     assert(
       Number.isInteger(response.code) &&

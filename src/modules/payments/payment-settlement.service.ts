@@ -43,6 +43,16 @@ export class PaymentSettlementService {
     @Inject(SslCommerzService) private readonly gateway: SslCommerzService,
   ) {}
 
+  // Resolve only our stored attempt; callback-supplied IDs never become redirect destinations.
+  async callbackPaymentId(merchantTranId: string) {
+    const row = await this.prisma.payment.findUnique({
+      where: { merchantTranId },
+      select: { id: true },
+    });
+    if (!row) throw new NotFoundException('Payment not found');
+    return row.id;
+  }
+
   async callback(
     input: PaymentCallback,
     kind: 'ipn' | 'success' | 'fail' | 'cancel',

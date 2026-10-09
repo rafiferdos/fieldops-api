@@ -1,10 +1,23 @@
 import { z } from 'zod';
 
-const optionalSetting = (schema: z.ZodType) =>
+const optionalSetting = <T extends z.ZodType>(schema: T) =>
   z.preprocess(
     (value) => (typeof value === 'string' && !value.trim() ? undefined : value),
     schema.optional(),
   );
+
+const originSchema = z.url().refine((value) => {
+  const url = new URL(value);
+  const local = ['localhost', '127.0.0.1', '[::1]'].includes(url.hostname);
+  return (
+    (url.protocol === 'https:' || (local && url.protocol === 'http:')) &&
+    !url.username &&
+    !url.password &&
+    !url.search &&
+    !url.hash &&
+    url.pathname === '/'
+  );
+}, 'Use an HTTPS origin (or loopback HTTP) without credentials, path, query or fragment');
 
 const envSchema = z
   .object({
@@ -12,7 +25,9 @@ const envSchema = z
       .enum(['development', 'test', 'production'])
       .default('development'),
     PORT: z.coerce.number().int().min(1).max(65535).default(3000),
-    FRONTEND_ORIGIN: z.url(),
+    FRONTEND_ORIGIN: originSchema.transform((value) =>
+      value.replace(/\/$/, ''),
+    ),
     REDIS_URL: z.preprocess(
       (value) =>
         typeof value === 'string' && !value.trim() ? undefined : value,
@@ -37,20 +52,8 @@ const envSchema = z
     SSLCOMMERZ_STORE_ID: optionalSetting(z.string().trim().min(1).max(30)),
     SSLCOMMERZ_STORE_PASSWORD: optionalSetting(z.string().min(1).max(100)),
     PUBLIC_API_URL: optionalSetting(
-      z
-        .url()
-        .refine((value) => {
-          const url = new URL(value);
-          return (
-            url.protocol === 'https:' &&
-            !url.username &&
-            !url.password &&
-            !url.search &&
-            !url.hash &&
-            url.pathname === '/' &&
-            value.length <= 190
-          );
-        }, 'PUBLIC_API_URL must be an HTTPS origin without credentials, path, query or fragment')
+      originSchema
+        .refine((value) => value.length <= 190)
         .transform((value) => value.replace(/\/$/, '')),
     ),
     JWT_ACCESS_SECRET: z.string().refine((value) => {
@@ -66,6 +69,21 @@ const envSchema = z
       ),
   })
   .superRefine((value, ctx) => {
+    // Loopback HTTP is exclusively a local sandbox browser-return test facility.
+    // Live callbacks and production frontend returns always require HTTPS.
+    for (const key of ['PUBLIC_API_URL', 'FRONTEND_ORIGIN'] as const) {
+      const url = value[key];
+      if (
+        url?.startsWith('http:') &&
+        (value.NODE_ENV === 'production' ||
+          (key === 'PUBLIC_API_URL' && value.SSLCOMMERZ_MODE !== 'sandbox'))
+      )
+        ctx.addIssue({
+          code: 'custom',
+          path: [key],
+          message: 'Production/live payment returns require HTTPS',
+        });
+    }
     const settings = [
       'SSLCOMMERZ_MODE',
       'SSLCOMMERZ_STORE_ID',

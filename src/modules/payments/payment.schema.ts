@@ -19,3 +19,5 @@ export const callbackSchema = z.object({
   val_id: z.string().min(1).max(50).optional(),
 });
 export type PaymentCallback = z.infer<typeof callbackSchema>;
+export const browserCallbackKindSchema = z.enum(['success', 'fail', 'cancel']);
+export type BrowserCallbackKind = z.infer<typeof browserCallbackKindSchema>;
