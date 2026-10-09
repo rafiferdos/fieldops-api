@@ -1,4 +1,4 @@
-import { BadGatewayException } from '@nestjs/common';
+import { BadGatewayException, Logger } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
 import request from 'supertest';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -34,6 +34,34 @@ describe('Verified payment settlement', () => {
     ctx.prisma.invoice.findUniqueOrThrow({ where: { id: ctx.invoiceId } });
   const row = () =>
     ctx.prisma.payment.findUniqueOrThrow({ where: { id: payment.id } });
+  it('records safe IPN delivery evidence after verified settlement', async () => {
+    const log = vi.spyOn(Logger.prototype, 'log').mockImplementation(() => {});
+    const charge = verifiedCharge(payment.merchantTranId);
+    providerEvidence(ctx, [charge]);
+    await notify(ctx, 'ipn', payment.merchantTranId, {
+      val_id: charge.val_id,
+      card_no: 'private-provider-payload',
+    }).expect(200);
+    expect(log).toHaveBeenCalledWith(
+      `Payment notification verified: ipn ${payment.id}`,
+    );
+    expect(JSON.stringify(log.mock.calls)).not.toContain(charge.val_id);
+    expect(JSON.stringify(log.mock.calls)).not.toContain(
+      'private-provider-payload',
+    );
+    expect((await row()).status).toBe('SUCCEEDED');
+  });
+  it('does not report verified callback delivery when provider verification fails', async () => {
+    const log = vi.spyOn(Logger.prototype, 'log').mockImplementation(() => {});
+    ctx.json.mockRejectedValue(
+      new BadGatewayException('Provider verification unavailable'),
+    );
+    await notify(ctx, 'ipn', payment.merchantTranId, {
+      val_id: 'unverified',
+    }).expect(502);
+    expect(log).not.toHaveBeenCalled();
+    expect((await row()).status).toBe('PENDING');
+  });
   it('settles through server verification while ignoring callback claims', async () => {
     const charge = verifiedCharge(payment.merchantTranId);
     providerEvidence(ctx, [charge]);

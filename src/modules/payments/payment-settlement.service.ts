@@ -2,6 +2,7 @@ import {
   BadGatewayException,
   Inject,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { AuditService } from '../../common/audit/audit.service.js';
@@ -37,6 +38,7 @@ type ReviewReason =
 
 @Injectable()
 export class PaymentSettlementService {
+  private readonly logger = new Logger(PaymentSettlementService.name);
   constructor(
     @Inject(PrismaService) private readonly prisma: PrismaService,
     @Inject(AuditService) private readonly audit: AuditService,
@@ -71,6 +73,8 @@ export class PaymentSettlementService {
           }
         : await this.gateway.lookup(row);
     await this.apply(row, observation);
+    // Correlate real callback delivery only after verification and commit; omit provider secrets.
+    this.logger.log(`Payment notification verified: ${kind} ${row.id}`);
   }
   async reconcile(id: string) {
     const row = await this.prisma.payment.findUnique({
