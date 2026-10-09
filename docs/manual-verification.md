@@ -4,11 +4,36 @@ Verified on October 7–8, 2026, using Chrome Apidog Web, Testing Env and Cloud 
 
 ## October 9 delivery checkpoint
 
-Backend revision f6e9670 is pushed and passed [GitHub CI run 37898892822](https://github.com/rafiferdos/fieldops-api/actions/runs/37898892822). Strict checks, build, 129 unit tests, 472 database integration tests, offline docs coverage (46 request examples / 42 templates) and compiled native HTTP flow pass. The authorized extension adds current technician skills, atomic inspected-set replacement and provider browser return; it introduces no model/migration change.
+Backend revision `7bf1e41fdb257ead94365ba532dc86497cc563ef` passed [GitHub CI run 37908940023](https://github.com/rafiferdos/fieldops-api/actions/runs/37908940023) and is live in Render deployment `dep-db4atv7lot8c738dsr4g`. Strict checks, build, 129 unit tests, 474 database integration tests, offline docs coverage (46 request examples / 42 templates) and compiled native HTTP flow pass. The authorized extension adds current technician skills, atomic inspected-set replacement, provider browser return and safe verified-notification logging; it introduces no model/migration change.
 
 A separate local production frontend and isolated payment-test database verify actual disposable skills writes, stale-set rejection and recovery after one committed response is lost. Actual SSLCommerz sandbox cancellation, explicit replacement, server-verified settlement and eligible paid feedback also pass. Google Identity Services sign-in is verified through the real frontend using the existing public client ID.
 
-These results do not replace the historical hosted/IPN proof below. The updated backend Render rollout and new frontend HTTPS/IPN verification are still pending protected hosting configuration. Existing production records were not reset or reseeded.
+These local results retain separate provenance from the historical hosted proof below. The updated backend and frontend are now deployed with approved protected configuration. Existing production records were not reset or reseeded.
+
+### New hosted frontend and payment checks
+
+The live frontend is `https://fieldops-rafiferdos.vercel.app`. Backend health/readiness,
+all three new dedicated evaluation roles and the current-skills route pass. Hosted
+browser verification exercises real owned request, dispatch, completion, checkout,
+access/audit and skill-replacement flows. The owner confirmed hosted Google login
+after the frontend's supported browser-mediated consent update.
+
+The final real SSLCommerz sandbox test passes cancellation, explicit replacement,
+HTTPS browser returns, paid feedback and uncertain-outcome inspection. Render logs
+record actual IPN for the cancelled attempt at 09:13:23 UTC and for the successful
+attempt at 09:13:30 UTC, before browser success at 09:13:35 UTC. No callback was
+forged. A read-only check of this owned disposable payment confirms SUCCEEDED/PAID,
+BDT 1,500.00, exactly one SETTLED receipt, one PAYMENT_SETTLED event and one
+INVOICE_PAID event, with equal settlement/paid timestamps. No live funds were used.
+
+The callback log includes only the kind and stored payment UUID after verification
+and commit. Integration tests reject success logging after verification failure and
+exclude validation IDs/provider payloads. A verified notification can still represent
+an unresolved lookup; persisted invoice/payment state remains authoritative.
+
+Safe proof is retained outside public Git in the Assignment 7 delivery folder. The
+new release has no model/migration changes. Render Free cold-start limits and live
+gateway grading acceptance remain explicit limitations.
 
 ## Environment and scope
 

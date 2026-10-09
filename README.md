@@ -390,8 +390,8 @@ A provider/transaction failure still returns a known attempt for inspection;
 it never marks an invoice paid. The frontend authenticates and reads actual payment
 and invoice state again. Malformed/unknown references retain `400`/`404`, unsupported
 formats retain `415`, and IPN retains JSON acknowledgements/errors. Already-created
-gateway sessions keep their original destinations. The hosted deployment must be
-updated separately before new hosted sessions use this transport.
+gateway sessions keep their original destinations. The current hosted release uses
+this transport with the verified Assignment 7 HTTPS origin.
 
 `FRONTEND_ORIGIN` must be a clean HTTPS origin in production. `PUBLIC_API_URL` must
 be publicly reachable HTTPS for live/production. Non-production sandbox browser
@@ -406,9 +406,12 @@ currency, while its merchant query reports `CANCELLED`; the adapter accepts that
 corroborated terminal shape, never merchant cancellation alone. Gross/original
 amounts and stored merchant/session identity must match; any supplied settlement
 currency must be BDT. Tests reject open sessions and incomplete/mismatched evidence.
-This does not claim deployed HTTPS/server-IPN, real fail/risk UI or live funds.
-Before an authorized production update, configure an actual HTTPS FRONTEND_ORIGIN;
-the earlier localhost helper origin is unsuitable for production browser returns.
+That local checkpoint did not claim deployed HTTPS/server-IPN. The October 9 hosted
+release now verifies actual provider IPN, HTTPS cancel/success returns and a single
+immutable settlement; see [the verification record](docs/manual-verification.md).
+Safe notification logs contain only the callback kind and stored payment UUID after
+verification/commit, never provider payloads or validation keys. A notification log
+does not itself mean an invoice is paid. Real fail/risk UI and live funds are not claimed.
 
 ### Recover uncertainty safely
 
@@ -480,7 +483,7 @@ npm run test:compiled
 
 E2E requires a separate `TEST_DATABASE_URL` whose database name ends in `_test`. Setup creates it if needed (CREATEDB permission required), applies committed migrations and never resets existing data. Fixtures clean up their own records; tests do not use the main database. Real Redis tests require `TEST_REDIS_URL` with index >0; without it they skip, while DB fallback tests run. No Redis flush commands. Integration fixture files run with one worker to isolate global administration totals and last-admin invariants; explicit concurrency races remain parallel. Unit tests need no DB/Redis. Build regenerates Prisma Client; production entry is `dist/main.js` (`npm run start:prod`).
 
-[Backend CI](.github/workflows/ci.yml) runs on main pushes, pull requests and manual dispatch: locked install, generate/schema/type/lint, unit tests, fresh PostgreSQL migrations, real Redis integration, build, API documentation contracts and compiled native HTTP flow. Temporary services and a generated signing key need no production secrets. Official actions are pinned by immutable SHA; permissions are read-only. Current revision `f6e9670` passed [GitHub CI run 37898892822](https://github.com/rafiferdos/fieldops-api/actions/runs/37898892822), including 129 unit and 472 database integration tests, documentation contracts, build and compiled flow. Local success alone does not prove a hosted run.
+[Backend CI](.github/workflows/ci.yml) runs on main pushes, pull requests and manual dispatch: locked install, generate/schema/type/lint, unit tests, fresh PostgreSQL migrations, real Redis integration, build, API documentation contracts and compiled native HTTP flow. Temporary services and a generated signing key need no production secrets. Official actions are pinned by immutable SHA; permissions are read-only. Deployed revision `7bf1e41` passed [GitHub CI run 37908940023](https://github.com/rafiferdos/fieldops-api/actions/runs/37908940023), including 129 unit and 474 database integration tests, documentation contracts, build and compiled flow. Local success alone does not prove a hosted run.
 
 `test:compiled` imports the built Nest app only after selecting the guarded test environment and asserting the actual database name. Its temporary loopback server verifies safe ADMIN/TECH bootstrap, real password login, request lifecycle, scheduling, scoped reads, cancellation/progress, completion retries, invoices, idempotent checkout/form callbacks, verified settlement, customer feedback and audits; it removes only its fixtures.
 
@@ -500,7 +503,7 @@ Preserve custom `btree_gist`, exclusion/check constraints, immutable snapshot/re
 - [Assignment source](https://github.com/Apollo-Level2-Web-Dev/B7A6)
 - [Reviewed plan](https://app.notion.com/p/3f14ab5df14481b9bdccd1349fd83a18)
 
-There are 39 domain APIs, two health routes and a provider browser-return transport. The frontend completion scope explicitly authorized current-skill reads and conditional replacement. The earlier administration build `de6d649` is live on Render with all 15 migrations applied; its GitHub CI passed. The current skills/browser-return revision `f6e9670` is pushed and CI-verified; its Render rollout and new HTTPS callback verification remain pending. No schema migration was added. See the verification record for executed hosted checks and remaining delivery work.
+There are 39 domain APIs, two health routes and a provider browser-return transport. The frontend completion scope explicitly authorized current-skill reads and conditional replacement. Skills/browser-return handling and safe callback evidence are live in Render revision `7bf1e41`, which passed its exact-source CI. All 15 existing migrations remain applied; no schema migration was added. Hosted readiness, dedicated role/skills reads, actual provider IPN and HTTPS payment returns pass. See the verification record for executed checks and delivery limits.
 
 ## Known dependency advisories
 
