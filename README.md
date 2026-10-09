@@ -396,6 +396,19 @@ updated separately before new hosted sessions use this transport.
 be publicly reachable HTTPS for live/production. Non-production sandbox browser
 tests alone may use loopback HTTP; provider server IPN cannot reach that origin.
 
+The Assignment 7 checkpoint verified real sandbox cancellation, explicit replacement,
+safe dummy-card/OTP settlement and paid feedback through the production frontend
+and updated local backend against an isolated database. Stored proof confirms one
+safe receipt, one settlement/invoice-paid event and one feedback/audit. The gateway's
+closed session reports `FAILED` with BDT original currency/amounts but no settlement
+currency, while its merchant query reports `CANCELLED`; the adapter accepts that
+corroborated terminal shape, never merchant cancellation alone. Gross/original
+amounts and stored merchant/session identity must match; any supplied settlement
+currency must be BDT. Tests reject open sessions and incomplete/mismatched evidence.
+This does not claim deployed HTTPS/server-IPN, real fail/risk UI or live funds.
+Before an authorized production update, configure an actual HTTPS FRONTEND_ORIGIN;
+the earlier localhost helper origin is unsuitable for production browser returns.
+
 ### Recover uncertainty safely
 
 A timeout/invalid initiation response returns `502` and retains UNKNOWN. A crash or database failure after initiation can retain INITIATING. Retry the original key/JSON to retrieve its payment ID; **do not switch keys**. After 15 seconds, replaying an INITIATING/UNKNOWN/PENDING attempt queries the existing merchant reference and revalidates any captured transaction. It never initiates another checkout. Gateway failure during recovery returns `502` without releasing the attempt. No-record/pending results remain unresolved; time alone does not prove failure.
