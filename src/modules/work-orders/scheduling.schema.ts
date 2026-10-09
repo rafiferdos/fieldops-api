@@ -33,14 +33,17 @@ export const availabilitySchema = windowSchema.safeExtend({
   serviceId: uuidSchema,
   ...paginationQueryShape,
 });
+const skillIdsSchema = z
+  .array(uuidSchema)
+  .max(100)
+  .refine(
+    (ids) => new Set(ids).size === ids.length,
+    'Duplicate service IDs are not allowed',
+  );
 export const skillsSchema = z.strictObject({
-  serviceIds: z
-    .array(uuidSchema)
-    .max(100)
-    .refine(
-      (ids) => new Set(ids).size === ids.length,
-      'Duplicate service IDs are not allowed',
-    ),
+  serviceIds: skillIdsSchema,
+  // Existing API consumers remain compatible; interactive editors provide an atomic precondition.
+  expectedServiceIds: skillIdsSchema.optional(),
 });
 export type AssignmentInput = z.output<typeof assignmentSchema>;
 export type ScheduleInput = z.output<typeof scheduleSchema>;

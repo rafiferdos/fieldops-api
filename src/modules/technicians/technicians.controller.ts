@@ -38,6 +38,16 @@ export class TechniciansController {
       'Available technicians retrieved successfully',
     );
   }
+  @Get(':id/skills')
+  async currentSkills(
+    @CurrentActor() actor: AuthActor,
+    @Param('id', new ZodValidationPipe(uuidSchema)) id: string,
+  ) {
+    return success(
+      await this.technicians.currentSkills(actor, id),
+      'Technician skills retrieved successfully',
+    );
+  }
   @Put(':id/skills')
   async skills(
     @CurrentActor() actor: AuthActor,

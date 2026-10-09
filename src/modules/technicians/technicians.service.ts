@@ -29,6 +29,39 @@ export class TechniciansService {
     @Inject(AuditService) private readonly audit: AuditService,
   ) {}
 
+  currentSkills(actor: AuthActor, id: string) {
+    return this.prisma.$transaction(
+      async (tx) => {
+        await requireActiveActor(tx, actor, ['ADMIN']);
+        const technician = await tx.user.findFirst({
+          where: { id, role: 'TECHNICIAN', deletedAt: null },
+          select: {
+            id: true,
+            technicianSkills: {
+              orderBy: { serviceId: 'asc' },
+              select: {
+                service: { select: { id: true, name: true, deletedAt: true } },
+              },
+            },
+          },
+        });
+        if (!technician) throw new NotFoundException('Technician not found');
+        // Retain deleted service identities so an editor never silently clears unknown skills.
+        const services = technician.technicianSkills.map(({ service }) => ({
+          id: service.id,
+          name: service.name,
+          active: service.deletedAt === null,
+        }));
+        return {
+          technicianId: technician.id,
+          serviceIds: services.map((service) => service.id),
+          services,
+        };
+      },
+      { isolationLevel: 'RepeatableRead' },
+    );
+  }
+
   replaceSkills(actor: AuthActor, id: string, input: SkillsInput) {
     return serializable(this.prisma, async (tx) => {
       const admin = await requireActiveActor(tx, actor, ['ADMIN']);
@@ -39,6 +72,21 @@ export class TechniciansService {
         technician.deletedAt
       )
         throw new NotFoundException('Technician not found');
+      if (input.expectedServiceIds !== undefined) {
+        const current = await tx.technicianSkill.findMany({
+          where: { userId: id },
+          select: { serviceId: true },
+        });
+        // Compare while holding the same technician lock used by dispatch and all skill writers.
+        const expected = new Set(input.expectedServiceIds);
+        if (
+          current.length !== expected.size ||
+          current.some(({ serviceId }) => !expected.has(serviceId))
+        )
+          throw new ConflictException(
+            'Technician skills changed; inspect the latest skills before replacing them',
+          );
+      }
       await lockActiveServices(tx, input.serviceIds);
       const required = await tx.workOrder.findMany({
         where: { technicianId: id, status: { in: [...activeWorkStatuses] } },

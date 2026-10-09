@@ -76,6 +76,7 @@ All routes use `/api/v1`. C = CUSTOMER, T = TECHNICIAN, A = ADMIN. Dispatch and 
 | PATCH  | `/requests/:id/review`          | A approve/reject                                  |
 | POST   | `/requests/:id/cancel`          | C own / A atomic cancellation                     |
 | PUT    | `/technicians/:id/skills`       | A skill replacement                               |
+| GET    | `/technicians/:id/skills`       | A complete current skill snapshot, including retired services |
 | GET    | `/technicians`                  | A availability by skill/window                    |
 | POST   | `/requests/:id/assignment`      | A assignment and price snapshot                   |
 | GET    | `/work-orders`                  | C own / T assigned / A list                       |
@@ -108,7 +109,7 @@ ADMIN user search supports `q`, `role`, `status`, `page`, `limit` and `sort`; de
 
 ### Import the completed API documentation
 
-Import [the Postman v2.1 collection](docs/fieldops.postman_collection.json) through **Settings → Import Data → Postman** in Apidog. It covers all 38 implemented domain APIs and two health routes, with 42 request examples including separate customer/admin/technician logins. Each request documents its input, authorization, lifecycle rules, expected success and relevant error scenarios. [Official import guide](https://docs.apidog.io/import-from-postman-635043m0)
+Import [the Postman v2.1 collection](docs/fieldops.postman_collection.json) through **Settings → Import Data → Postman** in Apidog. It covers all 39 implemented domain APIs, two health routes and the browser-return transport, with 46 request examples including separate role logins and return outcomes. Each request documents its input, authorization, lifecycle rules, expected success and relevant error scenarios. [Official import guide](https://docs.apidog.io/import-from-postman-635043m0)
 
 Set the imported variables in your local environment: `base_url`, account credentials, role-specific Bearer tokens and IDs extracted from actual responses. Keep secrets in **Local Value**. Set actual future scheduling dates and replace request/work-order versions after each mutation. Review Apidog's variable mapping after import.
 
@@ -249,7 +250,7 @@ Same-version edit/edit, approve/reject or review/cancel races have one winner (`
 
 Set ignored `SEED_TECHNICIAN_EMAIL`, `SEED_TECHNICIAN_PASSWORD` (15–128 characters), optional `SEED_TECHNICIAN_NAME`; run `npm run seed:technician`. Bootstrap creates a new technician/system audit only; never promotes/resets existing accounts. ADMIN/TECHNICIAN bootstrap share the same email lock. Log in and extract `technician_access_token` and `technician_id = $.data.user.id`.
 
-1. A `PUT /technicians/{{technician_id}}/skills`, `{ "serviceIds": ["{{service_id}}"] }` → `200`. Replaces the whole skill set; at most 100 unique UUIDs, `[]` allowed. Removing a skill required by active work is `409`; missing/deleted service or non-technician `404`.
+1. A `GET /technicians/{{technician_id}}/skills` → `{ technicianId, serviceIds, services: [{ id, name, active }] }`. The complete set includes deleted service identities, never credentials. Interactive editors then `PUT` `{ "serviceIds": ["{{service_id}}"], "expectedServiceIds": [...] }`, using all IDs from that read. Under the technician lock, a changed set returns `409` without writes/audit. The optional precondition preserves legacy API callers. Replacement accepts at most 100 unique active service UUIDs; `[]` explicitly clears idle skills. Removing a skill required by active work is `409`; missing/deleted service or non-technician `404`.
 2. A `GET /technicians?serviceId={{service_id}}&start=2099-01-01T10%3A00%3A00%2B06%3A00&end=2099-01-01T11%3A00%3A00%2B06%3A00&page=1&limit=20` → `{ items: [{ id, name }], pagination }`. Use actual future times; Apidog's query editor encodes raw values. Availability is a snapshot, not a reservation.
 3. C creates a request, A approves it, then A `POST /requests/{{request_id}}/assignment` → `201`:
 
@@ -499,7 +500,7 @@ Preserve custom `btree_gist`, exclusion/check constraints, immutable snapshot/re
 - [Assignment source](https://github.com/Apollo-Level2-Web-Dev/B7A6)
 - [Reviewed plan](https://app.notion.com/p/3f14ab5df14481b9bdccd1349fd83a18)
 
-There are 38 domain APIs and two health routes. All planned backend routes are implemented. The administration build `de6d649` is live on Render with all 15 migrations applied; its GitHub CI passed. See the verification record for executed hosted checks and remaining delivery work. Assignment 7 requirements must be reviewed separately.
+There are 39 domain APIs, two health routes and a provider browser-return transport. The frontend completion scope explicitly authorized current-skill reads and conditional replacement. The earlier administration build `de6d649` is live on Render with all 15 migrations applied; its GitHub CI passed. New skill and browser-return changes await the current delivery checkpoint. See the verification record for executed hosted checks and remaining delivery work.
 
 ## Known dependency advisories
 

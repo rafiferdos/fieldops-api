@@ -38,6 +38,83 @@ describe('Technician skills and availability (e2e)', () => {
       .get('/api/v1/technicians')
       .set('Authorization', `Bearer ${token}`)
       .query({ serviceId: ctx.service.id, ...window(), ...overrides });
+  const currentSkills = (token = ctx.admin.token, id = ctx.technician.id) =>
+    request(ctx.app.getHttpServer())
+      .get(`/api/v1/technicians/${id}/skills`)
+      .set('Authorization', `Bearer ${token}`);
+  const replaceExpected = (
+    serviceIds: string[],
+    expectedServiceIds: string[],
+  ) =>
+    request(ctx.app.getHttpServer())
+      .put(`/api/v1/technicians/${ctx.technician.id}/skills`)
+      .set('Authorization', `Bearer ${ctx.admin.token}`)
+      .send({ serviceIds, expectedServiceIds });
+
+  it('reads the complete safe skill set, including deleted service identities', async () => {
+    expect((await currentSkills().expect(200)).body.data).toEqual({
+      technicianId: ctx.technician.id,
+      serviceIds: [],
+      services: [],
+    });
+    await skills([ctx.service.id]).expect(200);
+    await ctx.prisma.service.update({
+      where: { id: ctx.service.id },
+      data: { deletedAt: new Date() },
+    });
+    const result = await currentSkills().expect(200);
+    expect(result.headers['cache-control']).toBe('no-store');
+    expect(result.body.data).toEqual({
+      technicianId: ctx.technician.id,
+      serviceIds: [ctx.service.id],
+      services: [{ id: ctx.service.id, name: ctx.service.name, active: false }],
+    });
+    expect(JSON.stringify(result.body)).not.toContain(ctx.technician.email);
+    expect(JSON.stringify(result.body)).not.toContain('password');
+  });
+  it('rejects invalid IDs, non-technicians and deleted technician reads', async () => {
+    await currentSkills(ctx.admin.token, 'invalid').expect(400);
+    await currentSkills(ctx.admin.token, randomUUID()).expect(404);
+    await currentSkills(ctx.admin.token, ctx.owner.id).expect(404);
+    await ctx.prisma.user.update({
+      where: { id: ctx.technician.id },
+      data: { deletedAt: new Date() },
+    });
+    await currentSkills().expect(404);
+  });
+  it('rejects stale skill replacement without writes or a misleading audit', async () => {
+    await replaceExpected([ctx.service.id], []).expect(200);
+    await replaceExpected([], []).expect(409);
+    expect((await currentSkills().expect(200)).body.data.serviceIds).toEqual([
+      ctx.service.id,
+    ]);
+    expect(
+      await ctx.prisma.auditLog.count({
+        where: {
+          entityId: ctx.technician.id,
+          action: 'TECHNICIAN_SKILLS_UPDATED',
+        },
+      }),
+    ).toBe(1);
+    await replaceExpected([], [ctx.service.id]).expect(200);
+  });
+  it('competing replacements from one snapshot allow exactly one complete change', async () => {
+    const results = await Promise.all([
+      replaceExpected([ctx.service.id], []),
+      replaceExpected([ctx.service.id], []),
+    ]);
+    expect(
+      results.map((result) => result.status).sort((a, b) => a - b),
+    ).toEqual([200, 409]);
+    expect(
+      await ctx.prisma.auditLog.count({
+        where: {
+          entityId: ctx.technician.id,
+          action: 'TECHNICIAN_SKILLS_UPDATED',
+        },
+      }),
+    ).toBe(1);
+  });
 
   it('replaces skills, supports empty replacement, audits and excludes private account fields', async () => {
     await skills([ctx.service.id]).expect(200);
@@ -68,11 +145,14 @@ describe('Technician skills and availability (e2e)', () => {
     async (role) => {
       await skills([ctx.service.id], ctx[role].token).expect(403);
       await available({}, ctx[role].token).expect(403);
+      await currentSkills(ctx[role].token).expect(403);
     },
   );
   it('rejects untrusted fields, duplicates, invalid UUIDs and wrong account roles', async () => {
     await skills([ctx.service.id, ctx.service.id]).expect(400);
     await skills(['invalid']).expect(400);
+    await replaceExpected([], ['invalid']).expect(400);
+    await replaceExpected([], [ctx.service.id, ctx.service.id]).expect(400);
     await skills([ctx.service.id], ctx.admin.token, ctx.owner.id).expect(404);
     await skills([randomUUID()]).expect(404);
     await request(ctx.app.getHttpServer())

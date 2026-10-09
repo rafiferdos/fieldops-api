@@ -8206,6 +8206,90 @@
       "name": "06 Technician dispatch",
       "item": [
         {
+          "name": "Read current technician skills",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/technicians/{{technician_id}}/skills",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "technicians",
+                "{{technician_id}}",
+                "skills"
+              ]
+            },
+            "description": "ADMIN only. Read the complete current skill set before replacing it. Returns technicianId, all serviceIds and safe service labels/active flags, including retired services. Customer/technician callers receive 403; malformed UUID 400; non-technician, deleted or missing user 404. Private responses are no-store. Copy the complete returned serviceIds into the subsequent PUT expectedServiceIds; a concurrent edit returns 409. Saved responses are illustrative, not live verification evidence."
+          },
+          "response": [
+            {
+              "name": "Success example (illustrative)",
+              "originalRequest": {
+                "method": "GET",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{admin_access_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/technicians/{{technician_id}}/skills",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "technicians",
+                    "{{technician_id}}",
+                    "skills"
+                  ]
+                },
+                "description": "ADMIN only. Read the complete current skill set before replacing it. Returns technicianId, all serviceIds and safe service labels/active flags, including retired services. Customer/technician callers receive 403; malformed UUID 400; non-technician, deleted or missing user 404. Private responses are no-store. Copy the complete returned serviceIds into the subsequent PUT expectedServiceIds; a concurrent edit returns 409. Saved responses are illustrative, not live verification evidence."
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-store"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Technician skills retrieved successfully\",\n  \"data\": {\n    \"technicianId\": \"{{technician_id}}\",\n    \"serviceIds\": [\n      \"{{service_id}}\"\n    ],\n    \"services\": [\n      {\n        \"id\": \"{{service_id}}\",\n        \"name\": \"Qualified service\",\n        \"active\": true\n      }\n    ]\n  }\n}"
+            }
+          ]
+        },
+        {
           "name": "Replace technician skills",
           "request": {
             "method": "PUT",
@@ -8240,7 +8324,7 @@
                 "skills"
               ]
             },
-            "description": "How to send this request\nThis PUT replaces the entire set, not one added skill. Include every skill that must stay. Read the response serviceIds; keep skills required by active work.\n\nAccess: ADMIN. Expected success: 200.\n\nTarget must be active TECHNICIAN. serviceIds contains at most 100 unique active service UUIDs; [] clears skills unless active work depends on one. Removing a required skill returns 409. Use the technician profile ID, not a customer ID.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.\n\nExamples: Main body is a starting input, not an automatic test. MANUAL cases below are documented expectations, not executed captures. ACTUAL responses are historical evidence; their old state/version may not be reusable. Keep passwords, tokens, Google credentials and provider references in Local Values. Read the current resource before writing.\n\nT064 — Duplicate skill ID: expect 400. Setup: ADMIN login. \nT065 — Missing referenced service: expect 404. Setup: ADMIN login. \nT066 — Clear idle technician skills: expect 200. Setup: Use an idle dedicated technician with no active work that depends on a skill. serviceIds becomes []; restore intended skills before assignment.\nT067 — Remove a skill used by active work: expect 409. Setup: Use a technician with ASSIGNED/EN_ROUTE/IN_PROGRESS work for this service. The original skill set remains intact.\nT068 — Customer ID is not a technician: expect 404. Setup: ADMIN login and a real CUSTOMER id. ",
+            "description": "How to send this request\nThis PUT replaces the entire set, not one added skill. Include every skill that must stay. Read the response serviceIds; keep skills required by active work.\n\nAccess: ADMIN. Expected success: 200.\n\nTarget must be a non-deleted TECHNICIAN. serviceIds contains at most 100 unique active service UUIDs; [] clears skills unless active work depends on one. Removing a required skill returns 409. Use the technician profile ID, not a customer ID.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.\n\nExamples: Main body is a starting input, not an automatic test. MANUAL cases below are documented expectations, not executed captures. ACTUAL responses are historical evidence; their old state/version may not be reusable. Keep passwords, tokens, Google credentials and provider references in Local Values. Read the current resource before writing.\n\nT064 — Duplicate skill ID: expect 400. Setup: ADMIN login. \nT065 — Missing referenced service: expect 404. Setup: ADMIN login. \nT066 — Clear idle technician skills: expect 200. Setup: Use an idle dedicated technician with no active work that depends on a skill. serviceIds becomes []; restore intended skills before assignment.\nT067 — Remove a skill used by active work: expect 409. Setup: Use a technician with ASSIGNED/EN_ROUTE/IN_PROGRESS work for this service. The original skill set remains intact.\nT068 — Customer ID is not a technician: expect 404. Setup: ADMIN login and a real CUSTOMER id. \n\nInteractive editors must GET this skill resource first and send its complete serviceIds as expectedServiceIds. Comparison runs under the technician row lock; a stale snapshot returns 409 without replacement/audit. Omitting expectedServiceIds preserves legacy callers. Deleted service IDs remain visible in GET; they cannot be newly qualified. Never infer an empty set from the active catalog.",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"serviceIds\": [\n    \"{{service_id}}\"\n  ]\n}",
