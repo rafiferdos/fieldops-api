@@ -44,6 +44,21 @@ These photos have public delivery URLs and are unsuitable for confidential attac
 
 Boundary tests cover provider response validation and safe failures. PostgreSQL/Nest integration tests cover ownership, role/purpose restrictions, attachment/removal, auditing and malformed uploads while replacing the external provider transport. These do not establish Cloudinary permissions or hosted upload success; verify real uploads separately after configuration and deployment.
 
-On October 10, 2026, the local checkpoint passed 157 unit tests, 484 PostgreSQL/Redis integration tests and the compiled HTTP workflow. Separately, real Cloudinary uploads succeeded after the configured key received upload access. The frontend verified avatar upload/save/reload/removal for all three roles, and administrator service upload/create/public-detail/mobile delivery against isolated databases. No hosted customer records were changed. A hosted release and its own verification remain separate.
+On October 10, 2026, the local checkpoint passed 157 unit tests, 484 PostgreSQL/Redis integration tests and the compiled HTTP workflow. Separately, real Cloudinary uploads succeeded after the configured key received upload access. The frontend verified avatar upload/save/reload/removal for all three roles, and administrator service upload/create/public-detail/mobile delivery against isolated databases.
+
+### Coordinated hosted release — October 10, 2026
+
+| Application | Released revision                          | Evidence                                                                                                                |
+| ----------- | ------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------- |
+| Backend     | `35ed3df4abed29001ff4ae15f17a4c7b323e566a` | [CI](https://github.com/rafiferdos/fieldops-api/actions/runs/38050362076), Render `dep-db52jvqd0e5s73dvtuvg`, Live      |
+| Frontend    | `ee0f4dd541faa8ea09a3f8b993a77b0ae3155c29` | [CI](https://github.com/rafiferdos/fieldops/actions/runs/38050365588), Vercel `dpl_5gyHKBxWvsJpwbLnMzfJEy2xLkNc`, Ready |
+
+Backend credentials were saved in Render; only the public cloud name was added to Vercel Production. Backend release logs confirm the additive migration applied successfully before startup, and `/api/v1/health/ready` returned database `up`. The frontend released afterward from its exact CI-passed Git revision. No database reset or paid hosting change occurred.
+
+Executed hosted checks used a newly registered disposable CUSTOMER and one explicitly disposable service created by an existing administrator. Real provider service upload/create/public catalog/detail reads passed. CUSTOMER service-upload attempts returned `403`; attaching the administrator's catalog upload as the customer's avatar returned `400`. The existing administrator profile was not edited.
+
+On the canonical HTTPS frontend, the disposable customer uploaded a photo through the authenticated multipart proxy, saved it, reloaded it and removed/saved/reloaded it successfully. Profile, catalog and detail photos loaded through the real Next.js optimizer. Mobile detail at 390px loaded without horizontal overflow. Completed browser checks reported no runtime, hydration or console warning/error entries; desktop/mobile screenshots were inspected. These focused checks do not claim a repeated full payment/OAuth regression or real mobile hardware validation.
+
+After verification, the service's image reference was cleared and the service soft-deleted; public detail returned `404`. The customer retained no avatar, was suspended and its sessions revoked. Both exact test Cloudinary assets were deleted, and the temporary administrator test session was logged out. Audit/media records retain the normal verification history. Existing customer work and payment records were unchanged. No bulk hosted demonstration seed was run. Sanitized screenshots are kept outside public Git in the frontend workspace's `delivery/media-images/` folder. Documentation-only commits after these revisions do not alter deployed application code.
 
 For realistic demonstration data, use a repeatable, explicitly scoped seed process and actual domain operations. Preserve existing records and ownership, identify demonstration accounts, and never fabricate gateway settlement, customer activity or production usage claims. Bulk hosted demonstration seeding is separate from image support.

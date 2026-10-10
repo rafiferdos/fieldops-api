@@ -233,17 +233,21 @@ flush is used. Concurrency tests exercise actual PostgreSQL transactions and con
 
 CI installs from the lockfile, provisions PostgreSQL/Redis, generates an ephemeral signing
 key, and runs schema, type, lint, unit, integration, build, documentation and compiled HTTP
-checks. Official actions are pinned by immutable revisions. The deployed application revision
-passed 129 unit and 474 database integration tests in
-[its CI run](https://github.com/rafiferdos/fieldops-api/actions/runs/37908940023).
+checks. Official actions are pinned by immutable revisions. The current deployed application
+revision `35ed3df4abed29001ff4ae15f17a4c7b323e566a` passed **157 unit tests and 484
+database integration tests** in [its CI run](https://github.com/rafiferdos/fieldops-api/actions/runs/38050362076).
 Automated gateway tests replace external HTTP transport; actual sandbox settlement, provider
 IPN and HTTPS browser returns are verified separately in the integration record.
 
-The image-support checkpoint passed **157 unit tests, 484 PostgreSQL/Redis integration
-tests and the compiled HTTP workflow** locally on October 10, 2026. Real Cloudinary
-uploads and frontend photo save/reload/removal were verified separately using isolated
-disposable accounts. This checkpoint still requires a coordinated hosted backend/frontend
-release; these local results do not claim the live service has been updated.
+The coordinated image release completed on October 10, 2026. Render deployed the exact
+CI-passed revision, applied `20261010123000_owned_media_images` and passed readiness.
+Real hosted Cloudinary upload, profile save/reload/removal, optimized catalog/detail
+delivery and ownership/role rejection passed with disposable test records. Desktop and
+390px mobile screenshots were inspected. The disposable service was soft-deleted, the
+test account suspended and its sessions revoked; both exact provider test assets were
+removed. Existing customer profiles and financial records were unchanged. Local checks
+also verified profile photos for all three roles; the hosted browser check used a new
+CUSTOMER account. See [image release evidence and limits](docs/media-images.md).
 
 For schema work, use `npm run db:migrate -- --name describe_your_change` and regenerate the
 client. Prisma loads the complete `prisma/` directory. Preserve exclusion/check constraints,
