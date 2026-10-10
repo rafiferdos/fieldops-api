@@ -4,6 +4,7 @@ export const serviceSelect = {
   id: true,
   name: true,
   description: true,
+  imageUrl: true,
   basePriceMinor: true,
   currency: true,
   createdAt: true,

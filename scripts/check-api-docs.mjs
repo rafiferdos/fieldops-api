@@ -231,7 +231,13 @@ for (const item of requests(collection.item)) {
               .filter((field) => !field.disabled)
               .map((field) => [field.key, resolve(field.value)]),
           )
-        : undefined;
+        : request.body?.mode === 'formdata'
+          ? Object.fromEntries(
+              request.body.formdata
+                .filter((field) => field.type === 'text' && !field.disabled)
+                .map((field) => [field.key, resolve(field.value)]),
+            )
+          : undefined;
   const httpRequest = { headers, query, params, body };
   for (const [argumentKey, argument] of Object.entries(route.args)) {
     if (!argument.pipes?.length) continue;

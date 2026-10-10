@@ -18,7 +18,8 @@ All routes use `/api/v1`. C = CUSTOMER, T = TECHNICIAN, A = ADMIN. Dispatch and 
 | POST   | `/auth/refresh`                 | Public refresh token rotation                                 |
 | POST   | `/auth/logout`                  | C/T/A current session revocation                              |
 | GET    | `/users/me`                     | C/T/A own profile                                             |
-| PATCH  | `/users/me`                     | C/T/A audited name/phone update                               |
+| PATCH  | `/users/me`                     | C/T/A audited name/phone/owned-avatar update                  |
+| POST   | `/media/images`                 | C/T/A own avatar upload; A catalog upload                     |
 | GET    | `/services`                     | Public search, pagination and sorting                         |
 | GET    | `/services/:id`                 | Public active service details                                 |
 | POST   | `/services`                     | A audited creation                                            |
@@ -64,11 +65,11 @@ ADMIN user search supports `q`, `role`, `status`, `page`, `limit` and `sort`; de
 
 ### Import the completed API documentation
 
-Import [the Postman v2.1 collection](fieldops.postman_collection.json) through **Settings → Import Data → Postman** in Apidog. It covers all 39 implemented domain APIs, two health routes and the browser-return transport, with 46 request examples including separate role logins and return outcomes. Each request documents its input, authorization, lifecycle rules, expected success and relevant error scenarios. [Official import guide](https://docs.apidog.io/import-from-postman-635043m0)
+Import [the Postman v2.1 collection](fieldops.postman_collection.json) through **Settings → Import Data → Postman** in Apidog. It covers all 40 implemented domain APIs, two health routes and the browser-return transport, with 48 request examples including separate role logins and return outcomes. Each request documents its input, authorization, lifecycle rules, expected success and relevant error scenarios. [Official import guide](https://docs.apidog.io/import-from-postman-635043m0)
 
 Set the imported variables in your local environment: `base_url`, account credentials, role-specific Bearer tokens and IDs extracted from actual responses. Keep secrets in **Local Value**. Set actual future scheduling dates and replace request/work-order versions after each mutation. Review Apidog's variable mapping after import.
 
-Use the Default module's folders **01–11** for normal testing. Main bodies contain editable inputs; named **MANUAL** debug cases document 159 branch expectations, while **ACTUAL** examples preserve 92 sanitized historical live responses. The [complete walkthrough](backend-walkthrough.md) explains the order, real fixture IDs, copyable bodies, role tokens, state branches and focused errors, with the authorized delivery extension below. The current collection covers 42 route templates. Local environment values override collection defaults: inspect IDs and versions before writing. GET, DELETE and logout have no body.
+Use the Default module's folders **01–11** for normal testing. Main bodies contain editable inputs; named **MANUAL** debug cases document 159 branch expectations, while **ACTUAL** examples preserve 92 sanitized historical live responses. The [complete walkthrough](backend-walkthrough.md) explains the order, real fixture IDs, copyable bodies, role tokens, state branches and focused errors, with the authorized delivery extension below. The current collection covers 43 route templates. Local environment values override collection defaults: inspect IDs and versions before writing. GET, DELETE and logout have no body.
 
 Run requests manually in workflow order: authentication → catalog → request/review → skills/assignment → progress/completion → verified gateway payment → feedback. Cancellation, deletion and logout are separate scenarios; do not run the entire collection as one sequence. The earlier **FieldOps — Actual scenarios** module and [live sample collection](fieldops-live-samples.postman_collection.json) remain historical backups with 92 actual responses and 17 prepared requests; normal testing no longer requires that module. Never publish populated environments or authentication responses. [Executed manual checks and verification limits](manual-verification.md) include real Google sign-in and SSLCommerz sandbox settlement.
 
@@ -90,7 +91,7 @@ Set `base_url = http://localhost:3000/api/v1`. Keep credentials/tokens in **Loca
 }
 ```
 
-Registration accepts only these three fields. Name is trimmed; email is trimmed/lowercased; password is 15–128 characters with spaces preserved. Role is server-fixed CUSTOMER; passwords use Argon2id. Expected `201`, safe user `{ id, name, email, role, createdAt }`; registration does not issue tokens. Invalid input is `400`; duplicate email, including a soft-deleted account, is `409`. Limit: 10 attempts/minute per IP.
+Registration accepts only these three fields. Name is trimmed; email is trimmed/lowercased; password is 15–128 characters with spaces preserved. Role is server-fixed CUSTOMER; passwords use Argon2id. Expected `201`, safe user `{ id, name, email, role, createdAt, avatarUrl }`; registration does not issue tokens. Invalid input is `400`; duplicate email, including a soft-deleted account, is `409`. Limit: 10 attempts/minute per IP.
 
 `POST /auth/login` with the same email/password returns `200`. Its `data` contains `user`, `accessToken`, `refreshToken`, `tokenType`, `expiresIn: 900` and `refreshExpiresAt`. In **Post Processors → Extract Variable**, save `$.data.accessToken` as `access_token` and `$.data.refreshToken` as `refresh_token` in the local environment. [Apidog extraction guide](https://docs.apidog.io/extract-variable-588468m0)
 
@@ -131,7 +132,7 @@ Consumed refresh records remain until session expiry for reuse detection. Logout
 
 ### Own profile
 
-`GET /users/me` with Bearer returns `{ id, name, email, role, createdAt, phone }`, where phone is nullable. Missing/invalid/expired/revoked authentication or suspended/deleted accounts return `401`.
+`GET /users/me` with Bearer returns `{ id, name, email, role, createdAt, phone, avatarUrl }`, where phone and avatarUrl are nullable. Missing/invalid/expired/revoked authentication or suspended/deleted accounts return `401`.
 
 `PATCH /users/me`, Bearer, JSON:
 
@@ -139,7 +140,7 @@ Consumed refresh records remain until session expiry for reuse detection. Logout
 { "name": "Rafi Ferdos", "phone": "+8801712345678" }
 ```
 
-Expected `200`, `Profile updated successfully`, with the same safe profile. All three roles may update their own account. At least one field is required; omitted fields are preserved. Name trims to 2–100 characters. Phone trims and accepts international `+` format, 2–15 digits, first digit nonzero; `null` removes it. This validates format, not phone ownership. Role/status/email/password/userId and all other extra fields are rejected (`400`).
+Expected `200`, `Profile updated successfully`, with the same safe profile. All three roles may update their own account. At least one field is required; omitted fields are preserved. Optional `avatarUrl` must reference a recorded AVATAR upload owned by this account; `null` removes it. See [owned image upload and attachment](media-images.md). Name trims to 2–100 characters. Phone trims and accepts international `+` format, 2–15 digits, first digit nonzero; `null` removes it. This validates format, not phone ownership. Role/status/email/password/userId and all other extra fields are rejected (`400`).
 
 The transaction rechecks the active account/session. Update and `USER_PROFILE_UPDATED` audit commit together; audit failure rolls back the update. Metadata contains field names only. Parallel independent name/phone changes both survive; repeating a valid PATCH records another audit. Default limit is 120 requests/minute per IP/endpoint.
 

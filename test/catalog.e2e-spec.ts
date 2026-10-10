@@ -83,6 +83,7 @@ describe('Public service catalog (e2e)', () => {
       'currency',
       'description',
       'id',
+      'imageUrl',
       'name',
       'updatedAt',
     ]);

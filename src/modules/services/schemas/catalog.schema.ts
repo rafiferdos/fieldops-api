@@ -11,6 +11,7 @@ export const catalogQuerySchema = z.strictObject({
 });
 
 export const publicServiceSchema = createServiceSchema.extend({
+  imageUrl: createServiceSchema.shape.imageUrl.unwrap(),
   id: z.uuid(),
   currency: z.literal('BDT'),
   createdAt: z.iso.datetime(),

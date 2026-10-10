@@ -1,8 +1,10 @@
 import { z } from 'zod';
+import { imageUrlSchema } from '../../../common/validation/image-url.schema.js';
 
 export const createServiceSchema = z.strictObject({
   name: z.string().trim().min(2).max(100),
   description: z.string().trim().min(10).max(2000),
+  imageUrl: imageUrlSchema.nullable().optional(),
   basePriceMinor: z.number().int().min(0).max(1000000000),
 });
 

@@ -3,6 +3,7 @@ import { createHash } from 'node:crypto';
 import type { Prisma } from '../../generated/prisma/client.js';
 import { Role } from '../../generated/prisma/enums.js';
 import { requireActiveActor } from '../../common/security/active-actor.js';
+import { requireOwnedImage } from '../../common/security/owned-image.js';
 import { pagination } from '../../common/http/pagination.js';
 import { literalSearch } from '../../common/validation/literal-search.js';
 import { PrismaService } from '../../infrastructure/prisma/prisma.service.js';
@@ -34,7 +35,7 @@ export class ServicesService {
       .update(JSON.stringify(query))
       .digest('hex');
     return this.cache.remember(
-      `catalog:v1:${revision}:list:${hash}`,
+      `catalog:v2:${revision}:list:${hash}`,
       catalogPageSchema,
       async () => {
         // Prisma contains maps to LIKE; escape metacharacters for literal user search.
@@ -84,7 +85,7 @@ export class ServicesService {
   async detail(id: string) {
     const revision = await this.currentRevision();
     return this.cache.remember(
-      `catalog:v1:${revision}:detail:${id}`,
+      `catalog:v2:${revision}:detail:${id}`,
       publicServiceSchema,
       async () => {
         const service = await this.prisma.service.findFirst({
@@ -109,11 +110,13 @@ export class ServicesService {
   async create(actor: AuthActor, input: CreateServiceInput) {
     return this.prisma.$transaction(async (tx) => {
       await requireActiveActor(tx, actor, [Role.ADMIN]);
+      await requireOwnedImage(tx, actor.user.id, input.imageUrl, 'SERVICE');
       const service = await tx.service.create({
         data: {
           name: input.name,
           description: input.description,
           basePriceMinor: input.basePriceMinor,
+          imageUrl: input.imageUrl ?? null,
         },
         select: serviceSelect,
       });
@@ -141,10 +144,12 @@ export class ServicesService {
       ...(input.basePriceMinor !== undefined
         ? { basePriceMinor: input.basePriceMinor }
         : {}),
+      ...(input.imageUrl !== undefined ? { imageUrl: input.imageUrl } : {}),
     };
     return this.prisma.$transaction(async (tx) => {
       await requireActiveActor(tx, actor, [Role.ADMIN]);
       const previous = await this.lockActiveService(tx, id);
+      await requireOwnedImage(tx, actor.user.id, input.imageUrl, 'SERVICE');
       const service = await tx.service.update({
         where: { id, deletedAt: null },
         data,
@@ -160,7 +165,8 @@ export class ServicesService {
             (field): field is keyof CreateServiceInput =>
               field === 'name' ||
               field === 'description' ||
-              field === 'basePriceMinor',
+              field === 'basePriceMinor' ||
+              field === 'imageUrl',
           ),
           previousBasePriceMinor: previous.basePriceMinor,
           basePriceMinor: service.basePriceMinor,

@@ -90,6 +90,7 @@ describe('Admin service catalog (e2e)', () => {
     ids.push(id);
     expect(created.body.data).toEqual({
       ...input,
+      imageUrl: null,
       id,
       currency: 'BDT',
       createdAt: expect.any(String),

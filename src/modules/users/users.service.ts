@@ -11,6 +11,7 @@ import { ownProfileSelect, publicUserSelect } from './users.select.js';
 import type { AuthActor } from '../auth/auth.types.js';
 import type { UpdateProfileInput } from './schemas/profile.schema.js';
 import { AuditService } from '../../common/audit/audit.service.js';
+import { requireOwnedImage } from '../../common/security/owned-image.js';
 
 type CreateCustomerInput = {
   name: string;
@@ -36,9 +37,11 @@ export class UsersService {
     const data = {
       ...(input.name !== undefined ? { name: input.name } : {}),
       ...(input.phone !== undefined ? { phone: input.phone } : {}),
+      ...(input.avatarUrl !== undefined ? { avatarUrl: input.avatarUrl } : {}),
     };
     try {
       return await this.prisma.$transaction(async (tx) => {
+        await requireOwnedImage(tx, actor.user.id, input.avatarUrl, 'AVATAR');
         // Recheck eligibility at the write boundary; never take an owner from input.
         const user = await tx.user.update({
           where: {
@@ -64,8 +67,8 @@ export class UsersService {
           // Field names only: no credentials or personal values in audit metadata.
           metadata: {
             updatedFields: Object.keys(data).filter(
-              (field): field is 'name' | 'phone' =>
-                field === 'name' || field === 'phone',
+              (field): field is 'name' | 'phone' | 'avatarUrl' =>
+                field === 'name' || field === 'phone' || field === 'avatarUrl',
             ),
           },
         });

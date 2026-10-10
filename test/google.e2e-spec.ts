@@ -46,6 +46,7 @@ describe('Google login (e2e)', () => {
     expect(tokens.user).toEqual({
       id: expect.any(String),
       name: 'Google Customer',
+      avatarUrl: null,
       email,
       role: 'CUSTOMER',
       createdAt: expect.any(String),

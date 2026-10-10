@@ -3252,7 +3252,7 @@
                 "me"
               ]
             },
-            "description": "How to send this request\nA phone is required before checkout. The example number is test contact data. Use an international number beginning with +; phone:null clears it.\n\nAccess: CUSTOMER. Expected success: 200.\n\nAllowlisted name/phone only; at least one field. Name 2–100 characters. Phone uses international format; null clears it. Cannot update role/status/email/password. Payment checkout requires a valid phone and name/email at most 50 characters.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.\n\nExamples: Main body is a starting input, not an automatic test. MANUAL cases below are documented expectations, not executed captures. ACTUAL responses are historical evidence; their old state/version may not be reusable. Keep passwords, tokens, Google credentials and provider references in Local Values. Read the current resource before writing.\n\nT020 — Clear phone: expect 200. Setup: Owner login. This affects checkout; restore the sample international phone afterward. phone is null; checkout must reject missing contact with 409.\nT021 — Empty profile update: expect 400. Setup: Owner login. \nT022 — Invalid phone: expect 400. Setup: Owner login. \nT023 — Forbidden profile fields: expect 400. Setup: Owner login. ",
+            "description": "How to send this request\nA phone is required before checkout. The example number is test contact data. Use an international number beginning with +; phone:null clears it.\n\nAccess: CUSTOMER. Expected success: 200.\n\nAllowlisted name/phone only; at least one field. Name 2–100 characters. Phone uses international format; null clears it. Cannot update role/status/email/password. Payment checkout requires a valid phone and name/email at most 50 characters.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.\n\nExamples: Main body is a starting input, not an automatic test. MANUAL cases below are documented expectations, not executed captures. ACTUAL responses are historical evidence; their old state/version may not be reusable. Keep passwords, tokens, Google credentials and provider references in Local Values. Read the current resource before writing.\n\nT020 — Clear phone: expect 200. Setup: Owner login. This affects checkout; restore the sample international phone afterward. phone is null; checkout must reject missing contact with 409.\nT021 — Empty profile update: expect 400. Setup: Owner login. \nT022 — Invalid phone: expect 400. Setup: Owner login. \nT023 — Forbidden profile fields: expect 400. Setup: Owner login. \n\nOptional avatarUrl: use a recorded AVATAR upload owned by this account, null to remove, or omit to retain. POST /media/images uploads first; an upload alone does not change the profile. See docs/media-images.md.",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"name\": \"Demo Customer\",\n  \"phone\": \"+8801712345678\"\n}",
@@ -4201,7 +4201,7 @@
                 "services"
               ]
             },
-            "description": "How to send this request\n150000 means BDT 1,500.00. Currency is set by the server. Copy data.id to service_id if using this new service for the full flow. Keep deletion tests on a separate disposable service.\n\nAccess: ADMIN. Expected success: 201.\n\nName 2–100, description 10–2000 trimmed characters; price integer 0–1000000000 paisa; BDT fixed by server. Extract data.id as service_id. Audit/cache revision update is atomic. SSLCommerz checkout supports only BDT 10–500000; unsupported invoice amounts return 409.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.\n\nExamples: Main body is a starting input, not an automatic test. MANUAL cases below are documented expectations, not executed captures. ACTUAL responses are historical evidence; their old state/version may not be reusable. Keep passwords, tokens, Google credentials and provider references in Local Values. Read the current resource before writing.\n\nT030 — Customer cannot create catalog entries: expect 403. Setup: Valid customer token and valid body. \nT031 — Invalid price or too-short fields: expect 400. Setup: ADMIN login. \nT032 — Client-selected currency: expect 400. Setup: ADMIN login. ",
+            "description": "How to send this request\n150000 means BDT 1,500.00. Currency is set by the server. Copy data.id to service_id if using this new service for the full flow. Keep deletion tests on a separate disposable service.\n\nAccess: ADMIN. Expected success: 201.\n\nName 2–100, description 10–2000 trimmed characters; price integer 0–1000000000 paisa; BDT fixed by server. Extract data.id as service_id. Audit/cache revision update is atomic. SSLCommerz checkout supports only BDT 10–500000; unsupported invoice amounts return 409.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.\n\nExamples: Main body is a starting input, not an automatic test. MANUAL cases below are documented expectations, not executed captures. ACTUAL responses are historical evidence; their old state/version may not be reusable. Keep passwords, tokens, Google credentials and provider references in Local Values. Read the current resource before writing.\n\nT030 — Customer cannot create catalog entries: expect 403. Setup: Valid customer token and valid body. \nT031 — Invalid price or too-short fields: expect 400. Setup: ADMIN login. \nT032 — Client-selected currency: expect 400. Setup: ADMIN login. \n\nOptional imageUrl: use a recorded SERVICE upload owned by this administrator, null to remove, or omit to retain. POST /media/images uploads first. Existing work prices and invoices remain immutable. See docs/media-images.md.",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"name\": \"Cooling unit inspection\",\n  \"description\": \"Inspect and repair the cooling unit.\",\n  \"basePriceMinor\": 150000\n}",
@@ -4631,7 +4631,7 @@
                 "{{service_id}}"
               ]
             },
-            "description": "How to send this request\nAt least one allowed field is required. A later price change affects future assignments, not an already assigned price or an issued invoice.\n\nAccess: ADMIN. Expected success: 200.\n\nAt least one name/description/basePriceMinor field; same bounds as creation. Historical agreed prices and invoices stay frozen.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.\n\nExamples: Main body is a starting input, not an automatic test. MANUAL cases below are documented expectations, not executed captures. ACTUAL responses are historical evidence; their old state/version may not be reusable. Keep passwords, tokens, Google credentials and provider references in Local Values. Read the current resource before writing.\n\nT033 — Update future price: expect 200. Setup: Use your disposable test service; do not change the shared fixture unless intended. Already assigned work and existing invoices retain their prior price.\nT034 — Empty catalog update: expect 400. Setup: ADMIN login. \nT035 — Missing catalog record: expect 404. Setup: ADMIN login and valid body. ",
+            "description": "How to send this request\nAt least one allowed field is required. A later price change affects future assignments, not an already assigned price or an issued invoice.\n\nAccess: ADMIN. Expected success: 200.\n\nAt least one name/description/basePriceMinor field; same bounds as creation. Historical agreed prices and invoices stay frozen.\n\nResponses use {success,message,data} / {success,message,errors}. Invalid input 400; missing/expired/revoked session 401; forbidden role 403; private/missing resource 404; state/duplicate conflict 409; rate limit 429; gateway verification failure 502; temporary unavailability 503. See README for domain-specific conditions. Saved responses are illustrative, never evidence of an executed request.\n\nExamples: Main body is a starting input, not an automatic test. MANUAL cases below are documented expectations, not executed captures. ACTUAL responses are historical evidence; their old state/version may not be reusable. Keep passwords, tokens, Google credentials and provider references in Local Values. Read the current resource before writing.\n\nT033 — Update future price: expect 200. Setup: Use your disposable test service; do not change the shared fixture unless intended. Already assigned work and existing invoices retain their prior price.\nT034 — Empty catalog update: expect 400. Setup: ADMIN login. \nT035 — Missing catalog record: expect 404. Setup: ADMIN login and valid body. \n\nOptional imageUrl: use a recorded SERVICE upload owned by this administrator, null to remove, or omit to retain. POST /media/images uploads first. Existing work prices and invoices remain immutable. See docs/media-images.md.",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"description\": \"Inspect, clean and repair the cooling unit.\"\n}",
@@ -18146,6 +18146,205 @@
                 }
               ],
               "body": "{\n  \"success\": false,\n  \"message\": \"Request validation failed\",\n  \"errors\": [\n    \"status: Invalid option: expected one of \\\"ACTIVE\\\"|\\\"SUSPENDED\\\"\"\n  ]\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Media images",
+      "item": [
+        {
+          "name": "Upload avatar image",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "purpose",
+                  "value": "AVATAR",
+                  "type": "text"
+                },
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/media/images",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "media",
+                "images"
+              ]
+            },
+            "description": "Upload one JPEG, PNG or WebP image up to 3 MB as multipart form-data. Select a local file in the file row; do not manually set Content-Type. AVATAR is available to all signed-in roles; SERVICE requires ADMIN. The provider must be configured. The returned URL belongs to the authenticated uploader and purpose; save it through PATCH /users/me avatarUrl or service imageUrl. Upload alone never changes the current profile/catalog image. Example responses below describe the contract and are not actual capture evidence."
+          },
+          "response": [
+            {
+              "name": "Expected uploaded-image response (contract example)",
+              "originalRequest": {
+                "method": "POST",
+                "header": [],
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{access_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [
+                    {
+                      "key": "purpose",
+                      "value": "AVATAR",
+                      "type": "text"
+                    },
+                    {
+                      "key": "file",
+                      "type": "file",
+                      "src": []
+                    }
+                  ]
+                },
+                "url": {
+                  "raw": "{{base_url}}/media/images",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "media",
+                    "images"
+                  ]
+                },
+                "description": "Upload one JPEG, PNG or WebP image up to 3 MB as multipart form-data. Select a local file in the file row; do not manually set Content-Type. AVATAR is available to all signed-in roles; SERVICE requires ADMIN. The provider must be configured. The returned URL belongs to the authenticated uploader and purpose; save it through PATCH /users/me avatarUrl or service imageUrl. Upload alone never changes the current profile/catalog image. Example responses below describe the contract and are not actual capture evidence."
+              },
+              "status": "Created",
+              "code": 201,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Image uploaded successfully\",\n  \"data\": {\n    \"id\": \"11111111-1111-4111-8111-111111111111\",\n    \"url\": \"https://res.cloudinary.com/fieldops-example/image/upload/v1/fieldops/avatar/11111111-1111-4111-8111-111111111111/example.webp\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Upload service image",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "purpose",
+                  "value": "SERVICE",
+                  "type": "text"
+                },
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/media/images",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "media",
+                "images"
+              ]
+            },
+            "description": "Upload one JPEG, PNG or WebP image up to 3 MB as multipart form-data. Select a local file in the file row; do not manually set Content-Type. AVATAR is available to all signed-in roles; SERVICE requires ADMIN. The provider must be configured. The returned URL belongs to the authenticated uploader and purpose; save it through PATCH /users/me avatarUrl or service imageUrl. Upload alone never changes the current profile/catalog image. Example responses below describe the contract and are not actual capture evidence."
+          },
+          "response": [
+            {
+              "name": "Expected uploaded-image response (contract example)",
+              "originalRequest": {
+                "method": "POST",
+                "header": [],
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{admin_access_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [
+                    {
+                      "key": "purpose",
+                      "value": "SERVICE",
+                      "type": "text"
+                    },
+                    {
+                      "key": "file",
+                      "type": "file",
+                      "src": []
+                    }
+                  ]
+                },
+                "url": {
+                  "raw": "{{base_url}}/media/images",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "media",
+                    "images"
+                  ]
+                },
+                "description": "Upload one JPEG, PNG or WebP image up to 3 MB as multipart form-data. Select a local file in the file row; do not manually set Content-Type. AVATAR is available to all signed-in roles; SERVICE requires ADMIN. The provider must be configured. The returned URL belongs to the authenticated uploader and purpose; save it through PATCH /users/me avatarUrl or service imageUrl. Upload alone never changes the current profile/catalog image. Example responses below describe the contract and are not actual capture evidence."
+              },
+              "status": "Created",
+              "code": 201,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Image uploaded successfully\",\n  \"data\": {\n    \"id\": \"11111111-1111-4111-8111-111111111111\",\n    \"url\": \"https://res.cloudinary.com/fieldops-example/image/upload/v1/fieldops/service/11111111-1111-4111-8111-111111111111/example.webp\"\n  }\n}"
             }
           ]
         }

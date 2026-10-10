@@ -48,5 +48,8 @@ for (const key of [
   'SSLCOMMERZ_STORE_ID',
   'SSLCOMMERZ_STORE_PASSWORD',
   'PUBLIC_API_URL',
+  'CLOUDINARY_CLOUD_NAME',
+  'CLOUDINARY_API_KEY',
+  'CLOUDINARY_API_SECRET',
 ])
   process.env[key] = '';

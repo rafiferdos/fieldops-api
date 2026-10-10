@@ -14,6 +14,7 @@ const allowedFields = {
     'basePriceMinor',
   ],
   SERVICE_DELETED: [],
+  IMAGE_UPLOADED: ['purpose'],
   REQUEST_CREATED: ['serviceId', 'status', 'version'],
   REQUEST_UPDATED: ['updatedFields', 'previousVersion', 'version'],
   REQUEST_REVIEWED: ['fromStatus', 'toStatus', 'previousVersion', 'version'],

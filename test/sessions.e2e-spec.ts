@@ -35,6 +35,7 @@ describe('Login and sessions (e2e)', () => {
     expect(data.user).toEqual({
       id: expect.any(String),
       name: 'Session Customer',
+      avatarUrl: null,
       email,
       role: 'CUSTOMER',
       createdAt: expect.any(String),

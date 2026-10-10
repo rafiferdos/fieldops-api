@@ -55,6 +55,7 @@ Exactly three primary roles share this workflow:
 
 - Email/password authentication with Argon2, verified Google identity and rotating refresh tokens.
 - Searchable public catalog with pagination, sorting and audited soft deletion.
+- Owned profile and catalog photos with bounded Cloudinary uploads and purpose/ownership checks.
 - Versioned request editing, approval/rejection and atomic cancellation.
 - Complete technician-skill snapshots and conditional skill replacement.
 - Skill/window availability, conflict-safe dispatch, reassignment and scoped work tracking.
@@ -116,10 +117,11 @@ availability and financial state; Redis stores only public catalog projections.
 
 ## API documentation
 
-All API routes are versioned under `/api/v1`. The collection documents 39 domain APIs,
+All API routes are versioned under `/api/v1`. The collection documents 40 domain APIs,
 two health routes and the browser-return transport, including role-specific examples.
 
 - [Complete endpoint guide and workflow examples](docs/api-guide.md)
+- [Profile/service images, configuration and storage lifecycle](docs/media-images.md)
 - [Postman v2.1 collection](docs/fieldops.postman_collection.json), importable into Postman or Apidog
 - [Implemented backend contract](https://app.notion.com/p/3f34ab5df14481afa4acc3e9a092b940)
 - [Executed integration verification](docs/manual-verification.md)
@@ -178,17 +180,18 @@ stops local services while retaining the database volume.
 
 Use [.env.example](.env.example) as the complete template. Never commit a populated environment.
 
-| Variable                                                                                | Purpose                                                                |
-| --------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
-| `NODE_ENV`, `PORT`                                                                      | Runtime mode and HTTP port                                             |
-| `DATABASE_URL`, `POSTGRES_PASSWORD`                                                     | PostgreSQL connection and matching local Compose password              |
-| `JWT_ACCESS_SECRET`                                                                     | Private signing key, at least 64 bytes of random material              |
-| `FRONTEND_ORIGIN`                                                                       | Exact trusted frontend origin for browser requests and payment returns |
-| `REDIS_URL`                                                                             | Optional public catalog cache; an outage falls back to PostgreSQL      |
-| `GOOGLE_CLIENT_ID`                                                                      | Optional OAuth Web client ID used as the verified audience             |
-| `SSLCOMMERZ_MODE`, `SSLCOMMERZ_STORE_ID`, `SSLCOMMERZ_STORE_PASSWORD`, `PUBLIC_API_URL` | Configure together to enable the gateway                               |
-| `SEED_ADMIN_*`, `SEED_TECHNICIAN_*`                                                     | Optional dedicated account bootstrap                                   |
-| `TEST_DATABASE_URL`, `TEST_REDIS_URL`                                                   | Isolated integration-test services                                     |
+| Variable                                                                                | Purpose                                                                    |
+| --------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| `NODE_ENV`, `PORT`                                                                      | Runtime mode and HTTP port                                                 |
+| `DATABASE_URL`, `POSTGRES_PASSWORD`                                                     | PostgreSQL connection and matching local Compose password                  |
+| `JWT_ACCESS_SECRET`                                                                     | Private signing key, at least 64 bytes of random material                  |
+| `FRONTEND_ORIGIN`                                                                       | Exact trusted frontend origin for browser requests and payment returns     |
+| `REDIS_URL`                                                                             | Optional public catalog cache; an outage falls back to PostgreSQL          |
+| `GOOGLE_CLIENT_ID`                                                                      | Optional OAuth Web client ID used as the verified audience                 |
+| `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`                  | Configure together for server-side image uploads; keep credentials private |
+| `SSLCOMMERZ_MODE`, `SSLCOMMERZ_STORE_ID`, `SSLCOMMERZ_STORE_PASSWORD`, `PUBLIC_API_URL` | Configure together to enable the gateway                                   |
+| `SEED_ADMIN_*`, `SEED_TECHNICIAN_*`                                                     | Optional dedicated account bootstrap                                       |
+| `TEST_DATABASE_URL`, `TEST_REDIS_URL`                                                   | Isolated integration-test services                                         |
 
 Use a clean HTTPS `FRONTEND_ORIGIN` in production. `PUBLIC_API_URL` is the API origin
 without `/api/v1`; hosted/live payment notification URLs must be publicly reachable HTTPS.
@@ -235,6 +238,12 @@ passed 129 unit and 474 database integration tests in
 [its CI run](https://github.com/rafiferdos/fieldops-api/actions/runs/37908940023).
 Automated gateway tests replace external HTTP transport; actual sandbox settlement, provider
 IPN and HTTPS browser returns are verified separately in the integration record.
+
+The image-support checkpoint passed **157 unit tests, 484 PostgreSQL/Redis integration
+tests and the compiled HTTP workflow** locally on October 10, 2026. Real Cloudinary
+uploads and frontend photo save/reload/removal were verified separately using isolated
+disposable accounts. This checkpoint still requires a coordinated hosted backend/frontend
+release; these local results do not claim the live service has been updated.
 
 For schema work, use `npm run db:migrate -- --name describe_your_change` and regenerate the
 client. Prisma loads the complete `prisma/` directory. Preserve exclusion/check constraints,

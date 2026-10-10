@@ -49,6 +49,11 @@ const envSchema = z
         .optional(),
     ),
     SSLCOMMERZ_MODE: optionalSetting(z.enum(['sandbox', 'live'])),
+    CLOUDINARY_CLOUD_NAME: optionalSetting(
+      z.string().regex(/^[a-zA-Z0-9_-]{1,100}$/),
+    ),
+    CLOUDINARY_API_KEY: optionalSetting(z.string().regex(/^\d{1,100}$/)),
+    CLOUDINARY_API_SECRET: optionalSetting(z.string().min(1).max(200)),
     SSLCOMMERZ_STORE_ID: optionalSetting(z.string().trim().min(1).max(30)),
     SSLCOMMERZ_STORE_PASSWORD: optionalSetting(z.string().min(1).max(100)),
     PUBLIC_API_URL: optionalSetting(
@@ -69,6 +74,26 @@ const envSchema = z
       ),
   })
   .superRefine((value, ctx) => {
+    const mediaSettings = [
+      'CLOUDINARY_CLOUD_NAME',
+      'CLOUDINARY_API_KEY',
+      'CLOUDINARY_API_SECRET',
+    ] as const;
+    const mediaConfigured = mediaSettings.filter(
+      (key) => value[key] !== undefined,
+    );
+    if (
+      mediaConfigured.length > 0 &&
+      mediaConfigured.length < mediaSettings.length
+    )
+      for (const key of mediaSettings)
+        if (value[key] === undefined)
+          ctx.addIssue({
+            code: 'custom',
+            path: [key],
+            message:
+              'Configure all Cloudinary settings together, or leave all blank',
+          });
     // Loopback HTTP is exclusively a local sandbox browser-return test facility.
     // Live callbacks and production frontend returns always require HTTPS.
     for (const key of ['PUBLIC_API_URL', 'FRONTEND_ORIGIN'] as const) {

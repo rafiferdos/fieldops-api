@@ -84,6 +84,7 @@ describe('Administrator account management (e2e)', () => {
     });
     expect(Object.keys(response.body.data).sort()).toEqual(
       [
+        'avatarUrl',
         'id',
         'name',
         'email',

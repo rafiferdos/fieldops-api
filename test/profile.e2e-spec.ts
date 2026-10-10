@@ -73,6 +73,7 @@ describe('Own profile updates (e2e)', () => {
         data: {
           id: actor.user.id,
           name: 'Updated Customer',
+          avatarUrl: null,
           email,
           role,
           phone,

@@ -145,7 +145,7 @@ export type AuditEvent = AuditTarget &
     | {
         action: 'USER_PROFILE_UPDATED';
         entityType: 'USER';
-        metadata: { updatedFields: Array<'name' | 'phone'> };
+        metadata: { updatedFields: Array<'name' | 'phone' | 'avatarUrl'> };
       }
     | {
         action: 'TECHNICIAN_SKILLS_UPDATED';
@@ -200,10 +200,17 @@ export type AuditEvent = AuditTarget &
         action: 'SERVICE_UPDATED';
         entityType: 'SERVICE';
         metadata: {
-          updatedFields: Array<'name' | 'description' | 'basePriceMinor'>;
+          updatedFields: Array<
+            'name' | 'description' | 'basePriceMinor' | 'imageUrl'
+          >;
           previousBasePriceMinor: number;
           basePriceMinor: number;
         };
+      }
+    | {
+        action: 'IMAGE_UPLOADED';
+        entityType: 'MEDIA';
+        metadata: { purpose: 'AVATAR' | 'SERVICE' };
       }
     | {
         action: 'SERVICE_DELETED';

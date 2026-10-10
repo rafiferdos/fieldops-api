@@ -1,0 +1,17 @@
+enum ImagePurpose {
+  AVATAR
+  SERVICE
+}
+
+// Only server-verified uploads may be attached to profile or catalog records.
+model MediaUpload {
+  id        String       @id @default(uuid()) @db.Uuid
+  ownerId   String       @db.Uuid
+  purpose   ImagePurpose
+  publicId  String       @unique @db.VarChar(255)
+  url       String       @unique @db.VarChar(2048)
+  createdAt DateTime     @default(now()) @db.Timestamptz(3)
+  owner     User         @relation(fields: [ownerId], references: [id], onDelete: Restrict)
+
+  @@index([ownerId, purpose, createdAt])
+}

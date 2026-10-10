@@ -14,6 +14,7 @@ model User {
   email            String            @unique
   name             String
   phone            String?
+  avatarUrl        String?           @db.VarChar(2048)
   passwordHash     String?
   role             Role              @default(CUSTOMER)
   status           UserStatus        @default(ACTIVE)
@@ -29,6 +30,7 @@ model User {
   invoices         Invoice[]
   payments         Payment[]
   feedback         Feedback[]
+  mediaUploads     MediaUpload[]
 
   @@index([role, status])
   @@index([deletedAt, createdAt, id])

@@ -15,6 +15,7 @@ import { PaymentsModule } from './modules/payments/payments.module.js';
 import { InvoicesModule } from './modules/invoices/invoices.module.js';
 import { FeedbackModule } from './modules/feedback/feedback.module.js';
 import { AdminModule } from './modules/admin/admin.module.js';
+import { MediaModule } from './modules/media/media.module.js';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { AdminModule } from './modules/admin/admin.module.js';
     PaymentsModule,
     FeedbackModule,
     AdminModule,
+    MediaModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },

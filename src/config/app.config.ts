@@ -17,6 +17,7 @@ export function configureApp(app: INestApplication): void {
       '/api/v1/invoices',
       '/api/v1/payments',
       '/api/v1/admin',
+      '/api/v1/media',
     ],
     (_req: Request, res: Response, next: NextFunction) => {
       res.setHeader('Cache-Control', 'no-store');

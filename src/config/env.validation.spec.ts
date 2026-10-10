@@ -77,6 +77,37 @@ describe('Optional Redis configuration', () => {
   );
 });
 
+describe('Optional Cloudinary configuration', () => {
+  const valid = {
+    ...baseEnv,
+    JWT_ACCESS_SECRET: randomBytes(64).toString('base64'),
+  };
+  const media = {
+    CLOUDINARY_CLOUD_NAME: 'fieldops-test',
+    CLOUDINARY_API_KEY: '123456789',
+    CLOUDINARY_API_SECRET: 'fixture-secret',
+  };
+
+  it('permits disabled uploads and accepts complete configuration', () => {
+    expect(validateEnv(valid).CLOUDINARY_CLOUD_NAME).toBeUndefined();
+    expect(validateEnv({ ...valid, ...media })).toMatchObject(media);
+  });
+  it.each(Object.keys(media))(
+    'rejects incomplete configuration without %s',
+    (key) => {
+      expect(() => validateEnv({ ...valid, ...media, [key]: '' })).toThrow();
+    },
+  );
+  it.each(['https://example.com', '../other-cloud', 'cloud name'])(
+    'rejects an unsafe cloud path: %s',
+    (cloud) => {
+      expect(() =>
+        validateEnv({ ...valid, ...media, CLOUDINARY_CLOUD_NAME: cloud }),
+      ).toThrow();
+    },
+  );
+});
+
 describe('Payment startup configuration', () => {
   const valid = {
     ...baseEnv,

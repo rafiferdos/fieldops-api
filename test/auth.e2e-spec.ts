@@ -41,6 +41,7 @@ describe('Customer registration (e2e)', () => {
       data: {
         id: expect.any(String),
         name: 'Rafi Ferdos',
+        avatarUrl: null,
         email,
         role: 'CUSTOMER',
         createdAt: expect.any(String),

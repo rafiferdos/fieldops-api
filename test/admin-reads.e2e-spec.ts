@@ -50,6 +50,7 @@ describe('Administration reads (e2e)', () => {
     });
     expect(Object.keys(response.body.data.items[0]).sort()).toEqual(
       [
+        'avatarUrl',
         'id',
         'name',
         'email',

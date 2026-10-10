@@ -10,6 +10,7 @@ import { auditMetadata } from './audit-metadata.js';
 export const adminUserSelect = {
   id: true,
   name: true,
+  avatarUrl: true,
   email: true,
   role: true,
   status: true,

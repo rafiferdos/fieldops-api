@@ -2,6 +2,7 @@ model Service {
   id               String            @id @default(uuid()) @db.Uuid
   name             String            @db.VarChar(100)
   description      String            @db.VarChar(2000)
+  imageUrl         String?           @db.VarChar(2048)
   basePriceMinor   Int
   currency         Currency          @default(BDT)
   deletedAt        DateTime?         @db.Timestamptz(3)

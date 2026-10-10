@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { imageUrlSchema } from '../../../common/validation/image-url.schema.js';
 
 export const nameSchema = z.string().trim().min(2).max(100);
 const phoneSchema = z
@@ -13,10 +14,11 @@ export const updateProfileSchema = z
   .strictObject({
     name: nameSchema.optional(),
     phone: phoneSchema.nullable().optional(),
+    avatarUrl: imageUrlSchema.nullable().optional(),
   })
   .refine(
-    (input) => input.name !== undefined || input.phone !== undefined,
-    'Provide at least one of name or phone',
+    (input) => Object.values(input).some((value) => value !== undefined),
+    'Provide at least one profile field',
   );
 
 export type UpdateProfileInput = z.output<typeof updateProfileSchema>;

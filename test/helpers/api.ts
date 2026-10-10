@@ -42,6 +42,7 @@ export async function closeTestApi(
         }),
         api.prisma.session.deleteMany({ where: { user: { email } } }),
         api.prisma.authIdentity.deleteMany({ where: { user: { email } } }),
+        api.prisma.mediaUpload.deleteMany({ where: { owner: { email } } }),
         api.prisma.user.deleteMany({ where: { email } }),
       ]);
     }
